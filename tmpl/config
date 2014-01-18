@@ -7,5 +7,4 @@ year: 2014
 abstract: Perl interface to libpng
 license: perl
 MailingList: http://groups.google.com/group/perlimagepng
-rt: https://github.com/benkasminbullock/Image-PNG/issues
 repo: https://github.com/benkasminbullock/image-png-libpng

@@ -42,24 +42,24 @@ This function corresponds to C<png_[% fn %]>
 
 =head1 NAME
 
-[% config.base %]::Libpng - Perl interface to the C library "libpng".
+Image::PNG::Libpng - Perl interface to the C library "libpng".
 
 [% INCLUDE "warning" %]
 
 =head1 SYNOPSIS
 
-     use [% config.base %]::Libpng;
-     my $png = [% config.base %]::Libpng::create_read_struct ();
+     use Image::PNG::Libpng ':all';
+     my $png = create_read_struct ();
      open my $file, '<:raw', 'nice.png';
      $png->init_io ($file);
      $png->read_png ();
      close $file;
 
-[% config.base %]::Libpng enables Perl to use the "libpng" library for
+Image::PNG::Libpng enables Perl to use the "libpng" library for
 reading and writing files in the PNG (Portable Network Graphics)
 format.
 
-[% config.base %]::Libpng consists of Perl subroutines which mirror
+Image::PNG::Libpng consists of Perl subroutines which mirror
 the C functions in libpng, plus helper subroutines to make it easier
 to read and write PNG data in Perl. 
 
@@ -412,7 +412,7 @@ with the text fields such as "key", "lang_key", "compression" taken
 from the PNG's information.
 
 The text data is uncompressed by libpng. If it is international text,
-[% config.base %]::Libpng automatically puts it into Perl's internal
+Image::PNG::Libpng automatically puts it into Perl's internal
 Unicode encoding (UTF-8). 
 
 Note that PNG international text is required to be in the UTF-8
@@ -494,7 +494,7 @@ conventions.
 
 =head2 color_type_name
 
-    my $name = [% config.base %]::Libpng::color_type_name ($color_type);
+    my $name = Image::PNG::Libpng::color_type_name ($color_type);
 
 Given a numerical colour type in C<$color_type>, return the equivalent
 name. The name is in upper case, with words separated by underscores,
@@ -508,7 +508,7 @@ file, C<png.h>.
 
 =head2 text_compression_name
 
-    my $name = [% config.base %]::Libpng::text_compression_name ($text->{compression});
+    my $name = Image::PNG::Libpng::text_compression_name ($text->{compression});
 
 Given a numerical text compression type, return the equivalent
 name. The name is in upper case. The possible return values are
@@ -544,7 +544,7 @@ C<ITXT_zTXt>.
 
 =head2 get_libpng_ver
 
-    my $libpng_version = [% config.base %]::Libpng::get_libpng_ver ();
+    my $libpng_version = Image::PNG::Libpng::get_libpng_ver ();
 
 This function returns the version of the libpng library which the
 module is using.
@@ -555,7 +555,7 @@ L</About libpng>.
 
 =head2 access_version_number
 
-    my $libpng_version_number = [% config.base %]::Libpng::access_version_number ();
+    my $libpng_version_number = Image::PNG::Libpng::access_version_number ();
 
 This function returns the version of the libpng library which the
 module is using as an integer number.
@@ -769,20 +769,20 @@ Nothing is exported by default, but all the functions in this module
 can be exported on request. The export tag 'all' exports everything in
 the module:
 
-    use [% config.base %]::Libpng ':all';
+    use Image::PNG::Libpng ':all';
     # Now everything in the module has been imported
 
 =head1 Differences from libpng
 
-The procedures in [% config.base %]::Libpng are closely based on
+The procedures in Image::PNG::Libpng are closely based on
 those of libpng, with the following differences.
 
 =head2 [% noinfo %]
 
-This module, C<[% config.base %]::Libpng> does not use the "info"
+This module, C<Image::PNG::Libpng> does not use the "info"
 structure of libpng. Almost all libpng functions require two initial
 arguments, a C<png_structp> and a C<png_infop>. However, in 
-[% config.base %]::Libpng, both the "png" and the "info" are contained in
+Image::PNG::Libpng, both the "png" and the "info" are contained in
 the first argument to each function.
 
 =head2 [% unused_title %]
@@ -808,7 +808,7 @@ function to return an array of pointers, but C<png_get_PLTE> (see
 L</get_PLTE>) uses a pointer reference to return an array of pointers,
 and the return value to indicate errors. 
 
-[% config.base %]::Libpng uses only the return value. Errors and
+Image::PNG::Libpng uses only the return value. Errors and
 non-existence are indicated by a return value of the undefined
 value. You can also choose to raise errors or print errors using the
 L</raise_error> and L</print_error> options.

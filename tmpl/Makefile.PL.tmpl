@@ -25,7 +25,7 @@ WriteMakefile (
     META_MERGE => {
         resources => {
             "MailingList" => "[% config.MailingList %]",
-            "bugtracker" => "[% config.rt %]",
+            "bugtracker" => "[% config.repo %]/issues",
             "repository" => "[% config.repo %]",
         },
         no_index => {

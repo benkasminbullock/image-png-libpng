@@ -675,7 +675,7 @@ discussions.
 
 =head2 CPAN stuff
 
-There is a bug tracker at L<https://github.com/benkasminbullock/Image-PNG/issues>.
+There is a bug tracker at L<https://github.com/benkasminbullock/image-png-libpng/issues>.
 
 =head1 FOR PROGRAMMERS
 
