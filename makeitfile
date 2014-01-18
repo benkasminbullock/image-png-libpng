@@ -1,11 +1,13 @@
-LIBPNGPM=lib/Image/PNG/Libpng.pm
+TOUT=perl-libpng.c Libpng.xs \
+	lib/Image/PNG/Libpng.pod \
+	lib/Image/PNG/Libpng.pm \
+	Makefile.PL typemap t/PLTE.t
 
-TOUT=perl-libpng.c Libpng.xs lib/Image/PNG/Libpng.pod \
-	Makefile.PL META.json META.yml typemap t/PLTE.t
 TIN=    tmpl/Libpng.pm.tmpl \
 	tmpl/Libpng.pod.tmpl \
 	build/LibpngInfo.pm \
-	tmpl/author tmpl/config \
+	tmpl/author \
+	tmpl/config \
 	tmpl/perl-libpng.c.tmpl \
 	tmpl/Libpng.xs.tmpl \
 	tmpl/Libpng.t.tmpl \
@@ -16,29 +18,16 @@ TIN=    tmpl/Libpng.pm.tmpl \
 	tmpl/other_modules \
 	build/make-files.pl
 
-HTML=/usr/local/www/data/image-png-libpng.html
-
-
 all:	$(TOUT)
-
-start:	$(TOUT) Makefile
-
-Makefile:	Makefile.PL
-	perl Makefile.PL
 
 $(TOUT): $(TIN)
 	build/make-files.pl
 
-HTML:	$(LIBPNGPM)
-	perldoc -o html $(LIBPNGPM) > $(HTML)
-
-HTML2:	$(PNGPM)
-	perldoc -o html $(PNGPM) > $(HTML2)
-
 clean:
 	-make clean
-	-rm -rf $(TOUT) Makefile.old perl-libpng.h my-xs.h MANIFEST
+	-rm -rf $(TOUT) perl-libpng.h my-xs.h
 	-rm -rf Image-PNG-Libpng-0.*/ Image-PNG-Libpng-0.*.tar.gz
+	-rm -f README
 
 # Local Variables:
 # mode: makefile

@@ -1,7 +1,7 @@
 # This file is just a list of exports and documentation. The source
 # code for this file is in Libpng.xs in the top directory.
 
-package [% config.base %]::Libpng;
+package Image::PNG::Libpng;
 require Exporter;
 require DynaLoader;
 use Carp;
@@ -19,7 +19,7 @@ read_file
 
 require XSLoader;
 [% INCLUDE version %]
-XSLoader::load('[% config.base %]', $VERSION);
+XSLoader::load('Image::PNG::Libpng', $VERSION);
 
 sub read_file
 {

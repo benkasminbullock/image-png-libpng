@@ -54,12 +54,6 @@ $vars{libpng_diagnostics} = \@libpng_diagnostics;
 # same directory as this script, used to build documentation etc.
 
 template_vars (\%vars);
-#for my $x (@{$vars{chunk}{cHRM}{fields}}) {
-#    print $x, "\n";
-#}
-#for my $x (@{$vars{ihdr_fields}}) {
-#    print $x->{name}, "\n";
-#}
 
 # These files go in the top directory
 
@@ -68,8 +62,6 @@ my %top_dir = (
     'Libpng.xs' => 1,
     'typemap' => 1,
     'perl-libpng.c' => 1,
-    'META.json' => 1,
-    'META.yml' => 1,
 );
 
 my @outputs;
@@ -80,8 +72,11 @@ for my $file (@files) {
     if ($top_dir{$file}) {
         $output = $file;
     }
-    elsif ($file eq 'PNG.pm') {
+    elsif ($file eq 'Libpng.pm') {
         $output = $config{main_module_out};
+    }
+    elsif ($file eq 'Libpng.pod') {
+        $output = $config{main_pod_out};
     }
     elsif ($file =~ /.t$/) {
         $output = "t/$file";
@@ -153,15 +148,5 @@ push @mani, @test_pngs;
 push @mani, @extras;
 push @mani, 'makeitfile';
 
-# my $output = 'MANIFEST';
-# if (-f $output) {
-#     chmod 0644, $output;
-# }
-# open my $out, '>', $output;
-# for my $file (sort @mani) {
-#     print $out "$file\n";
-# }
-# close $out;
-# chmod 0444, $output;
 exit;
 

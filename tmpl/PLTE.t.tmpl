@@ -1,17 +1,17 @@
 use warnings;
 use strict;
 use FindBin;
-use [% config.base %]::Libpng;
+use Image::PNG::Libpng;
 use Test::More tests => 3;
 
 my $file_name = "$FindBin::Bin/tantei-san.png";
-my $png = [% config.base %]::Libpng::create_read_struct ();
+my $png = Image::PNG::Libpng::create_read_struct ();
 open my $file, "<:raw", $file_name or die $!;
-[% config.base %]::Libpng::init_io ($png, $file);
+Image::PNG::Libpng::init_io ($png, $file);
 #print "Reading PNG.\n";
-[% config.base %]::Libpng::read_png ($png);
+Image::PNG::Libpng::read_png ($png);
 #print "Getting rows.\n";
-my $colors = [% config.base %]::Libpng::get_PLTE ($png);
+my $colors = Image::PNG::Libpng::get_PLTE ($png);
 #exit;
 # for my $i (0..$#$colors) {
 #     my $color = $colors->[$i];
