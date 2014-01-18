@@ -12,13 +12,11 @@ TIN=    tmpl/Libpng.pm.tmpl \
 	tmpl/Const.t.tmpl \
 	tmpl/PLTE.t.tmpl \
 	tmpl/typemap.tmpl \
-	tmpl/Util.pm.tmpl \
 	tmpl/Makefile.PL.tmpl \
 	tmpl/other_modules \
 	build/make-files.pl
 
 HTML=/usr/local/www/data/image-png-libpng.html
-HTML2=/usr/local/www/data/image-png.html
 
 
 all:	$(TOUT)
@@ -40,7 +38,7 @@ HTML2:	$(PNGPM)
 clean:
 	-make clean
 	-rm -rf $(TOUT) Makefile.old perl-libpng.h my-xs.h MANIFEST
-	-rm -rf Image-PNG-0.*/ Image-PNG-0.*.tar.gz
+	-rm -rf Image-PNG-Libpng-0.*/ Image-PNG-Libpng-0.*.tar.gz
 
 # Local Variables:
 # mode: makefile

@@ -32,7 +32,6 @@ my @files = qw/
                   Libpng.xs
                   Makefile.PL
                   PLTE.t
-                  Util.pm
                   perl-libpng.c
                   typemap
               /;
