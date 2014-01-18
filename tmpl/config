@@ -1,11 +1,11 @@
-version: 0.20
-base: Image::PNG
+version: 0.21
+base: Image::PNG::Libpng
 author: Ben Bullock
 author_pause: BKB
 email: bkb@cpan.org
-year: 2013
-abstract: Read and write PNG files
+year: 2014
+abstract: Perl interface to libpng
 license: perl
 MailingList: http://groups.google.com/group/perlimagepng
 rt: https://github.com/benkasminbullock/Image-PNG/issues
-repo: https://github.com/benkasminbullock/Image-PNG
+repo: https://github.com/benkasminbullock/image-png-libpng

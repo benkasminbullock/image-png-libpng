@@ -26,15 +26,12 @@ my @libpng_diagnostics = ImagePNGBuild::libpng_diagnostics (\%config);
 my @files = qw/
                   Const.pm
                   Const.t
-                  Container.pm
                   Libpng.pm
                   Libpng.pod
                   Libpng.t
                   Libpng.xs
                   Makefile.PL
                   PLTE.t
-                  PNG.pm
-                  PNG.t
                   Util.pm
                   perl-libpng.c
                   typemap

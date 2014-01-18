@@ -1,8 +1,6 @@
 LIBPNGPM=lib/Image/PNG/Libpng.pm
-PNGPM=lib/Image/PNG.pm
 
-TOUT=lib/Image/PNG.pm lib/Image/PNG/Container.pm \
-	$(LIBPNGPM) perl-libpng.c Libpng.xs lib/Image/PNG/Libpng.pod \
+TOUT=perl-libpng.c Libpng.xs lib/Image/PNG/Libpng.pod \
 	Makefile.PL META.json META.yml typemap t/PLTE.t
 TIN=    tmpl/Libpng.pm.tmpl \
 	tmpl/Libpng.pod.tmpl \
@@ -13,9 +11,6 @@ TIN=    tmpl/Libpng.pm.tmpl \
 	tmpl/Libpng.t.tmpl \
 	tmpl/Const.t.tmpl \
 	tmpl/PLTE.t.tmpl \
-	tmpl/PNG.t.tmpl \
-	tmpl/PNG.pm.tmpl \
-	tmpl/Container.pm.tmpl \
 	tmpl/typemap.tmpl \
 	tmpl/Util.pm.tmpl \
 	tmpl/Makefile.PL.tmpl \
