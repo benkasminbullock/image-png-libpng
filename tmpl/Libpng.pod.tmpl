@@ -63,13 +63,9 @@ Image::PNG::Libpng consists of Perl subroutines which mirror
 the C functions in libpng, plus helper subroutines to make it easier
 to read and write PNG data in Perl. 
 
-For an easy way to access PNG files, try the companion module L<[%
-config.base %]>, which offers a simplified interface to the functions
-in this module.
-
-For those who are familiar with libpng, to know what the differences
-between this module and libpng are, please go to the section
-L</Differences from libpng>.
+For those familiar with libpng, to know what the differences between
+this module and libpng are, please go to the section L</Differences
+from libpng>.
 
 =head1 FUNCTIONS
 
@@ -443,7 +439,7 @@ copied from libpng itself.)
 
 =head2 set_keep_unknown_chunks
 
-    use Image::PNG::Const 'PNG_HANDLE_CHUNK_ALWAYS';
+    use [% config.base %]::Const 'PNG_HANDLE_CHUNK_ALWAYS';
     $png->set_keep_unknown_chunks (PNG_HANDLE_CHUNK_ALWAYS);
 
 Tell libpng not to discard unknown chunks when reading the file.
@@ -659,7 +655,7 @@ in order to prevent problems occuring.
 
 =head2 set_filter
 
-    use Image::PNG::Const 'PNG_FILTER_NONE';
+    use [% config.base %]::Const 'PNG_FILTER_NONE';
     $png->set_filter (PNG_FILTER_NONE);
 
 This sets the filters which are allowed to be used for writing a PNG
@@ -673,7 +669,7 @@ image. The possible values are
 
 These can be combined using C<|> (logical or):
 
-    use Image::PNG::Const ':all';
+    use [% config.base %]::Const ':all';
     set_filter ($png, PNG_FILTER_UP | PNG_FILTER_AVG);
 
 Please see [% spec("9Filter-types") %] for the meanings of these
@@ -810,8 +806,7 @@ and the return value to indicate errors.
 
 Image::PNG::Libpng uses only the return value. Errors and
 non-existence are indicated by a return value of the undefined
-value. You can also choose to raise errors or print errors using the
-L</raise_error> and L</print_error> options.
+value.
 
 In libpng, some functions use the return value to indicate errors, and
 some of the functions don't indicate errors but fail silently. Some of
@@ -941,8 +936,6 @@ the first hits on search engines if you search for a function name in
 libpng.
 
 [% INCLUDE "other_modules" %]
-
-[% INCLUDE "examples_doc" %]
 
 [% INCLUDE "author" %]
 
