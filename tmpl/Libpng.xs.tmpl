@@ -113,13 +113,13 @@ void perl_png_scalar_as_input (Png, scalar, transforms = 0)
         perl_png_scalar_as_input (Png, scalar, transforms);
         OUTPUT:
 
-void perl_png_read_from_scalar (Png, scalar, transforms = 0)
-        Image::PNG::Libpng Png
+Image::PNG::Libpng perl_png_read_from_scalar (scalar, transforms = 0)
         SV * scalar
         int transforms
         CODE:
-        perl_png_read_from_scalar (Png, scalar, transforms);
+        RETVAL = perl_png_read_from_scalar (scalar, transforms);
         OUTPUT:
+	RETVAL
 
 const char * perl_png_color_type_name (color_type)
         int color_type

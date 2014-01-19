@@ -85,7 +85,7 @@ sub libpng_diagnostics
         my $type = $2;
         my $message = $3;
         $message =~ s/"[\s\\]+"//g;
-        $message =~ s/^"(.*)"$/$1/;
+        $message =~ s/^"(.*?)(?:\\n)?"$/$1/;
         if ($comment) {
             $comment =~ s/[\s|\\]+/ /g;
         }

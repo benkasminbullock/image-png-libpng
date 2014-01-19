@@ -1,3 +1,8 @@
+0.23 
+
+* "read_from_scalar" now has a return value & doesn't require
+  create_read_struct to be called.
+
 0.22 2014-01-19
 
 * Change Image::PNG::Libpng::Const back to Image::PNG::Const.

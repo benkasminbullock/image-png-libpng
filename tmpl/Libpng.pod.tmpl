@@ -79,12 +79,65 @@ Most of these functions can also be used as methods, with the return
 value of L</create_read_struct> and L</create_write_struct> as
 arguments.
 
+=head1 Simple input and output
+
+These are convenience functions which combine common operations. They
+don't have equivalents in libpng.
+
+=head2 read_png_file
+
+     my $png = read_png_file ('nice.png');
+
+This combines L</create_read_struct>, open, L</init_io>, and
+L</read_png>. The return value is the same as that of
+L</create_read_struct> with the entire PNG image already read in.
+
+=head2 write_png_file
+
+     $png->write_png_file ('nice.png');
+
+This combines open, L</init_io>, and L</write_png> to write an entire
+PNG image out to a file.
+
+=head2 read_from_scalar
+
+     my $png = read_from_scalar ($string);
+
+This creates an image structure C<$png> from the contents of a Perl
+scalar variable C<$string> containing a PNG image. [% rfirstpng %] It
+reads in all the data from the structure on being called.
+
+This is useful when image data is stored in a Perl scalar. For example
+
+[% INCLUDE "get-www-png.pl" | xtidy %]
+
+See also L</Input/output manipulation functions>.
+
+=head2 write_to_scalar
+
+    my $image_data = $png->write_to_scalar ();
+
+This writes the PNG image data in C<$png> into a Perl scalar. So, for
+example,
+
+[% INCLUDE "png-cgi.pl" | xtidy %]
+
+[% wfirstpng %] The return value of the subroutine is the Perl scalar
+containing the image data.
+
+See also L</Input/output manipulation functions>.
+
+=head1 New-like functions
+
+There are two different "new"-like functions, depending on whether you
+want to read or write a PNG.
+
 =head2 create_read_struct
 
      my $png = create_read_struct ();
 
-Create a structure for reading a PNG. This can be used as an object
-with the other functions as methods.
+Create a structure for reading a PNG. The return value can be used as
+an object with the other functions as methods.
 
 [% cor(fn="create_read_struct") %] plus C<create_info_struct> (see [%
 xnoinfo %]) with the error and warning handler variables set up to use
@@ -101,7 +154,9 @@ with the other functions as methods.
 xnoinfo %])  with the error and warning handler variables set up to use
 Perl's error reporting.
 
-=head1 Input and output
+=head1 Input and output libpng style
+
+These functions mirror libpng's functions.
 
 =head2 init_io
 
@@ -127,64 +182,6 @@ or
 
 [% cor(fn="init_io") %], with a Perl
 file handle substituting for the C C<FILE *>.
-
-=head2 read_from_scalar
-
-     my $png = create_read_struct ();
-     $png->read_from_scalar ($string);
-
-This subroutine sets the image data of C<$png> to be the contents of a
-Perl scalar variable C<$string>. [% rfirstpng %] It reads in all the
-data from the structure on being called.
-
-This is useful when image data is stored in a Perl scalar. For example
-
-     use LWP::Simple;
-     my $image_data = get 'http://www.example.com/example.png';
-     # Now $image_data contains the PNG file
-     my $png = create_read_struct ();
-     $png->read_from_scalar ($image_data);
-     # Now $png contains the PNG information from the image.
-
-[% libpng %]
-
-This uses C<png_set_read_fn> to set the reading function of C<$png> to
-a routine which reads data from Perl scalars. It then uses
-C<png_read_png> to read all the data.
-
-The C function which does this is called C<perl_png_scalar_read>, 
-[% perl_libpng_c %].
-
-See also L</Input/output manipulation functions>.
-
-=head2 write_to_scalar
-
-    my $image_data = $png->write_to_scalar ();
-
-This writes the PNG image data in C<$png> into a Perl scalar. So, for
-example,
-
-    my $img = $png->write_to_scalar ();
-    open my $output, ">:raw", "test-write-scalar.png";
-    print $output $img;
-    close $output;
-
-creates a PNG file called C<test-write-scalar.png> from the PNG data
-in C<$png>.
-
-[% wfirstpng %] The return value of the subroutine is the Perl scalar
-containing the image data.
-
-[% libpng %]
-
-This subroutine doesn't correspond directly to anything in libpng. It
-uses C<png_set_write_fn> to set the writing function of C<$png> to be
-its own function, which writes data to the Perl scalar.
-
-The C function which does this is called C<perl_png_scalar_write>, 
-[% perl_libpng_c %].
-
-See also L</Input/output manipulation functions>.
 
 =head2 read_png
 
@@ -449,6 +446,9 @@ copied from libpng itself.)
 
 =head1 Private chunks
 
+See [% spec("#12Use-of-private-chunks") %] for information on the PNG
+standards for private chunks.
+
 =head2 set_keep_unknown_chunks
 
     use Image::PNG::Const 'PNG_HANDLE_CHUNK_ALWAYS';
@@ -489,7 +489,7 @@ The "size" field of the PNG structure is not stored, because the
 
 =head2 set_unknown_chunks
 
-    $png->set_unknown_chunks ($private_chunks);
+This currently does not fully function.
 
 [% cor(fn="set_unknown_chunks") %]
 
@@ -620,6 +620,8 @@ creates a palette with two entries in C<$png>.
 
 =head1 Image data
 
+These functions deal with accessing the image data itself.
+
 =head2 get_rows
 
     my $rows = $png->get_rows ();
@@ -661,6 +663,9 @@ in order to prevent problems occuring.
 
     my $bytes_in_a_row = $png->get_rowbytes ();
 
+This returns the number of bytes needed to hold a transformed row of
+an image.
+
 [% cor(fn="get_rowbytes") %].
 
 =head1 Compression and filtering
@@ -693,6 +698,8 @@ argument omitted. [% unused %]
 =head1 Other chunks
 
 =head2 get_bKGD
+
+    my $bkgd = $png->get_bKGD ();
 
 Get the bKGD (background) chunk of the image.
 
@@ -748,6 +755,153 @@ See section "4.2.2.2. cHRM Primary chromaticities" of the PNG specification.
 
 [% cor(fn="set_cHRM") %] with a hash function instead of the C<double>
 arguments.
+
+=head2 get_gAMA
+
+    my $gamma = $png->get_gAMA ();
+
+Get the gamma value or gAMA chunk. The return value is a
+floating-point number.
+
+[% cor(fn="get_gAMA") %]
+
+=head2 set_gAMA
+
+    $png->set_gAMA (0.2);
+
+Set the gamma value or gAMA chunk.
+
+[% cor(fn="set_gAMA") %]
+
+=head2 get_sRGB
+
+    my $sRGB = $png->get_sRGB ();
+
+=head2 set_sRGB
+
+    $png->set_sRGB ();
+
+=head2 get_pHYs
+
+    my $phys = $png->get_pHYs ();
+
+=head2 set_pHYs
+
+    $png->set_pHYs ({res_x => 1, res_y => 1, unit_type => 99});
+
+=head2 get_oFFs
+
+    my $phys = $png->get_oFFs ();
+
+Get oFFs chunk. Return value is a hash reference
+
+=head2 set_oFFs
+
+    $png->set_oFFs ({x_offset => 1, y_offset => 1, unit_type => 99});
+
+Set oFFs chunk.
+
+=head2 get_sBIT
+
+    my $sbit = $png->get_sBIT ();
+
+[% cor(fn="get_sBIT") %]
+
+=head2 set_sBIT
+
+    $png->set_sBIT ({red => 1, blue => 2, green => 3});
+
+[% cor(fn="set_sBIT") %]
+
+=head2 get_sCAL
+
+Not implemented.
+
+=head2 set_sCAL
+
+Not implemented.
+
+=head2 get_tRNS
+
+Not implemented.
+
+=head2 set_tRNS
+
+Not implemented.
+
+=head2 get_iCCP
+
+    my $iccp = $png->get_iCCP ();
+
+[% cor(fn="get_sCCP") %]
+
+=head2 set_iCCP
+
+    $png->set_iCCP ({name => 'name', profile => 'profile'});
+
+[% cor(fn="set_sCCP") %]
+
+=head2 get_sPLT
+
+Not implemented.
+
+=head2 set_sPLT
+
+Not implemented.
+
+=head2 get_pCAL
+
+    my $pcal = $png->get_pCAL ();
+
+Implemented but not tested. Return value is a hash with the following keys:
+
+=over
+
+=item purpose
+
+The purpose string of the pCAL chunk.
+
+=item x0
+
+The zero value for the equation.
+
+=item x1
+
+The max value for the equation.
+
+=item type
+
+The equation type as a number.
+
+=item units
+
+The units as a string.
+
+=item params
+
+If this exists its value is a reference to an array containing the
+parameter list of the pCAL chunk.
+
+=back
+
+=head2 set_pCAL
+
+    $png->set_pCAL ($values);
+
+Implemented but not tested. The input is just the same as the output
+of L</get_pCAL>.
+
+=head2 get_hIST
+
+    my $hist = $png->get_hIST ();
+
+Return value is array reference.
+
+=head2 set_hIST
+
+    $png->set_hIST (\@hist);
+
+Set the histogram.
 
 =head1 META FUNCTIONS
 
@@ -866,6 +1020,56 @@ rely on preserving pointers to data structures within the Perl
 program's data area between calls. So this module doesn't deal with
 png_write_chunk, png_write_end, png_write_info, png_write_row, or
 png_write_rows.
+
+=head3 Other unsupported functions
+
+All libpng deprecated functions are not supported.
+
+Other unsupported functions include
+
+=over
+
+=item png_set_crc_action
+
+=item png_set_sig_bytes
+
+=item png_get_compression_buffer_size
+
+=item png_set_compression_buffer_size
+
+=item png_set_write_status_fn
+
+=item png_set_write_status_fn
+
+=item png_set_unknown_chunk_location
+
+=item png_set_check_for_invalid_index
+
+=item png_set_benign_errors
+
+=item png_benign_error
+
+=item png_chunk_benign_error
+
+=item png_get_image_width
+
+=item png_get_image_height
+
+=item png_get_bit_depth
+
+=item png_get_color_type
+
+=item png_get_interlace_type
+
+=item png_get_compression_type
+
+=item png_get_filter_type
+
+=item png_get_channels
+
+=item png_get_signature
+
+=back
 
 =head1 DIAGNOSTICS
 

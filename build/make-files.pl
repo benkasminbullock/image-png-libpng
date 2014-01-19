@@ -17,7 +17,13 @@ my %config = ImagePNGBuild::read_config ();
 
 my $tt = Template->new (
     ABSOLUTE => 1,
-    INCLUDE_PATH => $config{tmpl_dir},
+    INCLUDE_PATH => [$config{tmpl_dir},"$FindBin::Bin/../examples"],
+    FILTERS => {
+        xtidy => [
+            \& xtidy,
+            0,
+        ],
+    },
 #    STRICT => 1,
 );
 
@@ -152,3 +158,31 @@ push @mani, 'makeitfile';
 
 exit;
 
+# This removes some obvious boilerplate from the examples, to shorten
+# the documentation, and indents it to show POD that it is code.
+
+sub xtidy
+{
+    my ($text) = @_;
+
+    # Remove shebang.
+
+    $text =~ s/^#!.*$//m;
+
+    # Remove sobvious.
+
+    $text =~ s/use\s+(strict|warnings);\s+//g;
+    $text =~ s/^binmode\s+STDOUT.*?utf8.*?\s+$//gm;
+    $text =~ s/use\s+lib.*?;\s+//g;
+#    $text =~ s/use\s+JSON::Parse.*?;\s+//;
+
+    # Replace tabs with spaces.
+
+    $text =~ s/ {0,7}\t/        /g;
+
+    # Add indentation.
+
+    $text =~ s/^(.*)/    $1/gm;
+
+    return $text;
+}

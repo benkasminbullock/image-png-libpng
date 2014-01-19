@@ -28,8 +28,6 @@ typedef struct perl_libpng {
     unsigned int data_length;
     /* How much of the data in "image_data" we have read. */
     int read_position;
-
-
     /* If the following variable is set to a true value, the module
        prints messages about what it is doing. */
     int verbosity : 1;
@@ -855,13 +853,16 @@ perl_png_scalar_as_input (perl_libpng_t * png,
 
 /* Read a PNG from a Perl scalar "image_data". */
 
-void
-perl_png_read_from_scalar (perl_libpng_t * png,
-                           SV * image_data,
+perl_libpng_t *
+perl_png_read_from_scalar (SV * image_data,
                            int transforms)
 {
+    perl_libpng_t * png;
+                           
+    png = perl_png_create_read_struct ();
     perl_png_scalar_as_input (png, image_data, transforms);
     png_read_png (png->png, png->info, transforms, UNUSED_ZERO_ARG);
+    return png;
 }
 
 /* Write "bytes_to_write" bytes of PNG information into a Perl
@@ -1224,19 +1225,82 @@ void perl_png_set_bKGD (perl_libpng_t * png, HV * bKGD)
 
 SV * perl_png_get_pCAL (perl_libpng_t * png)
 {
-    if (VALID (pCAL)) {
-        HV * ice;
-        ice = newHV ();
-        return newRV_inc ((SV *) ice);
+#ifdef PNG_pCAL_SUPPORTED
+    HV * ice;
+    char * purpose;
+    int x0;
+    int x1;
+    int type;
+    int n_params;
+    char * units;
+    char ** png_params;
+
+    if (! VALID (pCAL)) {
+	UNDEF;
     }
+    png_get_pCAL (pngi, & purpose, & x0, & x1, & type,
+		  & n_params, & units, & png_params);
+    ice = newHV ();
+    HASH_STORE_PV (ice, purpose);
+    HASH_STORE_IV (ice, x0);
+    HASH_STORE_IV (ice, x1);
+    HASH_STORE_IV (ice, type);
+    HASH_STORE_PV (ice, units);
+    if (n_params) {
+	AV * params;
+	int i;
+	params = newAV ();
+	int length;
+	GET_MEMORY (png_params, n_params, char *);
+	for (i = 0; i < n_params; i++) {
+	    ARRAY_STORE_PV (params, png_params[i]);
+	}
+	HASH_STORE_AV (ice, params);
+    }
+    return newRV_inc ((SV *) ice);
+#else
+    /* Print a warnings. */
     UNDEF;
+#endif
 }
 
 /* Set the pCAL (calibration of pixel values) chunk of a PNG
-   image. This currently does nothing. */
+   image. */
 
 void perl_png_set_pCAL (perl_libpng_t * png, HV * pCAL)
 {
+#ifdef PNG_pCAL_SUPPORTED
+    char * purpose;
+    int purpose_length;
+    int x0;
+    int x1;
+    int type;
+    int n_params;
+    char * units;
+    int units_length;
+    AV * params;
+    SV * params_sv;
+    char ** png_params;
+    HASH_FETCH_PV (pCAL, purpose);
+    HASH_FETCH_IV (pCAL, x0);
+    HASH_FETCH_IV (pCAL, x1);
+    HASH_FETCH_IV (pCAL, type);
+    HASH_FETCH_PV (pCAL, units);
+    HASH_FETCH_AV (pCAL, params);
+    if (params) {
+	n_params = av_len (params) + 1;
+	if (n_params) {
+	    int i;
+	    int length;
+	    GET_MEMORY (png_params, n_params, char *);
+	    for (i = 0; i < n_params; i++) {
+		ARRAY_FETCH_PV (params, i, png_params[i], length);
+	    }
+	}
+    }
+    png_set_pCAL (pngi, purpose, x0, x1, type, n_params, units, png_params);
+#else
+#endif
 }
 
 /* Get the sPLT chunk of a PNG image. This currently does nothing. */
@@ -1283,17 +1347,37 @@ void perl_png_set_gAMA (perl_libpng_t * png, double gamma)
 SV * perl_png_get_iCCP (perl_libpng_t * png)
 {
     if (VALID (iCCP)) {
+	char * name;
+	unsigned char * profile;
+	int compression_method;
+	unsigned int proflen;
         HV * ice;
+	SV * profile_sv;
+	png_get_iCCP (pngi, & name, & compression_method, & profile,
+		      & proflen);
         ice = newHV ();
+	HASH_STORE_PV (ice, name);
+	profile_sv = newSVpv (profile, proflen);
+	hv_store (ice, "profile", strlen ("profile"), profile_sv, 0);
         return newRV_inc ((SV *) ice);
     }
     UNDEF;
 }
 
-/* iCCP does nothign. */
-
 void perl_png_set_iCCP (perl_libpng_t * png, HV * iCCP)
 {
+    char * name;
+    int name_length;
+    unsigned char * profile;
+    unsigned int profile_length;
+    int compression_method;
+
+    compression_method = PNG_COMPRESSION_TYPE_BASE;
+
+    HASH_FETCH_PV (iCCP, profile);
+    HASH_FETCH_PV (iCCP, name);
+
+    png_set_iCCP (pngi, name, compression_method, profile, profile_length);
 }
 
 SV * perl_png_get_tRNS (perl_libpng_t * png)
@@ -1323,6 +1407,37 @@ SV * perl_png_get_sCAL (perl_libpng_t * png)
         return newRV_inc ((SV *) ice);
     }
     UNDEF;
+}
+
+void perl_png_set_hIST (perl_libpng_t * png, AV * hIST)
+{
+    int hist_size;
+    png_uint_16p hist;
+    int i;
+    hist_size = av_len (hIST) + 1;
+    GET_MEMORY (hist, hist_size, png_uint_16);
+    for (i = 0; i < hist_size; i++) {
+	ARRAY_FETCH_IV (hIST, i, hist[i]);
+    }
+    png_set_hIST (pngi, hist);
+}
+
+AV * perl_png_get_hIST (perl_libpng_t * png)
+{
+    png_colorp colours;
+    int n_colours;
+    AV * hist_av;
+    png_uint_16p hist;
+    int i;
+
+    png_get_PLTE (pngi, & colours, & n_colours);
+    hist_av = newAV ();
+    png_get_hIST (pngi, & hist);
+
+    for (i = 0; i < n_colours; i++) {
+	av_push (hist_av, newSViv (hist[i]));
+    }
+    return hist_av;
 }
 
 void perl_png_set_sCAL (perl_libpng_t * png, HV * sCAL)
@@ -1460,6 +1575,7 @@ int perl_png_get_sRGB (perl_libpng_t * png)
 
 void perl_png_set_sRGB (perl_libpng_t * png, int sRGB)
 {
+    png_set_sRGB (pngi, sRGB);
 }
 
 SV * perl_png_get_valid (perl_libpng_t * png)
@@ -1703,6 +1819,7 @@ void perl_png_handle_error (perl_libpng_t * png, int die, int raise)
 
 SV * perl_png_get_unknown_chunks (perl_libpng_t * png)
 {
+#ifdef PNG_READ_UNKNOWN_CHUNKS_SUPPORTED
     png_unknown_chunkp unknown_chunks;
     int n_chunks;
     n_chunks = png_get_unknown_chunks (pngi, & unknown_chunks);
@@ -1750,12 +1867,17 @@ SV * perl_png_get_unknown_chunks (perl_libpng_t * png)
         }
         return newRV_inc ((SV *) chunk_list);
     }
+#else
+    perl_png_warn (png, "read unknown chunks not supported in this libpng");
+    return & PL_sv_undef;
+#endif
 }
 
 /* Set private chunks in the PNG. */
 
 void perl_png_set_unknown_chunks (perl_libpng_t * png, AV * chunk_list)
 {
+#ifdef PNG_WRITE_UNKNOWN_CHUNKS_SUPPORTED
     /* n_chunks is the number of chunks the user proposes to add to
        the PNG. */
     int n_chunks;
@@ -1776,6 +1898,7 @@ void perl_png_set_unknown_chunks (perl_libpng_t * png, AV * chunk_list)
     MESSAGE ("OK.");
     for (i = 0; i < n_chunks; i++) {
         HV * perl_chunk = 0;
+	SV ** chunk_pointer;
         png_unknown_chunk * png_chunk = 0;
         unsigned char * name;
         unsigned int name_length;
@@ -1786,6 +1909,14 @@ void perl_png_set_unknown_chunks (perl_libpng_t * png, AV * chunk_list)
         MESSAGE ("%d.\n", i);
         /* Get the chunk name and check it is four bytes long. */
 
+	chunk_pointer = av_fetch (chunk_list, i, 0);
+	if (! SvROK (* chunk_pointer) ||
+	    SvTYPE(SvRV(*chunk_pointer)) != SVt_PVHV) {
+            perl_png_warn (png, "Non-hash in chunk array");
+            continue;
+	}
+	perl_chunk = (HV*) SvRV (*chunk_pointer);
+
         HASH_FETCH_PV (perl_chunk, name);
         if (name_length != PERL_PNG_CHUNK_NAME_LENGTH) {
             /* The user's name for a private chunk was not a valid
@@ -1795,31 +1926,31 @@ void perl_png_set_unknown_chunks (perl_libpng_t * png, AV * chunk_list)
                            PERL_PNG_CHUNK_NAME_LENGTH);
             continue;
         }
+        png_chunk = unknown_chunks + n_ok_chunks;
         strncpy ((char *) png_chunk->name, (char *) name,
                  PERL_PNG_CHUNK_NAME_LENGTH);
 
         /* Get the data part of the unknown chunk. */
 
         HASH_FETCH_PV (perl_chunk, data);
-        png_chunk = unknown_chunks + n_ok_chunks;
         
         png_chunk->data = data;
         png_chunk->size = data_length;
-
-        /* Get the proposed location of the unknown chunk. */
-
-        HASH_FETCH_IV (perl_chunk, location);
-        if (location == 0) {
-            /* The user supplied a value for "location" of zero, which
-               means "don't write the chunk". */
-            perl_png_warn (png, "Unknown chunk location is zero, which means 'don't write the chunk'");
-        }
-        png_chunk->location = location;
+	printf ("data is %d %s\n", data_length, data);
         n_ok_chunks++;
     }
+    png_set_keep_unknown_chunks(png->png, 3,
+				NULL, 0);
+
     MESSAGE ("sending %d chunks.\n", n_ok_chunks);
     png_set_unknown_chunks (pngi, unknown_chunks, n_ok_chunks);
+    for (i = 0; i < n_ok_chunks; i++) {
+	png_set_unknown_chunk_location (pngi, i, PNG_AFTER_IDAT);
+    }
     PERL_PNG_FREE (unknown_chunks);
+#else
+    perl_png_warn (png, "write unknown chunks not supported in this libpng");
+#endif
 }
 
 /* Does the libpng support "what"? */
@@ -1968,6 +2099,8 @@ void perl_png_set_cHRM (perl_libpng_t * png, HV * cHRM)
     png_set_cHRM (pngi
 [%- FOR key IN chunk_hash.cHRM.fields -%], [% key %][%- END -%]);
 }
+
+
 
 /*
    Local Variables:

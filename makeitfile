@@ -27,7 +27,7 @@ $(TOUT): $(TIN)
 
 clean:
 	-make clean
-	-rm -rf $(TOUT) perl-libpng.h my-xs.h
+	-rm -rf $(TOUT)
 	-rm -rf Image-PNG-Libpng-0.*/ Image-PNG-Libpng-0.*.tar.gz
 	-rm -f README
 
