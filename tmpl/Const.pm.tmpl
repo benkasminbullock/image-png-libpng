@@ -29,22 +29,25 @@ Image::PNG::Const - make libpng constants available
 
 =head1 SYNOPSIS
 
-    # Get the constants you need:
-    use [% config.base %]::Const qw/PNG_TRANSFORM_INVERT_ALPHA
-                            PNG_COLOR_MASK_ALPHA/;
+    # Get just the constants you need:
+    use Image::PNG::Const qw/PNG_TRANSFORM_INVERT_ALPHA
+                             PNG_COLOR_MASK_ALPHA/;
     # Get everything:
-    use [% config.base %]::Const ':all';
+    use Image::PNG::Const ':all';
 
-This module contains no functions, only constants.
+This module is a helper for L<Image::PNG::Libpng>. It contains no
+functions, only constants.
 
 =head1 CONSTANTS
 
-This file contains constants extracted from the header file of the PNG
-library, C<png.h>. The constants in this file are
+This file contains the following constants, from the header
+file of the PNG library, C<png.h>:
 
 =over
 [% FOR macro IN macros %]
-=item [% macro.macro %] = [% macro.value %]
+=item [% macro.macro %]
+
+[% macro.macro %] has value [% macro.value %].
 [% END %]
 =back
 
@@ -61,3 +64,9 @@ all the symbols in this module:
 This Perl module was generated from C<png.h>.
 
 [% INCLUDE author %]
+
+=cut
+
+# Local variables:
+# mode: perl
+# End:

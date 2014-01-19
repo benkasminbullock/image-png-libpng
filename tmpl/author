@@ -24,9 +24,3 @@ discussions.
 
 There is a bug tracker at L<[% config.repo %]/issues>.
 
-=head1 FOR PROGRAMMERS
-
-The distributed files are not the source code of the module. The
-source code lives in the "tmpl" directory of the distribution and the
-distribution is created via scripts.
-
