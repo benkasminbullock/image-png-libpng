@@ -1,9 +1,9 @@
 use warnings;
 use strict;
 use FindBin;
+use Test::More;
 use Image::PNG::Libpng ':all';
 use Image::PNG::Const ':all';
-use Test::More tests => 12;
 
 # Test reading a background.
 
@@ -23,7 +23,7 @@ my %col = (
 );
 
 for my $col (keys %col) {
-    ok ($bg->{$col} == $col{$col}, "$col background");
+    is ($bg->{$col}, $col{$col}, "$col background");
 }
 my $valid = get_valid ($png);
 my @expect = qw/IDAT bKGD gAMA/;
@@ -59,6 +59,8 @@ read_png ($rpng);
 close $rfh or die $!;
 my $rbg = get_bKGD ($rpng);
 for my $k (keys %bKGD) {
-    ok ($rbg->{$k} == $bKGD{$k}, "Key $k OK in written then read file");
+    is ($rbg->{$k}, $bKGD{$k}, "Key $k OK in written then read file");
 }
 
+done_testing ();
+exit;

@@ -55,6 +55,8 @@ Image::PNG::Libpng - Perl interface to the C library "libpng".
      $png->read_png ();
      close $file;
 
+=head1 DESCRIPTION
+
 Image::PNG::Libpng enables Perl to use the "libpng" library for
 reading and writing files in the PNG (Portable Network Graphics)
 format.
@@ -68,6 +70,10 @@ this module and libpng are, please go to the section L</Differences
 from libpng>.
 
 =head1 FUNCTIONS
+
+Most of these functions can also be used as methods, with the return
+value of L</create_read_struct> and L</create_write_struct> as
+arguments.
 
 =head2 create_read_struct
 
@@ -181,7 +187,7 @@ See also L</Input/output manipulation functions>.
 Read the entire PNG file into memory. You can provide an argument
 containing transformations to apply to the image:
 
-     use [% config.base %]::Const qw/PNG_TRANSFORM_STRIP_ALPHA/;
+     use Image::PNG::Const qw/PNG_TRANSFORM_STRIP_ALPHA/;
      $png->read_png (PNG_TRANSFORM_STRIP_ALPHA);
 
 In the absence of any third argument, the default value of
@@ -211,7 +217,7 @@ using L</init_io>. For example,
 An optional argument consists of transformations to apply to the PNG
 image before writing it:
 
-    use [% config.base %]::Const qw/PNG_TRANSFORM_STRIP_ALPHA/;
+    use Image::PNG::Const qw/PNG_TRANSFORM_STRIP_ALPHA/;
     $png->write_png (PNG_TRANSFORM_STRIP_ALPHA);
 
 The transformations which can be applied are as follows:
@@ -439,7 +445,7 @@ copied from libpng itself.)
 
 =head2 set_keep_unknown_chunks
 
-    use [% config.base %]::Const 'PNG_HANDLE_CHUNK_ALWAYS';
+    use Image::PNG::Const 'PNG_HANDLE_CHUNK_ALWAYS';
     $png->set_keep_unknown_chunks (PNG_HANDLE_CHUNK_ALWAYS);
 
 Tell libpng not to discard unknown chunks when reading the file.
@@ -578,7 +584,7 @@ undefined value.
 A PNG image may or may not contain a palette. To check whether the
 image contains a palette, use something of the following form:
 
-     use [% config.base %]::Const ':all';
+     use Image::PNG::Const ':all';
      my $color_type = $png->get_color_type ();
      if ($color_type == PNG_COLOR_TYPE_PALETTE) {
          # The PNG uses a palette.
@@ -655,7 +661,7 @@ in order to prevent problems occuring.
 
 =head2 set_filter
 
-    use [% config.base %]::Const 'PNG_FILTER_NONE';
+    use Image::PNG::Const 'PNG_FILTER_NONE';
     $png->set_filter (PNG_FILTER_NONE);
 
 This sets the filters which are allowed to be used for writing a PNG
@@ -669,7 +675,7 @@ image. The possible values are
 
 These can be combined using C<|> (logical or):
 
-    use [% config.base %]::Const ':all';
+    use Image::PNG::Const ':all';
     set_filter ($png, PNG_FILTER_UP | PNG_FILTER_AVG);
 
 Please see [% spec("9Filter-types") %] for the meanings of these

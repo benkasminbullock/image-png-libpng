@@ -6,7 +6,7 @@ use FindBin;
 use File::Compare;
 use Image::PNG::Libpng;
 use utf8;
-use Image::PNG::Libpng::Const ':all';
+use Image::PNG::Const ':all';
 
 my $builder = Test::More->builder;
 

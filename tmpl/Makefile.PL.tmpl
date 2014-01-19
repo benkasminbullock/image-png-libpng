@@ -38,7 +38,7 @@ WriteMakefile (
 my @names = (qw());
 
 ExtUtils::Constant::WriteConstants(
-    NAME         => '[% config.base %]::Libpng',
+    NAME         => 'Image::PNG::Libpng',
     NAMES        => \@names,
     DEFAULT_TYPE => 'IV',
     C_FILE       => 'const-c.inc',

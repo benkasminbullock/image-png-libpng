@@ -25,7 +25,6 @@ my @libpng_diagnostics = ImagePNGBuild::libpng_diagnostics (\%config);
 
 my @files = qw/
                   Const.pm
-                  Const.t
                   Libpng.pm
                   Libpng.pod
                   Libpng.t
@@ -74,6 +73,9 @@ for my $file (@files) {
     }
     elsif ($file eq 'Libpng.pm') {
         $output = $config{main_module_out};
+    }
+    elsif ($file eq 'Const.pm') {
+        $output = $config{const_out};
     }
     elsif ($file eq 'Libpng.pod') {
         $output = $config{main_pod_out};

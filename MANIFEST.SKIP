@@ -18,3 +18,4 @@ Image-PNG-[\d\.]+\.tar\.gz
 MYMETA\..*
 makeitfile$
 doc/.*
+^pm_to_blib$
