@@ -1,9 +1,11 @@
 TOUT=perl-libpng.c Libpng.xs \
 	lib/Image/PNG/Libpng.pod \
 	lib/Image/PNG/Libpng.pm \
+	lib/Image/PNG/Const.pm \
 	Makefile.PL typemap t/PLTE.t
 
-TIN=    tmpl/Libpng.pm.tmpl \
+TIN=    tmpl/Const.pm.tmpl \
+	tmpl/Libpng.pm.tmpl \
 	tmpl/Libpng.pod.tmpl \
 	build/LibpngInfo.pm \
 	tmpl/author \

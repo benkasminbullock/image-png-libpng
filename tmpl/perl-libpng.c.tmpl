@@ -3,14 +3,7 @@
 #include <png.h>
 #include <time.h>
 
-#include "EXTERN.h"
-#include "perl.h"
-#include "XSUB.h"
-
-#include "perl-libpng.h"
 #include "my-xs.h"
-
-#ifdef HEADER
 
 /* Common structure for carrying around all our baggage. */
 
@@ -56,8 +49,6 @@ typedef struct perl_libpng {
 perl_libpng_t;
 
 typedef perl_libpng_t * Image__PNG__Libpng;
-
-#endif
 
 /* Convenient macro for libpng function arguments. */
 
