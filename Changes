@@ -1,3 +1,8 @@
+0.22 2014-01-19
+
+* Change Image::PNG::Libpng::Const back to Image::PNG::Const.
+* Minor fixes in documentation, etc.
+
 0.21 2014-01-18
 
 * Split from Image::PNG

@@ -59,7 +59,8 @@ Image::PNG::Libpng - Perl interface to the C library "libpng".
 
 Image::PNG::Libpng enables Perl to use the "libpng" library for
 reading and writing files in the PNG (Portable Network Graphics)
-format.
+format. Image::PNG::Libpng does not contain "libpng". "libpng" must be
+installed on the computer prior to installing Image::PNG::Libpng.
 
 Image::PNG::Libpng consists of Perl subroutines which mirror
 the C functions in libpng, plus helper subroutines to make it easier
@@ -67,7 +68,10 @@ to read and write PNG data in Perl.
 
 For those familiar with libpng, to know what the differences between
 this module and libpng are, please go to the section L</Differences
-from libpng>.
+from libpng>. For those not familiar with libpng, the module basically
+mirrors the C interface of libpng. An extension of this module,
+L<Image::PNG>, is intended to give a more intuitive interface to the
+library.
 
 =head1 FUNCTIONS
 
@@ -79,7 +83,8 @@ arguments.
 
      my $png = create_read_struct ();
 
-Create a structure for reading a PNG.
+Create a structure for reading a PNG. This can be used as an object
+with the other functions as methods.
 
 [% cor(fn="create_read_struct") %] plus C<create_info_struct> (see [%
 xnoinfo %]) with the error and warning handler variables set up to use
@@ -89,7 +94,8 @@ Perl's error reporting.
 
      my $png = create_write_struct ();
 
-Create a structure for writing a PNG.
+Create a structure for writing a PNG. This can be used as an object
+with the other functions as methods.
 
 [% cor(fn="create_write_struct") %] plus C<create_info_struct> (see [%
 xnoinfo %])  with the error and warning handler variables set up to use
