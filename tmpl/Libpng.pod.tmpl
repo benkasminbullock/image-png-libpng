@@ -845,11 +845,26 @@ Set the gamma value or gAMA chunk.
 
 =head2 sRGB
 
+See [% spec("11sRGB") %]  of the PNG specification.
+
 =head3 get_sRGB
 
     my $sRGB = $png->get_sRGB ();
 
-The return value is an integer number.
+The return value is an integer number corresponding to one of the
+following:
+
+=over
+
+=item PNG_sRGB_INTENT_SATURATION
+
+=item PNG_sRGB_INTENT_PERCEPTUAL
+
+=item PNG_sRGB_INTENT_ABSOLUTE
+
+=item PNG_sRGB_INTENT_RELATIVE
+
+=back
 
 [% cor(fn="get_sRGB") %]
 
@@ -857,7 +872,19 @@ The return value is an integer number.
 
     $png->set_sRGB ($srgb);
 
-C<$srgb> is an integer number.
+C<$srgb> is one of the following (integer numbers).
+
+=over
+
+=item PNG_sRGB_INTENT_SATURATION
+
+=item PNG_sRGB_INTENT_PERCEPTUAL
+
+=item PNG_sRGB_INTENT_ABSOLUTE
+
+=item PNG_sRGB_INTENT_RELATIVE
+
+=back
 
 [% cor(fn="set_sRGB") %]
 
@@ -917,11 +944,15 @@ See [% spec("11sBIT") %]  of the PNG specification.
 
     my $sbit = $png->get_sBIT ();
 
+This is implemented but untested.
+
 [% cor(fn="get_sBIT") %]
 
 =head3 set_sBIT
 
     $png->set_sBIT ({red => 1, blue => 2, green => 3});
+
+This is implemented but untested.
 
 [% cor(fn="set_sBIT") %]
 
@@ -1227,13 +1258,26 @@ Other unsupported functions include
 
 =item png_get_compression_type
 
+=item png_set_text_compression_strategy
+
 =item png_get_filter_type
 
 =item png_get_channels
 
 =item png_get_signature
 
+=item png_get_progressive_ptr
+
+=item png_set_filter_heuristics
+
+=item png_set_quantize
+
+=item png_set_tRNS_to_alpha
+
 =back
+
+Unfortunately there are a raft of functions in libpng, many completely
+undocumented.
 
 =back
 

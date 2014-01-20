@@ -1,7 +1,7 @@
 #line 2 "Libpng.t.tmpl"
 use warnings;
 use strict;
-use Test::More tests => 20;
+use Test::More;
 use FindBin;
 use File::Compare;
 use Image::PNG::Libpng;
@@ -26,8 +26,8 @@ $png->init_io ($file);
 $png->read_info ();
 
 my $IHDR = $png->get_IHDR ();
-ok ($IHDR->{width} == 100, "width");
-ok ($IHDR->{height} == 100, "height");
+is ($IHDR->{width}, 100, "width");
+is ($IHDR->{height}, 100, "height");
 $png->destroy_read_struct ();
 close $file or die $!;
 
@@ -71,12 +71,15 @@ SKIP: {
     skip "Your libpng does not support iTXt", 3
         unless (Image::PNG::Libpng::supports ('iTXt'));
     my $chunk3 = $text_chunks[2];
-    ok ($chunk3->{compression} == 1, "text compression for iTXT");
-    ok ($chunk3->{key} eq 'Detective', "text key");
-    ok ($chunk3->{text} eq '工藤俊作', "text text in UTF-8");
+    is ($chunk3->{compression}, 1, "text compression for iTXT");
+    is ($chunk3->{key}, 'Detective', "text key");
+    is ($chunk3->{text}, '工藤俊作', "text text in UTF-8");
 };
 
-#Image::PNG::Libpng::destroy_read_struct ($png3);
+eval {
+    Image::PNG::Libpng::destroy_read_struct ($png3);
+};
+ok (! $@, "no error from destroy_read_struct");
 close $file3 or die $!;
 
 my $number_version = Image::PNG::Libpng::access_version_number ();
@@ -108,7 +111,7 @@ eval {
     $badpng->read_png ();
 };
 ok ($@, "Error reading bad PNG causes croak (not core dump)");
-ok ($@ =~ /libpng error/, "Found string 'libpng error' in error message.");
+like ($@, qr/libpng error/, "Found string 'libpng error' in error message.");
 
 eval {
     my $png_no_rows = Image::PNG::Libpng::create_write_struct ();
@@ -136,6 +139,8 @@ eval {
 };
 like ($@, qr/Attempt to write PNG without calling init_io/,
       "Produces error on write if no output file has been set");
+done_testing ();
+exit;
 
 # Local variables:
 # mode: perl
