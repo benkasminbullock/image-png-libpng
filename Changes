@@ -1,7 +1,8 @@
-0.23 
+0.23 2014-01-20
 
 * "read_from_scalar" now has a return value & doesn't require
   create_read_struct to be called.
+* Documentation clarified.
 
 0.22 2014-01-19
 
