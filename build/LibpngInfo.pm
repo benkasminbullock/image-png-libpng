@@ -26,7 +26,6 @@ EOF
     text => <<EOF,
 The bit depth of the image (the number of bits used for each colour in
 a pixel).  This cannot be omitted.
-16.
 EOF
     retvalues => [1, 2, 4, 8, 16],
 },

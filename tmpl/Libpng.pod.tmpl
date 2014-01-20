@@ -1,6 +1,6 @@
 =pod
 
-[%- libpng = "=head3 Correspondence to libpng" -%]
+[%- libpng = "\n\nB<Correspondence to libpng:> " -%]
 [%- noinfo = "No info structure" -%]
 [%- xnoinfo = BLOCK -%]
 L</[% noinfo %]>
@@ -57,10 +57,14 @@ Image::PNG::Libpng - Perl interface to the C library "libpng".
 
 =head1 DESCRIPTION
 
+This is a low-level library for accessing the contents of PNG
+graphics. PNG means Portable Network Graphics and it is a common
+standard for graphics.
+
 Image::PNG::Libpng enables Perl to use the "libpng" library for
-reading and writing files in the PNG (Portable Network Graphics)
-format. Image::PNG::Libpng does not contain "libpng". "libpng" must be
-installed on the computer prior to installing Image::PNG::Libpng.
+reading and writing files in the PNG format. Image::PNG::Libpng does
+not contain "libpng". "libpng" must be installed on the computer prior
+to installing Image::PNG::Libpng.
 
 Image::PNG::Libpng consists of Perl subroutines which mirror
 the C functions in libpng, plus helper subroutines to make it easier
@@ -88,6 +92,8 @@ don't have equivalents in libpng.
 
      my $png = read_png_file ('nice.png');
 
+Open a file F<nice.png> and read its contents into C<$png>.
+
 This combines L</create_read_struct>, open, L</init_io>, and
 L</read_png>. The return value is the same as that of
 L</create_read_struct> with the entire PNG image already read in.
@@ -97,7 +103,9 @@ L</create_read_struct> with the entire PNG image already read in.
      $png->write_png_file ('nice.png');
 
 This combines open, L</init_io>, and L</write_png> to write an entire
-PNG image out to a file.
+PNG image out to a file. C<$png> must be the object created by
+L</create_write_struct>, so L</read_png_file> followed by a call to
+this does not work.
 
 =head2 read_from_scalar
 
@@ -363,6 +371,77 @@ colour type, use L</color_type_name>.
 
 [% cor(fn="get_color_type") %].
 
+=head2 color_type_name
+
+    $name = color_type_name ($color_type);
+
+Given a numerical colour type in C<$color_type>, return the equivalent
+name. The name is in upper case, with words separated by underscores,
+as in C<RGB_ALPHA>.
+
+[% INCLUDE "color-type-name.pl" | xtidy %]
+
+[% libpng %]
+
+This function does not correspond to anything in libpng. The names of
+the colour types are taken from those defined in the libpng header
+file, C<png.h>.
+
+=head1 Image data
+
+These functions deal with accessing the image data itself.
+
+=head2 get_rows
+
+    my $rows = $png->get_rows ();
+    my $pixel = substr ($rows->[10], 20, 1);
+
+This returns the rows of the PNG image, after uncompressing and
+unfiltering, as binary data. The return value, C<$rows> in the
+example, is an array reference with a number of rows equal to the
+height of the PNG image. Each row consists of the actual binary data,
+which you will need to cut out using a routine like L<substr> or
+L<unpack> to access pixel values. This binary data is likely to
+contain bytes equal to zero.
+
+You can get the number of bytes in each row using L</get_rowbytes>.
+
+Each row is a Perl string. Perl terminates each row of data with an
+extra zero byte at the end.
+
+[% cor(fn="get_rows") %].
+
+=head2 set_rows
+
+    $png->set_rows (\@rows);
+
+Set the rows of data to be written in to the PNG to C<@rows>. C<@rows>
+needs to contain at least the same number of rows of data as the
+height of the PNG image, and the length of each entry needs to be at
+least the width of the entry times the number of bytes required for
+each pixel.
+
+C<set_rows> does not copy the row data, it just tells libpng where the
+data is to be found. Thus, if you call this routine as above with an
+array C<@rows>, then you alter the contents of C<@rows>, then call
+L</write_png>, the contents written by C<write_png> will be the
+contents of C<@rows> at the time you called C<write_png>, rather than
+the contents at the time you called C<set_rows>. Thus I recommend that
+you only use this immediately before calling L</write_png> to prevent
+odd problems from occuring. (note to self - this is stupid, should
+just copy the row data).
+
+[% cor(fn="set_rows") %].
+
+=head2 get_rowbytes
+
+    my $bytes_in_a_row = $png->get_rowbytes ();
+
+This returns the number of bytes needed to hold a transformed row of
+an image.
+
+[% cor(fn="get_rowbytes") %].
+
 =head1 PNG timestamps
 
 See [% spec("11timestampinfo") %] for information on the PNG standards for
@@ -378,10 +457,14 @@ time stamp information.
 This subroutine gets the modification time value of the PNG image and
 puts it into fields labelled "year", "month", "day", "hour", "minute"
 and "second" of the hash reference given as the third argument. If
-there is no modification time it returns an undefined value. Note that
-PNG images are not required to contain a modification time, and that
-this modification time is not the same thing as the modification time
-of the PNG file itself.
+there is no modification time in the file, it returns an undefined
+value.
+
+The "modification time value" of the PNG image is a chunk written into
+the PNG file itself, and may not have the same value as the operating
+system's modification time for the file. The tIME chunk is not a
+compulsory requirement for PNG files, and most PNG image files do not
+contain this chunk.
 
 [% cor(fn="get_tIME") %], with a Perl hash reference
 substituted for the C struct C<png_timep> used in libpng.
@@ -446,7 +529,7 @@ copied from libpng itself.)
 
 =head1 Private chunks
 
-See [% spec("#12Use-of-private-chunks") %] for information on the PNG
+See [% spec("12Use-of-private-chunks") %] for information on the PNG
 standards for private chunks.
 
 =head2 set_keep_unknown_chunks
@@ -499,20 +582,6 @@ These helper functions assist the programmer in the transition from
 libpng, which uses C conventions such as upper case macros standing
 for numerical constants and C structures, to Perl's string-based
 conventions.
-
-=head2 color_type_name
-
-    my $name = Image::PNG::Libpng::color_type_name ($color_type);
-
-Given a numerical colour type in C<$color_type>, return the equivalent
-name. The name is in upper case, with words separated by underscores,
-as in C<RGB_ALPHA>.
-
-[% libpng %]
-
-This function does not correspond to anything in libpng. The names of
-the colour types are taken from those defined in the libpng header
-file, C<png.h>.
 
 =head2 text_compression_name
 
@@ -618,56 +687,6 @@ creates a palette with two entries in C<$png>.
 
 [% cor(fn="set_PLTE") %].
 
-=head1 Image data
-
-These functions deal with accessing the image data itself.
-
-=head2 get_rows
-
-    my $rows = $png->get_rows ();
-    my $pixel = substr ($rows->[10], 20, 1);
-
-This returns the rows of the PNG image, after uncompressing and
-unfiltering, as binary data. The return value, C<$rows> in the
-example, is an array reference with a number of rows equal to the
-height of the PNG image. Each row consists of the actual binary data,
-which you will need to cut out using a routine like L<substr> or
-L<unpack> to access pixel values. This binary data is likely to
-contain bytes equal to zero.
-
-You can get the number of bytes in each row using L</get_rowbytes>.
-
-Each row is a Perl string. Perl terminates each row of data with an
-extra zero byte at the end.
-
-[% cor(fn="get_rows") %].
-
-=head2 set_rows
-
-    $png->set_rows (\@rows);
-
-Set the rows of data to be written in to the PNG to C<@rows>. C<@rows>
-needs to contain at least the same number of rows of data as the
-height of the PNG image, and the length of each entry needs to be at
-least the width of the entry times the number of bytes required for
-each pixel.
-
-Please also note that this is a bit unreliable. 
-See L</set_rows is unreliable>.
-I recommend that you only use this immediately before calling L</write_png> 
-in order to prevent problems occuring.
-
-[% cor(fn="set_rows") %].
-
-=head2 get_rowbytes
-
-    my $bytes_in_a_row = $png->get_rowbytes ();
-
-This returns the number of bytes needed to hold a transformed row of
-an image.
-
-[% cor(fn="get_rowbytes") %].
-
 =head1 Compression and filtering
 
 =head2 set_filter
@@ -697,23 +716,74 @@ argument omitted. [% unused %]
 
 =head1 Other chunks
 
-=head2 get_bKGD
+These routines deal with the other possible chunks of PNGs.
+
+The getter and setter routines for all other chunks are designed so
+that the return value of C<get_wXYZ> is able to be used directly as
+the value for C<set_wXYZ>, so the values of chunks can easily be
+copied from one PNG to another.
+
+    my $values = $png1->get_wXYZ ();
+    $png2->set_wXYZ ($values);
+
+If the chunk is not present, or if the chunk is not supported by the
+user's version of libpng, the return value of C<get_wXYZ> is the
+undefined value.
+
+=head2 bKGD
+
+The background colour of the PNG image.
+
+See [% spec("11bKGD") %] for information on the PNG standards for
+the background chunk.
+
+=head3 get_bKGD
 
     my $bkgd = $png->get_bKGD ();
 
 Get the bKGD (background) chunk of the image.
 
+The return value is a hash with the following keys, depending on the
+colour type of the image:
+
+=over
+
+=item index
+
+For palette colour types, this is the offset into the palette.
+
+=item gray
+
+For greyscale colour types.
+
+=item red
+
+=item green
+
+=item blue
+
+=back
+
 [% cor(fn="get_bKGD") %] with a hash function instead of a
 C<png_color> struct.
 
-=head2 set_bKGD
+=head3 set_bKGD
 
-Set the bKGD (background) chunk of the image.
+    $png->set_bKGD ($bkgd);
+
+Set the bKGD (background) chunk of the image. C<$bkgd> is a hash
+reference. The keys of the hash reference are as described in
+L</get_bKGD>.
 
 [% cor(fn="set_bKGD") %] with a hash function instead of a
 C<png_color> struct.
 
-=head2 get_cHRM
+=head2 cHRM
+
+See [% spec("11cHRM") %] "cHRM Primary chromaticities and white
+point" of the PNG specification.
+
+=head3 get_cHRM
 
     my %cHRM = $png->get_cHRM ();
 
@@ -729,13 +799,11 @@ The keys of the hash are
 
 The values of the hash are floating point numbers between 0 and 1.
 
-See section "4.2.2.2. cHRM Primary chromaticities" of the PNG specification.
-
 [% cor(fn="get_cHRM") %] with a hash function instead of the C<double>
 arguments. The hash key names correspond to the names of the C<double>
 arguments in libpng.
 
-=head2 set_cHRM
+=head3 set_cHRM
 
     $png->set_cHRM (\%cHRM);
 
@@ -751,12 +819,14 @@ The keys of the hash are
 
 The values of the hash are floating point numbers between 0 and 1.
 
-See section "4.2.2.2. cHRM Primary chromaticities" of the PNG specification.
-
 [% cor(fn="set_cHRM") %] with a hash function instead of the C<double>
 arguments.
 
-=head2 get_gAMA
+=head2 gAMA
+
+See [% spec("11gAMA") %] of the PNG specification.
+
+=head3 get_gAMA
 
     my $gamma = $png->get_gAMA ();
 
@@ -765,7 +835,7 @@ floating-point number.
 
 [% cor(fn="get_gAMA") %]
 
-=head2 set_gAMA
+=head3 set_gAMA
 
     $png->set_gAMA (0.2);
 
@@ -773,83 +843,123 @@ Set the gamma value or gAMA chunk.
 
 [% cor(fn="set_gAMA") %]
 
-=head2 get_sRGB
+=head2 sRGB
+
+=head3 get_sRGB
 
     my $sRGB = $png->get_sRGB ();
 
-=head2 set_sRGB
+The return value is an integer number.
 
-    $png->set_sRGB ();
+[% cor(fn="get_sRGB") %]
 
-=head2 get_pHYs
+=head3 set_sRGB
+
+    $png->set_sRGB ($srgb);
+
+C<$srgb> is an integer number.
+
+[% cor(fn="set_sRGB") %]
+
+=head2 pHYs
+
+See [% spec("11pHYs") %]  of the PNG specification.
+
+=head3 get_pHYs
 
     my $phys = $png->get_pHYs ();
 
-=head2 set_pHYs
+The return value is a hash reference with the keys
+
+=over
+
+=item res_x
+
+=item res_y
+
+=item unit_type
+
+=back
+
+[% cor(fn="get_pHYs") %]
+
+=head3 set_pHYs
 
     $png->set_pHYs ({res_x => 1, res_y => 1, unit_type => 99});
 
-=head2 get_oFFs
+[% cor(fn="set_pHYs") %]
+
+=head2 oFFs
+
+This is an extension to the PNG specification. See L<http://www.libpng.org/pub/png/spec/1.1/pngext-1.1.0-pdg.html#C.oFFs>.
+
+=head3 get_oFFs
 
     my $phys = $png->get_oFFs ();
 
 Get oFFs chunk. Return value is a hash reference
 
-=head2 set_oFFs
+[% cor(fn="get_oFFs") %]
+
+=head3 set_oFFs
 
     $png->set_oFFs ({x_offset => 1, y_offset => 1, unit_type => 99});
 
 Set oFFs chunk.
 
-=head2 get_sBIT
+[% cor(fn="set_oFFs") %]
+
+=head2 sBIT
+
+See [% spec("11sBIT") %]  of the PNG specification.
+
+=head3 get_sBIT
 
     my $sbit = $png->get_sBIT ();
 
 [% cor(fn="get_sBIT") %]
 
-=head2 set_sBIT
+=head3 set_sBIT
 
     $png->set_sBIT ({red => 1, blue => 2, green => 3});
 
 [% cor(fn="set_sBIT") %]
 
-=head2 get_sCAL
+=head2 iCCP
 
-Not implemented.
+See [% spec("11iCCP") %]  of the PNG specification.
 
-=head2 set_sCAL
-
-Not implemented.
-
-=head2 get_tRNS
-
-Not implemented.
-
-=head2 set_tRNS
-
-Not implemented.
-
-=head2 get_iCCP
+=head3 get_iCCP
 
     my $iccp = $png->get_iCCP ();
 
+The return value is a hash with two keys,
+
+=over
+
+=item name
+
+The name of the profile.
+
+=item profile
+
+The colour profile.
+
+=back
+
 [% cor(fn="get_sCCP") %]
 
-=head2 set_iCCP
+=head3 set_iCCP
 
     $png->set_iCCP ({name => 'name', profile => 'profile'});
 
 [% cor(fn="set_sCCP") %]
 
-=head2 get_sPLT
+=head2 pCAL
 
-Not implemented.
+pCAL is an extension of the PNG specification. See L<http://www.libpng.org/pub/png/spec/1.1/pngext-1.1.0-pdg.html#C.pCAL>.
 
-=head2 set_sPLT
-
-Not implemented.
-
-=head2 get_pCAL
+=head3 get_pCAL
 
     my $pcal = $png->get_pCAL ();
 
@@ -884,26 +994,80 @@ parameter list of the pCAL chunk.
 
 =back
 
-=head2 set_pCAL
+[% cor(fn="get_pCAL") %]
+
+=head3 set_pCAL
 
     $png->set_pCAL ($values);
 
 Implemented but not tested. The input is just the same as the output
 of L</get_pCAL>.
 
-=head2 get_hIST
+[% cor(fn="set_pCAL") %]
+
+=head2 hIST
+
+See [% spec("#11hIST") %]  of the PNG specification.
+
+=head3 get_hIST
 
     my $hist = $png->get_hIST ();
 
-Return value is array reference.
+Return value is array reference. The number of entries in the array
+reference is the same as in the palette.
 
-=head2 set_hIST
+[% cor(fn="get_hIST") %]
+
+=head3 set_hIST
 
     $png->set_hIST (\@hist);
 
 Set the histogram.
 
+[% cor(fn="set_hIST") %]
+
+=head1 UNIMPLEMENTED CHUNKS
+
+=head2 sCAL
+
+This is an extension to the PNG specification. See
+L<http://www.libpng.org/pub/png/spec/1.1/pngext-1.1.0-pdg.html#C.sCAL>.
+
+=head3 get_sCAL
+
+Not implemented.
+
+=head3 set_sCAL
+
+Not implemented.
+
+=head2 tRNS
+
+See [% spec("11tRNS") %]  of the PNG specification.
+
+=head3 get_tRNS
+
+Not implemented.
+
+=head3 set_tRNS
+
+Not implemented.
+
+=head2 sPLT
+
+See [% spec("11sPLT") %]  of the PNG specification.
+
+=head3 get_sPLT
+
+Not implemented.
+
+=head3 set_sPLT
+
+Not implemented.
+
 =head1 META FUNCTIONS
+
+These functions enable examination of the installed libpng from Perl.
 
 =head2 supports
 
@@ -936,8 +1100,8 @@ the module:
 
 =head1 Differences from libpng
 
-The procedures in Image::PNG::Libpng are closely based on
-those of libpng, with the following differences.
+The functions in Image::PNG::Libpng are closely based on those of
+libpng, with the following differences.
 
 =head2 [% noinfo %]
 
@@ -993,24 +1157,26 @@ freeing is now handled by Perl automatically.
 
 =head2 Other unimplemented parts of libpng
 
-=head3 Memory management functions
+=over
+
+=item Memory management functions
 
 This module does not offer an interface to C<png_malloc> and C<png_free>.
 
-=head3 Error handling functions
+=item Error handling functions
 
 This module does not offer an interface to C<png_error> and
 C<png_get_error_ptr>. It redirects the error and warning handlers to
 Perl's error stream.
 
-=head3 Input/output manipulation functions
+=item Input/output manipulation functions
 
 This module does not offer a direct interface to C<png_set_write_fn>
 and C<png_set_read_fn>. However, it is possible to use their
 functionality to access Perl data via L</read_from_scalar> and
 L</write_to_scalar>.
 
-=head3 Partial read/write functions
+=item Partial read/write functions
 
 This module does not yet offer an interface to the partial read and
 write functions of libpng. The reason is because I don't know enough
@@ -1021,7 +1187,7 @@ program's data area between calls. So this module doesn't deal with
 png_write_chunk, png_write_end, png_write_info, png_write_row, or
 png_write_rows.
 
-=head3 Other unsupported functions
+=item Other unsupported functions
 
 All libpng deprecated functions are not supported.
 
@@ -1036,8 +1202,6 @@ Other unsupported functions include
 =item png_get_compression_buffer_size
 
 =item png_set_compression_buffer_size
-
-=item png_set_write_status_fn
 
 =item png_set_write_status_fn
 
@@ -1071,9 +1235,12 @@ Other unsupported functions include
 
 =back
 
+=back
+
 =head1 DIAGNOSTICS
 
-The module may produce the following error or warning messages.
+The module may produce the following error or warning messages. Errors
+are marked "(F)" and warnings are marked "(W)".
 
 =over
 [% FOR diagnostic IN libpng_diagnostics %]
@@ -1117,6 +1284,12 @@ compilation choices which I've found in practice, but it does not
 support every possible choice. If you encounter problems using this
 Perl module because of a conditionally-compiled libpng, then please
 let me know and I'll consider adding that facility to the module.
+
+=head1 STANDALONE SCRIPT
+
+A standalone script, F<pnginspect>, is installed with the
+distribution. It prints out the contents of the chunks of the PNG file
+on the command line.
 
 =head1 SEE ALSO
 

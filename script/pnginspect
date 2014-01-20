@@ -15,7 +15,12 @@ for my $file (@ARGV) {
     $png->read_png ();
     my $ihdr = $png->get_IHDR ();
     for my $k (keys %$ihdr) {
-        print "$k: $ihdr->{$k}\n";
+	if ($k eq 'color_type') {
+	    print "$k: ", color_type_name ($ihdr->{$k}), "\n";
+	}
+	else {
+	    print "$k: $ihdr->{$k}\n";
+	}
     }
     my $text = $png->get_text ();
     if ($text) {
