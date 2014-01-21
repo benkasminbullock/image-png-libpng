@@ -1,3 +1,12 @@
+0.27
+
+* Change "supports" to "libpng_supports" and add "tEXt", "zTXt"
+  options.
+
+0.26 2014-01-21
+
+* Skip text tests for people without libpng text support.
+
 0.25 2014-01-21
 
 * Use the "official libpng" test PNG files for testing (previous files

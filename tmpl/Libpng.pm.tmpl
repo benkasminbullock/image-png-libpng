@@ -60,6 +60,32 @@ sub write_png_file
     close $in or croak $!;
 }
 
+my %known_chunks = (
+[% FOR chunk IN chunks %]
+[% IF chunk.in_valid %][% chunk.name %] => 1,[% END %]
+[% END %]
+);
+
+sub get_chunk
+{
+    my ($png, $chunk) = @_;
+    if ($chunk eq 'IDAT') {
+	croak "Use get_rows";
+    }
+    if ($known_chunks{$chunk}) {
+	no strict 'refs';
+	my $sub = "get_$chunk";
+	return &$sub ($png); 
+    }
+    return undef;
+}
+
+sub set_chunk
+{
+
+}
+
+
 1;
 
 # Local Variables:

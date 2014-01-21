@@ -2,6 +2,7 @@
 use warnings;
 use strict;
 use Image::PNG::Libpng ':all';
+use Data::Dumper;
 binmode STDOUT, ":utf8";
 
 for my $file (@ARGV) {
@@ -20,6 +21,16 @@ for my $file (@ARGV) {
 	}
 	else {
 	    print "$k: $ihdr->{$k}\n";
+	}
+    }
+    my $valid = $png->get_valid ();
+    for my $key (sort keys %$valid) {
+	if ($valid->{$key}) {
+	    print "Valid $key chunk.\n";
+	    if ($key ne 'IDAT') {
+		my $value = $png->get_chunk ($key);
+		print Dumper ($value);
+	    }
 	}
     }
     my $text = $png->get_text ();

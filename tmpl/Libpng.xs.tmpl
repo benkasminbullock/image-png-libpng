@@ -235,10 +235,10 @@ SV * perl_png_get_unknown_chunks (Png)
         OUTPUT:
         RETVAL
 
-int perl_png_supports (what)
+int perl_png_libpng_supports (what)
         const char * what
         CODE:
-        RETVAL = perl_png_supports (what);
+        RETVAL = perl_png_libpng_supports (what);
         OUTPUT:
         RETVAL
 

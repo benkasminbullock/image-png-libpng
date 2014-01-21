@@ -1985,7 +1985,7 @@ static void perl_png_set_unknown_chunks (perl_libpng_t * png, AV * chunk_list)
 
 /* Does the libpng support "what"? */
 
-int perl_png_supports (const char * what)
+int perl_png_libpng_supports (const char * what)
 {
     if (strcmp (what, "iTXt") == 0) {
 #ifdef PNG_iTXt_SUPPORTED
@@ -1993,6 +1993,20 @@ int perl_png_supports (const char * what)
 #else
         return 0;
 #endif /* iTXt */
+    }
+    if (strcmp (what, "zTXt") == 0) {
+#ifdef PNG_zTXt_SUPPORTED
+        return 1;
+#else
+        return 0;
+#endif /* zTXt */
+    }
+    if (strcmp (what, "tEXt") == 0) {
+#ifdef PNG_tEXt_SUPPORTED
+        return 1;
+#else
+        return 0;
+#endif /* tEXt */
     }
     /* The user asked whether something was supported, but we don't
        know what that thing is. */
