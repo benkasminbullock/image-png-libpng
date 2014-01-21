@@ -457,6 +457,24 @@ key => 'Disclaimer',
 },
 );
 
+for my $test (@stuff) {
+    my $chunks = $test->{chunks};
+    if ($chunks) {
+	for my $chunk (@$chunks) {
+	    if ($chunk->{compression} == 2) {
+
+		# There are no examples with compression = 2 in the
+		# examples anywhere, so how this happens I don't know,
+		# but it does:
+
+		# http://www.cpantesters.org/cpan/report/717bf5a4-8284-11e3-bd14-e3bee4621ba3
+
+		plan skip_all => 'Broken libpng returning bad compression value';
+		goto end;
+	    }
+	}
+    }
+}
 
 for my $test (@stuff) {
     my $png = read_png_file ("$FindBin::Bin/libpng/$test->{file}.png");
@@ -466,9 +484,13 @@ for my $test (@stuff) {
     }
     else {
 	my $chunks = $test->{chunks};
-	is_deeply ($chunks, $texts, "Got expected stuff");
+	is_deeply ($texts, $chunks, "Got expected stuff");
     }
 }
+
+# Escape route for broken libpngs.
+
+end:
 
 done_testing ();
 
