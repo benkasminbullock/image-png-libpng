@@ -627,8 +627,7 @@ This function returns the version of the libpng library which the
 module is using.
 
 [% cor(fn="get_libpng_ver") %]. However, it
-doesn't require the C<png_structp> argument of the C function. See
-L</About libpng>.
+doesn't require the C<png_structp> argument of the C function.
 
 =head2 access_version_number
 
@@ -1119,6 +1118,17 @@ The possible arguments to C<supports> are
 Does the libpng support international text?
 
 =back
+
+=head2 get_internals
+
+    my ($png_struct, $png_info) = get_internals ($png);
+
+This allows writers of XS extensions to Image::PNG::Libpng access to
+the internal C<png_structp> and C<png_infop> contained in C<$png>. The
+return value is a list containing the png_structp as the first
+argument and the png_infop as the second argument, wrapped up as
+references to objects of type C<Image::PNG::Libpng::png_struct> and
+C<Image::PNG::Libpng::png_info>.
 
 =head1 EXPORTS
 
