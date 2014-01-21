@@ -1058,6 +1058,9 @@ Set the histogram.
 
 =head1 UNIMPLEMENTED CHUNKS
 
+These chunks have skeleton routines but the actual reading and writing
+code is not yet implemented.
+
 =head2 sCAL
 
 This is an extension to the PNG specification. See
@@ -1129,6 +1132,21 @@ return value is a list containing the png_structp as the first
 argument and the png_infop as the second argument, wrapped up as
 references to objects of type C<Image::PNG::Libpng::png_struct> and
 C<Image::PNG::Libpng::png_info>.
+
+To access the values of the actual pointers from XS, use something
+like the following:
+
+    void access_png_internals (png, info)
+	SV * png;
+	SV * info;
+    PREINIT:
+	png_struct * cpng;
+	png_info * cinfo;
+    CODE:
+	cpng = INT2PTR (png_struct *, SvIV ((SV *) SvRV (png)));
+	cinfo = INT2PTR (png_info *, SvIV ((SV *) SvRV (info)));
+
+An example exists in L<Image::PNG::Cairo>.    
 
 =head1 EXPORTS
 
