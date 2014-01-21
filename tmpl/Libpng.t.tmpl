@@ -1,4 +1,7 @@
 #line 2 "Libpng.t.tmpl"
+
+# Various tests.
+
 use warnings;
 use strict;
 use Test::More;
@@ -38,49 +41,15 @@ my $png_in = Image::PNG::Libpng::create_read_struct ();
 $png_in->init_io ($file_in);
 $png_in->read_png (0);
 close $file_in or die $!;
+
 my $file_out_name = "$FindBin::Bin/test-write.png";
 my $png_out = Image::PNG::Libpng::create_write_struct ();
-my $time_file_name = "$FindBin::Bin/with-time.png";
-open my $file2, "<", $time_file_name or die "Can't open '$time_file_name': $!";
-my $png2 = Image::PNG::Libpng::create_read_struct ();
-$png2->init_io ($file2);
-$png2->read_info ();
-my %times;
-%times = %{$png2->get_tIME ()};
-ok ($times{year} == 2010, "year");
-ok ($times{month} == 12, "month");
-ok ($times{day} == 29, "day");
-ok ($times{hour} == 16, "hour");
-ok ($times{minute} == 20, "minute");
-ok ($times{second} == 20, "second");
-close $file2 or die $!;
 
-my $text_file_name = "$FindBin::Bin/with-text.png";
-open my $file3, "<", $text_file_name or die "Can't open '$text_file_name': $!";
-my $png3 = Image::PNG::Libpng::create_read_struct ();
-$png3->init_io ($file3);
-$png3->read_info ();
-my @text_chunks = @{$png3->get_text ()};
-
-my $chunk1 = $text_chunks[0];
-ok ($chunk1->{compression} == 0, "text compression");
-ok ($chunk1->{key} eq 'Title', "text key");
-ok ($chunk1->{text} eq 'Mona Lisa', "text text");
-
-SKIP: {
-    skip "Your libpng does not support iTXt", 3
-        unless (Image::PNG::Libpng::supports ('iTXt'));
-    my $chunk3 = $text_chunks[2];
-    is ($chunk3->{compression}, 1, "text compression for iTXT");
-    is ($chunk3->{key}, 'Detective', "text key");
-    is ($chunk3->{text}, '工藤俊作', "text text in UTF-8");
-};
-
+my $png3 = Image::PNG::Libpng::read_png_file ("$FindBin::Bin/tantei-san.png");
 eval {
     Image::PNG::Libpng::destroy_read_struct ($png3);
 };
 ok (! $@, "no error from destroy_read_struct");
-close $file3 or die $!;
 
 my $number_version = Image::PNG::Libpng::access_version_number ();
 ok ($number_version =~ /^\d+$/, "Numerical version number OK");
@@ -100,7 +69,7 @@ if ($number_version > 100000) {
 # perl-libpng.c.tmpl. The error was fixed in 0.03 but this test is new
 # in 0.04.
 
-my $badpngfile = "$FindBin::Bin/xlfn0g04.png";
+my $badpngfile = "$FindBin::Bin/libpng/xlfn0g04.png";
 if (! -f $badpngfile) {
     die "You are missing a test file";
 }

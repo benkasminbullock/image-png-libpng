@@ -3,7 +3,7 @@ use strict;
 use Test::More tests => 2;
 use Image::PNG::Libpng ':all';
 use FindBin;
-my $image = "$FindBin::Bin/ccwn2c08.png";
+my $image = "$FindBin::Bin/libpng/ccwn2c08.png";
 
 
 my $rpng = create_read_struct ();

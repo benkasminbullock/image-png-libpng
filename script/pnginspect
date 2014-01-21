@@ -24,17 +24,29 @@ for my $file (@ARGV) {
     }
     my $text = $png->get_text ();
     if ($text) {
+	my $i = 0;
         for my $t (@$text) {
-            print "TEXT:\n";
+	    $i++;
+            print "Text chunk $i:\n";
             for my $k (keys %$t) {
                 my $v = $t->{$k};
                 if (! defined $v) {
                     $v = 'undefined';
                 }
+		if ($k eq 'compression') {
+		    $v = text_compression_name ($v);
+		}
                 print "$k: $v\n";
             }
             print "\n";
         }
+    }
+    my $time = $png->get_tIME ();
+    if ($time) {
+	print "Modification time:\n";
+	for my $k (qw/year month day hour minute second/) {
+	    print "$k: $time->{$k}\n";
+	}
     }
 }
 

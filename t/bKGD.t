@@ -8,7 +8,7 @@ use Image::PNG::Const ':all';
 # Test reading a background.
 
 my $png = create_read_struct ();
-open my $fh, "<:raw", "$FindBin::Bin/bgyn6a16.png" or die $!;
+open my $fh, "<:raw", "$FindBin::Bin/libpng/bgyn6a16.png" or die $!;
 init_io ($png, $fh);
 read_png ($png);
 close $fh or die $!;

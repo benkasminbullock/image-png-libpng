@@ -442,14 +442,17 @@ perl_png_textp_to_hash (perl_libpng_t * png, const png_textp text_ptr)
         f[3] = newSV (0);
     }
     f[4] = lang_key_to_sv (png, text_ptr->lang_key);
+#else
+    f[4] = &PL_sv_undef;
 #endif /* iTXt */
     f[5] = newSViv (text_ptr->text_length);
 #ifdef PNG_iTXt_SUPPORTED
     f[6] = newSViv (text_ptr->itxt_length);
+#else
+    f[6] = &PL_sv_undef;
 #endif /* iTXt */
 
     for (i = 0; i < N_TEXT_FIELDS; i++) {
-        //printf ("%d:%s\n", i, text_fields[i]);
         if (!hv_store (text_hash, text_fields[i],
                        strlen (text_fields[i]), f[i], 0)) {
             fprintf (stderr, "hv_store failed.\n");
@@ -489,7 +492,8 @@ perl_png_get_text (perl_libpng_t * png)
         }
         text_ref = newRV_inc ((SV *) text_chunks);
         return text_ref;
-    } else {
+    }
+    else {
         MESSAGE ("There is no text:");
         UNDEF;
     }

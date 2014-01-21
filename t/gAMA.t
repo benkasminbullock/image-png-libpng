@@ -4,7 +4,7 @@ use strict;
 use Test::More;
 use FindBin;
 use Image::PNG::Libpng ':all';
-my $png = read_png_file ("$FindBin::Bin/g03n2c08.png");
+my $png = read_png_file ("$FindBin::Bin/libpng/g03n2c08.png");
 my $gamma = $png->get_gAMA ();
 cmp_ok ($gamma - 0.35, '<', 0.0001);
 my $opng = create_write_struct ();

@@ -6,6 +6,7 @@ Image-PNG-*/
 # Test files not to be distributed
 
 t/*guffin*
+t/libpng/*
 
 # Generated from "Makefile.PL"
 

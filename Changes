@@ -1,3 +1,13 @@
+0.25 2014-01-21
+
+* Use the "official libpng" test PNG files for testing (previous files
+  had bugs in them, leading to obscure test failures.)
+
+0.24 2014-01-21
+
+* Fix errors in gAMA.t causing test failures
+* Open internals for the sake of Image::PNG::Cairo.
+
 0.23 2014-01-20
 
 * "read_from_scalar" now has a return value & doesn't require
