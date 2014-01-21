@@ -412,6 +412,8 @@ static const char * text_fields[] = {
 /* "perl_png_textp_to_hash" creates a new Perl associative array from
    the PNG text values in "text_ptr". */
 
+#ifdef PNG_tEXt_SUPPORTED
+
 static HV *
 perl_png_textp_to_hash (perl_libpng_t * png, const png_textp text_ptr)
 {
@@ -439,10 +441,11 @@ perl_png_textp_to_hash (perl_libpng_t * png, const png_textp text_ptr)
     }
     else {
         /* The language code may be empty. */
-        f[3] = newSV (0);
+        f[3] = &PL_sv_undef;
     }
     f[4] = lang_key_to_sv (png, text_ptr->lang_key);
 #else
+    f[3] = &PL_sv_undef;
     f[4] = &PL_sv_undef;
 #endif /* iTXt */
     f[5] = newSViv (text_ptr->text_length);
@@ -461,6 +464,7 @@ perl_png_textp_to_hash (perl_libpng_t * png, const png_textp text_ptr)
 
     return text_hash;
 }
+#endif /* tEXt_SUPPORTED */
 
 /*
   This is the C part of [% config.base %]::get_text.
@@ -469,6 +473,7 @@ perl_png_textp_to_hash (perl_libpng_t * png, const png_textp text_ptr)
 static SV *
 perl_png_get_text (perl_libpng_t * png)
 {
+#ifdef PNG_tEXt_SUPPORTED
     int num_text = 0;
     png_textp text_ptr;
 
@@ -497,6 +502,9 @@ perl_png_get_text (perl_libpng_t * png)
         MESSAGE ("There is no text:");
         UNDEF;
     }
+#else
+    return &PL_sv_undef;
+#endif
 }
 
 /* Set a PNG text from "chunk". The return value is true if

@@ -457,11 +457,16 @@ key => 'Disclaimer',
 },
 );
 
+# There are some instances of libpngs which return 2 for the text
+# compression. However, this does not occur in any of the examples, so
+# it seems like there must be a faulty libpng.
+
 for my $test (@stuff) {
-    my $chunks = $test->{chunks};
-    if ($chunks) {
-	for my $chunk (@$chunks) {
-	    if ($chunk->{compression} == 2) {
+    my $png = read_png_file ("$FindBin::Bin/libpng/$test->{file}.png");
+    my $texts = $png->get_text ();
+    if ($texts) {
+	for my $text (@$texts) {
+	    if ($text->{compression} == 2) {
 
 		# There are no examples with compression = 2 in the
 		# examples anywhere, so how this happens I don't know,
@@ -469,7 +474,7 @@ for my $test (@stuff) {
 
 		# http://www.cpantesters.org/cpan/report/717bf5a4-8284-11e3-bd14-e3bee4621ba3
 
-		plan skip_all => 'Broken libpng returning bad compression value';
+		plan skip_all => 'Bad compression value detected, your libpng is faulty';
 		goto end;
 	    }
 	}
