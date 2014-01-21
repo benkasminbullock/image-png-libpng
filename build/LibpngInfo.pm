@@ -456,6 +456,10 @@ our @chunks = (
     name => 'IHDR',
     auto_type => 'hv',
 },
+{
+    name => 'hIST',
+    auto_type => 'av',
+},
 
 );
 

@@ -78,9 +78,9 @@ void perl_png_read_image (Png)
 void perl_png_read_png (Png, transforms = PNG_TRANSFORM_IDENTITY)
         Image::PNG::Libpng  Png
         int transforms
-        CODE:
-        png_read_png (Png->png, Png->info, transforms, 0);
-        OUTPUT:
+CODE:
+        perl_png_read_png (Png, transforms);
+OUTPUT:
 
 SV * perl_png_get_text (Png)
         Image::PNG::Libpng  Png
@@ -183,13 +183,6 @@ SV * perl_png_get_valid (Png)
         RETVAL = perl_png_get_valid (Png);
         OUTPUT:
         RETVAL
-
-void perl_png_set_row_pointers (Png, row_pointers)
-        Image::PNG::Libpng Png
-        void * row_pointers
-        CODE:
-        perl_png_set_row_pointers (Png, row_pointers);
-        OUTPUT:
 
 void perl_png_set_tRNS_pointer (Png, tRNS_pointer, num_tRNS_pointer)
         Image::PNG::Libpng Png
@@ -368,3 +361,17 @@ PPCODE:
 	sv_setref_pv(info_sv, "Image::PNG::Libpng::png_info", info);
 	XPUSHs(sv_2mortal(png_sv));
 	XPUSHs(sv_2mortal(info_sv));
+
+void perl_png_set_transforms (Png, transforms)
+	Image::PNG::Libpng Png;
+	int transforms;
+CODE:
+	perl_png_set_transforms (Png, transforms);
+OUTPUT:
+
+void perl_png_set_row_pointers (Png, row_pointers)
+	Image::PNG::Libpng Png;
+	SV * row_pointers;
+CODE:
+	perl_png_set_row_pointers (Png, row_pointers);
+OUTPUT:

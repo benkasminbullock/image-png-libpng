@@ -1148,6 +1148,29 @@ like the following:
 
 An example exists in L<Image::PNG::Cairo>.    
 
+=head2 set_transforms
+
+    $png->set_transforms (PNG_TRANSFORM_BGR);
+
+Set transforms for reading and writing. This is the same as the
+optional argument to L</read_png> or L</write_png>. If both this and
+the optional argument are given, the optional argument overrides what
+is set here.
+
+=head2 set_row_pointers
+
+    $png->set_row_pointers ($row_pointers);
+
+C<$row_pointers> should be set up something like the following:
+
+    RETVAL = newSV (0);
+    xv_setref_pv (RETVAL, "Image::PNG::Libpng::row_pointers", row_pointers);
+
+It's extracted using
+
+    
+
+
 =head1 EXPORTS
 
 Nothing is exported by default, but all the functions in this module

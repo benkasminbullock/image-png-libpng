@@ -38,9 +38,9 @@
 #define HASH_FETCH_AV(hash,field) {			\
 	SV * field_sv;					\
 	HASH_FETCH (hash, field);			\
-	if (SvROK (params) &&				\
-	    SvTYPE (SvRV (params)) == SVt_PVAV) {	\
-	    field = (AV *) SvRV (params);		\
+	if (SvROK (field_sv) &&				\
+	    SvTYPE (SvRV (field_sv)) == SVt_PVAV) {	\
+	    field = (AV *) SvRV (field_sv);		\
 	}						\
 	else {						\
 	    field = 0;					\

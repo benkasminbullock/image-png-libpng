@@ -19,6 +19,10 @@ typedef struct perl_libpng {
     /* Number of times we have called calloc. */
     int memory_gets;
 
+    /* Transforms to apply. */
+
+    int transforms;
+
     /* Jive for reading from a scalar */
 
     /* Points to the raw data from a Perl scalar. */
@@ -51,6 +55,16 @@ typedef perl_libpng_t * Image__PNG__Libpng;
 /* Convenient macro for libpng function arguments. */
 
 #define pngi png->png, png->info
+
+/* Get the transforms from the function argument or from the set value
+   inside the PNG. */
+
+#define GET_TRANSFORMS				\
+    if (png->transforms) {			\
+	if (! transforms) {			\
+	    transforms = png->transforms;	\
+	}					\
+    }
 
 /* The following macro is used to indicate to programmers reading this
    which arguments are "useless" (ignored) arguments from libpng which
@@ -250,7 +264,7 @@ static void free_png (perl_libpng_t * png)
     Safefree (png);
 }
 
-void
+static void
 perl_png_destroy_write_struct (perl_libpng_t * png)
 {
     return;
@@ -260,7 +274,7 @@ perl_png_destroy_write_struct (perl_libpng_t * png)
     */
 }
 
-void
+static void
 perl_png_destroy_read_struct (perl_libpng_t * png)
 {
     return;
@@ -270,7 +284,7 @@ perl_png_destroy_read_struct (perl_libpng_t * png)
     */
 }
 
-void
+static void
 perl_png_destroy (perl_libpng_t * png)
 {
     if (! png) {
@@ -449,7 +463,7 @@ perl_png_textp_to_hash (perl_libpng_t * png, const png_textp text_ptr)
   This is the C part of [% config.base %]::get_text.
  */
 
-SV *
+static SV *
 perl_png_get_text (perl_libpng_t * png)
 {
     int num_text = 0;
@@ -593,7 +607,7 @@ perl_png_set_text_from_hash (perl_libpng_t * png,
    into the object rather than setting them (so it does not destroy
    already-set ones). */
 
-void
+static void
 perl_png_set_text (perl_libpng_t * png, AV * text_chunks)
 {
     int num_text;
@@ -673,7 +687,7 @@ static const char * time_fields[] = {
    associative array with named fields of the same name as the members
    of the C structure. */
 
-void perl_png_timep_to_hash (const png_timep mod_time, HV * time_hash)
+static void perl_png_timep_to_hash (const png_timep mod_time, HV * time_hash)
 {
     int i;
     SV * f[N_TIME_FIELDS];
@@ -694,7 +708,7 @@ void perl_png_timep_to_hash (const png_timep mod_time, HV * time_hash)
 /* If the PNG contains a valid time, put the time into a Perl
    associative array. */
 
-SV *
+static SV *
 perl_png_get_tIME (perl_libpng_t * png)
 {
     png_timep mod_time = 0;
@@ -713,7 +727,7 @@ perl_png_get_tIME (perl_libpng_t * png)
 
 /* Set the time in the PNG from "time". */
 
-void
+static void
 perl_png_set_tIME (perl_libpng_t * png, SV * input_time)
 {
     /* The PNG month and day fields shouldn't be equal to zero. 
@@ -830,12 +844,14 @@ perl_png_scalar_read (png_structp pngstruct,
     png->read_position += byte_count_to_read;
 }
 
-void
+static void
 perl_png_scalar_as_input (perl_libpng_t * png,
                           SV * image_data,
                           int transforms)
 {
     MESSAGE ("Setting input from a scalar");
+
+    GET_TRANSFORMS;
 
     /* We don't need the following anywhere. However we probably
        should keep track of where the data comes from. */
@@ -884,13 +900,16 @@ perl_png_scalar_write (png_structp png, png_bytep bytes_to_write,
     }
 }
 
+
 /* Write the PNG image data into a Perl scalar. */
 
-SV *
+static SV *
 perl_png_write_to_scalar (perl_libpng_t * png, int transforms)
 {
     scalar_as_image_t * si;
     SV * image_data;
+
+    GET_TRANSFORMS;
 
     GET_MEMORY (si, 1, scalar_as_image_t);
     MESSAGE ("Setting up the image.");
@@ -905,10 +924,13 @@ perl_png_write_to_scalar (perl_libpng_t * png, int transforms)
 
 /* Write a PNG. */
 
-void
+static void
 perl_png_write_png (perl_libpng_t * png, int transforms)
 {
     MESSAGE ("Trying to write a PNG.");
+
+    GET_TRANSFORMS;
+
     if (! png->init_io_done) {
         /* write_png was called before a file handle was associated
            with the PNG. */
@@ -927,7 +949,7 @@ perl_png_write_png (perl_libpng_t * png, int transforms)
 
 /* Get the IHDR from a PNG image. */
 
-SV *
+static SV *
 perl_png_get_IHDR (perl_libpng_t * png)
 {
     png_uint_32 width;
@@ -966,7 +988,7 @@ perl_png_get_IHDR (perl_libpng_t * png)
 /* Set the IHDR of a PNG image from the values specified in a Perl
    hash, "IHDR". */
 
-void 
+static void 
 perl_png_set_IHDR (perl_libpng_t * png, HV * IHDR)
 {
     /* The first four are set to illegal values. We really should
@@ -1070,7 +1092,7 @@ const char * perl_png_text_compression_name (int text_compression)
 
 /* Return an array of hashes containing the colour values of the palette. */
 
-SV *
+static SV *
 perl_png_get_PLTE (perl_libpng_t * png)
 {
     png_colorp colours;
@@ -1105,7 +1127,7 @@ perl_png_get_PLTE (perl_libpng_t * png)
 /* Set the palette chunk of a PNG image to the palette described in
    "perl_colors". */
 
-void
+static void
 perl_png_set_PLTE (perl_libpng_t * png, AV * perl_colors)
 {
     int n_colors;
@@ -1147,7 +1169,7 @@ perl_png_set_PLTE (perl_libpng_t * png, AV * perl_colors)
 
 /* Set the palette directly, using a pointer. */
 
-void
+static void
 perl_png_set_PLTE_pointer (perl_libpng_t * png, png_colorp colors, int n_colors){
     png_set_PLTE (pngi, colors, n_colors);
 }
@@ -1198,7 +1220,7 @@ static void perl_png_hv_to_color_16 (HV * perl_colour, png_color_16p colour)
 /* Get the background chunk of a PNG image and return it as a hash
    reference. */
 
-SV * perl_png_get_bKGD (perl_libpng_t * png)
+static SV * perl_png_get_bKGD (perl_libpng_t * png)
 {
     if (VALID(bKGD)) {
         png_color_16p background;
@@ -1212,7 +1234,7 @@ SV * perl_png_get_bKGD (perl_libpng_t * png)
 /* Set the bKGD chunk of the image from values in a hash
    "bKGD". Values not set in the hash are set to zero. */
 
-void perl_png_set_bKGD (perl_libpng_t * png, HV * bKGD)
+static void perl_png_set_bKGD (perl_libpng_t * png, HV * bKGD)
 {
     /* Default is all zeros. */
     png_color_16 background = {0};
@@ -1223,7 +1245,7 @@ void perl_png_set_bKGD (perl_libpng_t * png, HV * bKGD)
 /* Get the pCAL (calibration of pixel values) chunk from a PNG
    image. This currently does nothing. */
 
-SV * perl_png_get_pCAL (perl_libpng_t * png)
+static SV * perl_png_get_pCAL (perl_libpng_t * png)
 {
 #ifdef PNG_pCAL_SUPPORTED
     HV * ice;
@@ -1250,7 +1272,6 @@ SV * perl_png_get_pCAL (perl_libpng_t * png)
 	AV * params;
 	int i;
 	params = newAV ();
-	int length;
 	GET_MEMORY (png_params, n_params, char *);
 	for (i = 0; i < n_params; i++) {
 	    ARRAY_STORE_PV (params, png_params[i]);
@@ -1267,19 +1288,18 @@ SV * perl_png_get_pCAL (perl_libpng_t * png)
 /* Set the pCAL (calibration of pixel values) chunk of a PNG
    image. */
 
-void perl_png_set_pCAL (perl_libpng_t * png, HV * pCAL)
+static void perl_png_set_pCAL (perl_libpng_t * png, HV * pCAL)
 {
 #ifdef PNG_pCAL_SUPPORTED
     char * purpose;
-    int purpose_length;
+    unsigned int purpose_length;
     int x0;
     int x1;
     int type;
     int n_params;
     char * units;
-    int units_length;
+    unsigned int units_length;
     AV * params;
-    SV * params_sv;
     char ** png_params;
     HASH_FETCH_PV (pCAL, purpose);
     HASH_FETCH_IV (pCAL, x0);
@@ -1287,11 +1307,13 @@ void perl_png_set_pCAL (perl_libpng_t * png, HV * pCAL)
     HASH_FETCH_IV (pCAL, type);
     HASH_FETCH_PV (pCAL, units);
     HASH_FETCH_AV (pCAL, params);
+    n_params = 0;
+    png_params = 0;
     if (params) {
 	n_params = av_len (params) + 1;
 	if (n_params) {
 	    int i;
-	    int length;
+	    unsigned int length;
 	    GET_MEMORY (png_params, n_params, char *);
 	    for (i = 0; i < n_params; i++) {
 		ARRAY_FETCH_PV (params, i, png_params[i], length);
@@ -1305,7 +1327,7 @@ void perl_png_set_pCAL (perl_libpng_t * png, HV * pCAL)
 
 /* Get the sPLT chunk of a PNG image. This currently does nothing. */
 
-SV * perl_png_get_sPLT (perl_libpng_t * png)
+static SV * perl_png_get_sPLT (perl_libpng_t * png)
 {
     if (VALID (sPLT)) {
         HV * ice;
@@ -1317,13 +1339,13 @@ SV * perl_png_get_sPLT (perl_libpng_t * png)
 
 /* Set the sPLT chunk of a PNG image. This currently does nothing. */
 
-void perl_png_set_sPLT (perl_libpng_t * png, HV * sPLT)
+static void perl_png_set_sPLT (perl_libpng_t * png, HV * sPLT)
 {
 }
 
 /* Get the gAMA of a PNG image. */
 
-SV * perl_png_get_gAMA (perl_libpng_t * png)
+static SV * perl_png_get_gAMA (perl_libpng_t * png)
 {
     if (VALID (gAMA)) {
         SV * perl_gamma;
@@ -1337,14 +1359,14 @@ SV * perl_png_get_gAMA (perl_libpng_t * png)
 
 /* Set the gAMA of a PNG image. */
 
-void perl_png_set_gAMA (perl_libpng_t * png, double gamma)
+static void perl_png_set_gAMA (perl_libpng_t * png, double gamma)
 {
     png_set_gAMA (pngi, gamma);
 }
 
 /* iCCP does nothign. */
 
-SV * perl_png_get_iCCP (perl_libpng_t * png)
+static SV * perl_png_get_iCCP (perl_libpng_t * png)
 {
     if (VALID (iCCP)) {
 	char * name;
@@ -1357,18 +1379,18 @@ SV * perl_png_get_iCCP (perl_libpng_t * png)
 		      & proflen);
         ice = newHV ();
 	HASH_STORE_PV (ice, name);
-	profile_sv = newSVpv (profile, proflen);
-	hv_store (ice, "profile", strlen ("profile"), profile_sv, 0);
+	profile_sv = newSVpv ((char *) profile, proflen);
+	(void) hv_store (ice, "profile", strlen ("profile"), profile_sv, 0);
         return newRV_inc ((SV *) ice);
     }
     UNDEF;
 }
 
-void perl_png_set_iCCP (perl_libpng_t * png, HV * iCCP)
+static void perl_png_set_iCCP (perl_libpng_t * png, HV * iCCP)
 {
     char * name;
-    int name_length;
-    unsigned char * profile;
+    unsigned int name_length;
+    char * profile;
     unsigned int profile_length;
     int compression_method;
 
@@ -1377,10 +1399,11 @@ void perl_png_set_iCCP (perl_libpng_t * png, HV * iCCP)
     HASH_FETCH_PV (iCCP, profile);
     HASH_FETCH_PV (iCCP, name);
 
-    png_set_iCCP (pngi, name, compression_method, profile, profile_length);
+    png_set_iCCP (pngi, name, compression_method,
+		  (unsigned char *) profile, profile_length);
 }
 
-SV * perl_png_get_tRNS (perl_libpng_t * png)
+static SV * perl_png_get_tRNS (perl_libpng_t * png)
 {
     if (VALID (tRNS)) {
         HV * ice;
@@ -1390,16 +1413,16 @@ SV * perl_png_get_tRNS (perl_libpng_t * png)
     UNDEF;
 }
 
-void perl_png_set_tRNS (perl_libpng_t * png, HV * tRNS)
+static void perl_png_set_tRNS (perl_libpng_t * png, HV * tRNS)
 {
 }
 
-void perl_png_set_tRNS_pointer (perl_libpng_t * png, png_bytep trans, int num_trans)
+static void perl_png_set_tRNS_pointer (perl_libpng_t * png, png_bytep trans, int num_trans)
 {
     png_set_tRNS (pngi, trans, num_trans, 0);
 }
 
-SV * perl_png_get_sCAL (perl_libpng_t * png)
+static SV * perl_png_get_sCAL (perl_libpng_t * png)
 {
     if (VALID (sCAL)) {
         HV * ice;
@@ -1409,7 +1432,7 @@ SV * perl_png_get_sCAL (perl_libpng_t * png)
     UNDEF;
 }
 
-void perl_png_set_hIST (perl_libpng_t * png, AV * hIST)
+static void perl_png_set_hIST (perl_libpng_t * png, AV * hIST)
 {
     int hist_size;
     png_uint_16p hist;
@@ -1422,7 +1445,7 @@ void perl_png_set_hIST (perl_libpng_t * png, AV * hIST)
     png_set_hIST (pngi, hist);
 }
 
-AV * perl_png_get_hIST (perl_libpng_t * png)
+static SV * perl_png_get_hIST (perl_libpng_t * png)
 {
     png_colorp colours;
     int n_colours;
@@ -1437,10 +1460,10 @@ AV * perl_png_get_hIST (perl_libpng_t * png)
     for (i = 0; i < n_colours; i++) {
 	av_push (hist_av, newSViv (hist[i]));
     }
-    return hist_av;
+    return newRV_inc ((SV *) hist_av);
 }
 
-void perl_png_set_sCAL (perl_libpng_t * png, HV * sCAL)
+static void perl_png_set_sCAL (perl_libpng_t * png, HV * sCAL)
 {
 }
 
@@ -1448,7 +1471,7 @@ void perl_png_set_sCAL (perl_libpng_t * png, HV * sCAL)
 
 /* "4.2.4.3. sBIT Significant bits" */
 
-SV * perl_png_get_sBIT (perl_libpng_t * png)
+static SV * perl_png_get_sBIT (perl_libpng_t * png)
 {
     if (VALID (sBIT)) {
         HV * sig_bit;
@@ -1460,14 +1483,14 @@ SV * perl_png_get_sBIT (perl_libpng_t * png)
     UNDEF;
 }
 
-void perl_png_set_sBIT (perl_libpng_t * png, HV * sBIT)
+static void perl_png_set_sBIT (perl_libpng_t * png, HV * sBIT)
 {
     png_color_8 colours;
     [% FOR colour IN colours %] HASH_FETCH_IV_MEMBER (sBIT,[% colour %],(&colours));[% END %]
     png_set_sBIT (pngi, & colours);
 }
 
-SV * perl_png_get_oFFs (perl_libpng_t * png)
+static SV * perl_png_get_oFFs (perl_libpng_t * png)
 {
     if (VALID (oFFs)) {
         HV * offset;
@@ -1487,7 +1510,7 @@ SV * perl_png_get_oFFs (perl_libpng_t * png)
 
 /* set oFFs of PNG image. */
  
-void perl_png_set_oFFs (perl_libpng_t * png, HV * oFFs)
+static void perl_png_set_oFFs (perl_libpng_t * png, HV * oFFs)
 {
     png_uint_32 x_offset;
     png_uint_32 y_offset;
@@ -1498,7 +1521,7 @@ void perl_png_set_oFFs (perl_libpng_t * png, HV * oFFs)
     png_set_oFFs (pngi, x_offset, y_offset, unit_type);
 }
 
-SV * perl_png_get_pHYs (perl_libpng_t * png)
+static SV * perl_png_get_pHYs (perl_libpng_t * png)
 {
     if (VALID (pHYs)) {
         png_uint_32 res_x;
@@ -1515,7 +1538,7 @@ SV * perl_png_get_pHYs (perl_libpng_t * png)
     UNDEF;
 }
 
-void perl_png_set_pHYs (perl_libpng_t * png, HV * pHYs)
+static void perl_png_set_pHYs (perl_libpng_t * png, HV * pHYs)
 {
     png_uint_32 res_x;
     png_uint_32 res_y;
@@ -1528,7 +1551,7 @@ void perl_png_set_pHYs (perl_libpng_t * png, HV * pHYs)
 
 /* Get the transparency information for a paletted image. */
 
-SV * perl_png_get_tRNS_palette (perl_libpng_t * png)
+static SV * perl_png_get_tRNS_palette (perl_libpng_t * png)
 {
     if (VALID (tRNS) && VALID (PLTE)) {
         AV * perl_trans;
@@ -1573,12 +1596,12 @@ int perl_png_get_sRGB (perl_libpng_t * png)
 
 /* Set the sRGB. */
 
-void perl_png_set_sRGB (perl_libpng_t * png, int sRGB)
+static void perl_png_set_sRGB (perl_libpng_t * png, int sRGB)
 {
     png_set_sRGB (pngi, sRGB);
 }
 
-SV * perl_png_get_valid (perl_libpng_t * png)
+static SV * perl_png_get_valid (perl_libpng_t * png)
 {
     HV * perl_valid;
     unsigned int valid;
@@ -1603,7 +1626,7 @@ SV * perl_png_get_valid (perl_libpng_t * png)
                         |___/                              */
 
 
-SV *
+static SV *
 perl_png_get_rows (perl_libpng_t * png)
 {
     png_bytepp rows;
@@ -1648,14 +1671,21 @@ perl_png_get_rows (perl_libpng_t * png)
         row_svs[r] = newSVpvn ((char *) rows[r], rowbytes);
     }
     perl_rows = av_make (height, row_svs);
-    MESSAGE ("There are %d elements in the array.\n", av_len (perl_rows));
+    MESSAGE ("There are %d elements in the array.\n", (int) av_len (perl_rows));
     PERL_PNG_FREE (row_svs);
     return newRV_inc ((SV *) perl_rows);
 }
 
+static void
+perl_png_read_png (perl_libpng_t * png, int transforms)
+{
+    GET_TRANSFORMS;
+    png_read_png (pngi, transforms, 0);
+}
+
 /* Read the image data into allocated memory */
 
-void
+static void
 perl_png_read_image (perl_libpng_t * png)
 {
     int n_rows;
@@ -1686,7 +1716,7 @@ perl_png_read_image (perl_libpng_t * png)
 
 /* Get the row pointers directly. */
 
-void *
+static void *
 perl_png_get_row_pointers (perl_libpng_t * png)
 {
     png_bytepp rows;
@@ -1699,18 +1729,9 @@ perl_png_get_row_pointers (perl_libpng_t * png)
     return rows;
 }
 
-/* Set the row pointers directly from a pointer. */
-
-void
-perl_png_set_row_pointers (perl_libpng_t * png, void * row_pointers)
-{
-    png_set_rows (pngi, row_pointers);
-    png->row_pointers = 0;
-}
-
 /* Set the rows of the image to "rows". */
 
-void perl_png_set_rows (perl_libpng_t * png, AV * rows)
+static void perl_png_set_rows (perl_libpng_t * png, AV * rows)
 {
     unsigned char ** row_pointers;
     int i;
@@ -1773,16 +1794,20 @@ void perl_png_set_rows (perl_libpng_t * png, AV * rows)
     \__,_|_| |_|\__,_|   \_/\_/ \__,_|_|  |_| |_|_|_| |_|\__, |___/
                                                          |___/      */
 
-void perl_png_set_verbosity (perl_libpng_t * png, int verbosity)
+static void perl_png_set_verbosity (perl_libpng_t * png, int verbosity)
 {
     png->verbosity = verbosity;
     MESSAGE ("You have asked me to print messages saying what I'm doing.");
 }
 
+/* These aren't implemented in the XS. */
+
+#if 0
+
 /* What should we do when there is an undefined variable, print an
    error message, raise an error, or nothing at all? */
 
-void perl_png_handle_undefined (perl_libpng_t * png, int die, int raise)
+static void perl_png_handle_undefined (perl_libpng_t * png, int die, int raise)
 {
     png->print_undefined = !! raise;
     png->raise_undefined = !! die;
@@ -1791,11 +1816,13 @@ void perl_png_handle_undefined (perl_libpng_t * png, int die, int raise)
 /* What should we do for other errors, print an error message, raise
    an error, or nothing at all? */
 
-void perl_png_handle_error (perl_libpng_t * png, int die, int raise)
+static void perl_png_handle_error (perl_libpng_t * png, int die, int raise)
 {
     png->print_errors = !! raise;
     png->raise_errors = !! die;
 }
+
+#endif
 
 #undef UNDEF
 #define UNDEF return &PL_sv_undef
@@ -1817,7 +1844,7 @@ void perl_png_handle_error (perl_libpng_t * png, int die, int raise)
 
 /* Get any unknown chunks from the program. */
 
-SV * perl_png_get_unknown_chunks (perl_libpng_t * png)
+static SV * perl_png_get_unknown_chunks (perl_libpng_t * png)
 {
 #ifdef PNG_READ_UNKNOWN_CHUNKS_SUPPORTED
     png_unknown_chunkp unknown_chunks;
@@ -1875,7 +1902,7 @@ SV * perl_png_get_unknown_chunks (perl_libpng_t * png)
 
 /* Set private chunks in the PNG. */
 
-void perl_png_set_unknown_chunks (perl_libpng_t * png, AV * chunk_list)
+static void perl_png_set_unknown_chunks (perl_libpng_t * png, AV * chunk_list)
 {
 #ifdef PNG_WRITE_UNKNOWN_CHUNKS_SUPPORTED
     /* n_chunks is the number of chunks the user proposes to add to
@@ -1900,11 +1927,10 @@ void perl_png_set_unknown_chunks (perl_libpng_t * png, AV * chunk_list)
         HV * perl_chunk = 0;
 	SV ** chunk_pointer;
         png_unknown_chunk * png_chunk = 0;
-        unsigned char * name;
+        char * name;
         unsigned int name_length;
-        unsigned char * data;
+        char * data;
         unsigned int data_length;
-        int location;
 
         MESSAGE ("%d.\n", i);
         /* Get the chunk name and check it is four bytes long. */
@@ -1934,7 +1960,7 @@ void perl_png_set_unknown_chunks (perl_libpng_t * png, AV * chunk_list)
 
         HASH_FETCH_PV (perl_chunk, data);
         
-        png_chunk->data = data;
+        png_chunk->data = (unsigned char *) data;
         png_chunk->size = data_length;
 	printf ("data is %d %s\n", data_length, data);
         n_ok_chunks++;
@@ -1970,7 +1996,7 @@ int perl_png_supports (const char * what)
     return 0;
 }
 
-void
+static void
 perl_png_set_keep_unknown_chunks (perl_libpng_t * png, int keep,
                                   SV * chunk_list)
 {
@@ -1979,7 +2005,7 @@ perl_png_set_keep_unknown_chunks (perl_libpng_t * png, int keep,
         SvROK (chunk_list) && 
         SvTYPE (SvRV (chunk_list)) == SVt_PVAV) {
         int num_chunks;
-        unsigned char * chunk_list_text;
+        char * chunk_list_text;
         AV * chunk_list_av;
         int i;
         const int len = (PERL_PNG_CHUNK_NAME_LENGTH + 1);
@@ -2013,7 +2039,8 @@ perl_png_set_keep_unknown_chunks (perl_libpng_t * png, int keep,
             chunk_list_text [ i * len + PERL_PNG_CHUNK_NAME_LENGTH ] = '\0';
         }
         png_set_keep_unknown_chunks (png->png, keep,
-                                     chunk_list_text, num_chunks);
+                                     (unsigned char *) chunk_list_text,
+				     num_chunks);
 #if 0
             if (! png->png->chunk_list) {
                 fprintf (stderr, "Zero.\n");
@@ -2041,31 +2068,31 @@ perl_png_set_keep_unknown_chunks (perl_libpng_t * png, int keep,
 #endif
 }
 
-void
+static void
 perl_png_set_expand (perl_libpng_t * png)
 {
     png_set_expand (png->png);
 }
 
-void
+static void
 perl_png_set_gray_to_rgb (perl_libpng_t * png)
 {
     png_set_gray_to_rgb(png->png);
 }
 
-void
+static void
 perl_png_set_filler (perl_libpng_t * png, int filler, int flags)
 {
     png_set_filler (png->png, filler, flags);
 }
 
-void
+static void
 perl_png_set_strip_16 (perl_libpng_t * png)
 {
     png_set_strip_16 (png->png);
 }
 
-SV * perl_png_get_cHRM (perl_libpng_t * png)
+static SV * perl_png_get_cHRM (perl_libpng_t * png)
 {
     if (VALID (cHRM)) {
         HV * ice;
@@ -2084,7 +2111,7 @@ SV * perl_png_get_cHRM (perl_libpng_t * png)
     UNDEF;
 }
 
-void perl_png_set_cHRM (perl_libpng_t * png, HV * cHRM)
+static void perl_png_set_cHRM (perl_libpng_t * png, HV * cHRM)
 {
     SV ** key_sv_ptr;
 [% FOR key IN chunk_hash.cHRM.fields -%]
@@ -2100,7 +2127,22 @@ void perl_png_set_cHRM (perl_libpng_t * png, HV * cHRM)
 [%- FOR key IN chunk_hash.cHRM.fields -%], [% key %][%- END -%]);
 }
 
+static void perl_png_set_transforms (perl_libpng_t * png, int transforms)
+{
+    png->transforms = transforms;
+}
 
+/* Set "row_pointers" from malloced memory from elsewhere. */
+
+static void perl_png_set_row_pointers (perl_libpng_t * png, SV * row_pointers)
+{
+    png_byte ** crow_pointers;
+
+    crow_pointers = INT2PTR (png_byte **, SvIV ((SV *) SvRV (row_pointers)));
+
+    png->row_pointers = crow_pointers;
+    png->memory_gets++;
+}
 
 /*
    Local Variables:
