@@ -17,7 +17,10 @@ my %config = ImagePNGBuild::read_config ();
 
 my $tt = Template->new (
     ABSOLUTE => 1,
-    INCLUDE_PATH => [$config{tmpl_dir},"$FindBin::Bin/../examples"],
+    INCLUDE_PATH => [
+	$config{tmpl_dir},
+	"$FindBin::Bin/../examples",
+    ],
     FILTERS => {
         xtidy => [
             \& xtidy,
@@ -102,7 +105,7 @@ for my $file (@files) {
         chmod 0644, $output;
     }
     $tt->process ($template, \%vars, $output)
-        or die '' . $tt->error ();
+        or die "Error processing $template: " . $tt->error ();
     chmod 0444, $output;
 }
 

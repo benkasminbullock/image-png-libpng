@@ -1653,7 +1653,7 @@ perl_png_get_rows (perl_libpng_t * png)
     height = png_get_image_height (pngi);
     if (height == 0) {
         /* The height of the image is zero. */
-        perl_png_error (png, "Image has no height");
+        perl_png_error (png, "Image has zero height");
     }
     else {
         MESSAGE ("Image has height %d\n", height);

@@ -44,8 +44,6 @@ This function corresponds to C<png_[% fn %]>
 
 Image::PNG::Libpng - Perl interface to the C library "libpng".
 
-[% INCLUDE "warning" %]
-
 =head1 SYNOPSIS
 
      use Image::PNG::Libpng ':all';
@@ -1422,7 +1420,9 @@ on the command line.
 
 =head2 [% libpngdoc %]
 
-=head3 "Official" documentation
+=over
+
+=item Official documentation
 
 The starting point is the plain text libpng manual at
 L<http://libpng.org/pub/png/libpng-manual.txt> and the manual page
@@ -1435,7 +1435,7 @@ the library. If you are considering programming in C using libpng, you
 will definitely also need to look at the header file "png.h".  In some
 cases you will also need to look at the source code of the library.
 
-=head3 Unofficial documentation
+=item Other documentation
 
 There is a collection of function definitions under the title
 "Interface Definitions for libpng12" at
@@ -1446,6 +1446,8 @@ the libpng routines, something which is often only available elsewhere
 by actually looking at the libpng source code. These pages are usually
 the first hits on search engines if you search for a function name in
 libpng.
+
+=back
 
 [% INCLUDE "other_modules" %]
 
