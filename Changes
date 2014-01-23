@@ -1,3 +1,7 @@
+0.28 2014-01-23
+
+* Memory handling changed for the benefit of Image::PNG::Cairo.
+
 0.27 2014-01-21
 
 * Change "supports" to "libpng_supports" and add "tEXt", "zTXt"

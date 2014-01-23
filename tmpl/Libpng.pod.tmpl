@@ -1173,16 +1173,16 @@ optional argument to L</read_png> or L</write_png>. If both this and
 the optional argument are given, the optional argument overrides what
 is set here.
 
-=head2 set_row_pointers
+=head2 copy_row_pointers
 
-    $png->set_row_pointers ($row_pointers);
+    $png->copy_row_pointers ($row_pointers);
 
 This is a routine which allows an XS module communicating with
 Image::PNG::Libpng to directly set the value of the row pointers for
-the PNG image. This is then freed by Image::PNG::Libpng using Perl's
-Safefree when C<$png> is destroyed. Because the freeing uses
-C<Safefree>, it's better to use Newx to allocate the memory rather
-than malloc.
+the PNG image. The memory is copied so whatever is in the row pointers
+can be freed immediately after calling this. However, the image data
+it points to is not copied, so this needs to be valid until the PNG is
+written.
 
 The Perl scalar C<$row_pointers> should be set up something like the
 following (where C<rp> is the C pointer):

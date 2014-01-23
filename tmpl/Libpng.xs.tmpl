@@ -237,9 +237,9 @@ SV * perl_png_get_unknown_chunks (Png)
 
 int perl_png_libpng_supports (what)
         const char * what
-        CODE:
+CODE:
         RETVAL = perl_png_libpng_supports (what);
-        OUTPUT:
+OUTPUT:
         RETVAL
 
 void perl_png_set_keep_unknown_chunks (Png, keep, chunk_list = 0)
@@ -369,9 +369,9 @@ CODE:
 	perl_png_set_transforms (Png, transforms);
 OUTPUT:
 
-void perl_png_set_row_pointers (Png, row_pointers)
+void perl_png_copy_row_pointers (Png, row_pointers)
 	Image::PNG::Libpng Png;
 	SV * row_pointers;
 CODE:
-	perl_png_set_row_pointers (Png, row_pointers);
+	perl_png_copy_row_pointers (Png, row_pointers);
 OUTPUT:
