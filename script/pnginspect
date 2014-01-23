@@ -1,19 +1,49 @@
 #!/home/ben/software/install/bin/perl
+
+# This is a primitive "dumper" for PNG image data.
+
 use warnings;
 use strict;
 use Image::PNG::Libpng ':all';
 use Data::Dumper;
+my $webok;
+
+eval {
+    require Data::Validate::URI;
+    Data::Validate::URI->import (qw/is_web_uri/);
+    require LWP::Simple;
+    LWP::Simple->import ();
+    $webok = 1;
+};
+
+if ($@) {
+    $webok = 0;
+}
+
 binmode STDOUT, ":utf8";
 
 for my $file (@ARGV) {
-    if (! -f $file) {
-        warn "Cannot find a file called '$file', skipping.\n";
-        next;
+    my $png;
+    if (-f $file) {
+	$png = read_png_file ($file);
     }
-    my $png = create_read_struct ();
-    open my $in, "<:raw", $file or die $!;
-    $png->init_io ($in);
-    $png->read_png ();
+    else {
+	if ($webok && is_web_uri ($file)) {
+	    print "Getting '$file' from web.\n";
+	    my $png_data = get ($file);
+	    if ($png_data) {
+		$png = read_from_scalar ($png_data);
+	    }
+	    else {
+		warn "Could not download '$file', skipping.\n";
+	    }
+	}
+	else {
+	    warn "Cannot find a file called '$file', skipping.\n";
+	    next;
+	}
+    }
+
     my $ihdr = $png->get_IHDR ();
     for my $k (keys %$ihdr) {
 	if ($k eq 'color_type') {
