@@ -2,11 +2,13 @@
 # code for this file is in Libpng.xs in the top directory.
 
 package Image::PNG::Libpng;
+use warnings;
+use strict;
+
 require Exporter;
-require DynaLoader;
 use Carp;
-@ISA = qw(Exporter);
-@EXPORT_OK = qw/
+our @ISA = qw(Exporter);
+our @EXPORT_OK = qw/
 [% FOR function IN functions -%]
 	[% function %]
 [% END -%]
@@ -16,10 +18,7 @@ color_type_name
 get_internals
 /;
 
-use warnings;
-use strict;
-
-%EXPORT_TAGS = (
+our %EXPORT_TAGS = (
     all => \@EXPORT_OK,
 );
 

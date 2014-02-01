@@ -1376,7 +1376,7 @@ static void perl_png_set_gAMA (perl_libpng_t * png, double gamma)
     png_set_gAMA (pngi, gamma);
 }
 
-/* iCCP does nothign. */
+/* iCCP does nothing. */
 
 static SV * perl_png_get_iCCP (perl_libpng_t * png)
 {
@@ -1436,12 +1436,41 @@ static void perl_png_set_tRNS_pointer (perl_libpng_t * png, png_bytep trans, int
 
 static SV * perl_png_get_sCAL (perl_libpng_t * png)
 {
+#ifdef PNG_sCAL_SUPPORTED
     if (VALID (sCAL)) {
         HV * ice;
+	int unit;
+	char * width;
+	char * height;
         ice = newHV ();
+	png_get_sCAL_s (pngi, & unit, & width, & height);
+	HASH_STORE_IV (ice, unit);
+	HASH_STORE_PV (ice, width);
+	HASH_STORE_PV (ice, height);
         return newRV_inc ((SV *) ice);
     }
     UNDEF;
+#else /* PNG_sCAL_SUPPORTED */
+    perl_png_warn (png, "sCAL chunk not supported in this libpng");
+    UNDEF;
+#endif /* PNG_sCAL_SUPPORTED */
+}
+
+static void perl_png_set_sCAL (perl_libpng_t * png, HV * sCAL)
+{
+#ifdef PNG_sCAL_SUPPORTED
+    int unit;
+    char * width;
+    char * height;
+    int width_length;
+    int height_length;
+    HASH_FETCH_IV (sCAL, unit);
+    HASH_FETCH_PV (sCAL, width);
+    HASH_FETCH_PV (sCAL, height);
+    png_set_sCAL_s (pngi, unit, width, height);
+#else /* PNG_sCAL_SUPPORTED */
+    perl_png_warn (png, "sCAL chunk not supported in this libpng");
+#endif /* PNG_sCAL_SUPPORTED */
 }
 
 static void perl_png_set_hIST (perl_libpng_t * png, AV * hIST)
@@ -1473,10 +1502,6 @@ static SV * perl_png_get_hIST (perl_libpng_t * png)
 	av_push (hist_av, newSViv (hist[i]));
     }
     return newRV_inc ((SV *) hist_av);
-}
-
-static void perl_png_set_sCAL (perl_libpng_t * png, HV * sCAL)
-{
 }
 
 /* Should this be a hash value or an array? */
@@ -2011,6 +2036,13 @@ int perl_png_libpng_supports (const char * what)
     }
     if (strcmp (what, "tEXt") == 0) {
 #ifdef PNG_tEXt_SUPPORTED
+        return 1;
+#else
+        return 0;
+#endif /* tEXt */
+    }
+    if (strcmp (what, "sCAL") == 0) {
+#ifdef PNG_sCAL_SUPPORTED
         return 1;
 #else
         return 0;

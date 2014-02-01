@@ -1060,23 +1060,61 @@ Set the histogram.
 
 [% cor(fn="set_hIST") %]
 
-=head1 UNIMPLEMENTED CHUNKS
-
-These chunks have skeleton routines but the actual reading and writing
-code is not yet implemented.
-
 =head2 sCAL
 
 This is an extension to the PNG specification. See
 L<http://www.libpng.org/pub/png/spec/1.1/pngext-1.1.0-pdg.html#C.sCAL>.
 
+You can test whether your version of libpng supports the sCAL chunk
+with L</libpng_supports> as follows:
+
+    if (libpng_supports ('sCAL')) {
+        # do something
+    }
+
 =head3 get_sCAL
 
-Not implemented.
+    my $scal = $png->get_sCAL ();
+
+The returned hash value contains the following keys:
+
+=over
+
+=item unit
+
+The unit type, which is either PNG_SCALE_UNKNOWN, PNG_SCALE_METER, or
+PNG_SCALE_RADIAN.
+
+=item width
+
+The width, as a string.
+
+=item height
+
+The height, as a string.
+
+=back
+
+
+[% cor(fn="get_sCAL_s") %]. Note that this uses the sCAL_s function
+rather than the get_sCAL and the returned values are the strings
+themselves rather than parsed numbers.
 
 =head3 set_sCAL
 
-Not implemented.
+    $png->set_sCAL ($scal);
+
+C<$scal> is a hash reference containing the keys described in
+L</get_sCAL>.
+
+[% cor(fn="set_sCAL_s") %]. Note that this uses the C<set_sCAL_s>
+function rather than C<set_sCAL> and the input values are the strings
+themselves rather than numbers.
+
+=head1 UNIMPLEMENTED CHUNKS
+
+These chunks have skeleton routines but the actual reading and writing
+code is not yet implemented.
 
 =head2 tRNS
 
@@ -1131,6 +1169,10 @@ Does the libpng support text?
 =item zTXt
 
 Does the libpng support compressed text?
+
+=item sCAL
+
+Does the libpng support the sCAL extension?
 
 =back
 
