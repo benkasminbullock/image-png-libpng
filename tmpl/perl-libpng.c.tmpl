@@ -5,6 +5,15 @@
 
 #include "my-xs.h"
 
+/* sCAL block support. This is complicated, see PNG mailing list
+   archives. */
+
+#ifdef PNG_sCAL_SUPPORTED
+#if PNG_LIBPNG_VER_MINOR > 4 || defined (PNG_FIXED_POINT_SUPPORTED)
+#define PNG_sCAL_REALLY_SUPPORTED
+#endif /* version or fixed point */
+#endif /* PNG_sCAL_SUPPORTED */
+
 /* Common structure for carrying around all our baggage. */
 
 typedef struct perl_libpng {
@@ -1436,7 +1445,7 @@ static void perl_png_set_tRNS_pointer (perl_libpng_t * png, png_bytep trans, int
 
 static SV * perl_png_get_sCAL (perl_libpng_t * png)
 {
-#ifdef PNG_sCAL_SUPPORTED
+#ifdef PNG_sCAL_REALLY_SUPPORTED
     if (VALID (sCAL)) {
         HV * ice;
 	int unit;
@@ -1450,27 +1459,27 @@ static SV * perl_png_get_sCAL (perl_libpng_t * png)
         return newRV_inc ((SV *) ice);
     }
     UNDEF;
-#else /* PNG_sCAL_SUPPORTED */
+#else /* PNG_sCAL_REALLY_SUPPORTED */
     perl_png_warn (png, "sCAL chunk not supported in this libpng");
     UNDEF;
-#endif /* PNG_sCAL_SUPPORTED */
+#endif /* PNG_sCAL_REALLY_SUPPORTED */
 }
 
 static void perl_png_set_sCAL (perl_libpng_t * png, HV * sCAL)
 {
-#ifdef PNG_sCAL_SUPPORTED
+#ifdef PNG_sCAL_REALLY_SUPPORTED
     int unit;
     char * width;
     char * height;
-    int width_length;
-    int height_length;
+    unsigned int width_length;
+    unsigned int height_length;
     HASH_FETCH_IV (sCAL, unit);
     HASH_FETCH_PV (sCAL, width);
     HASH_FETCH_PV (sCAL, height);
     png_set_sCAL_s (pngi, unit, width, height);
-#else /* PNG_sCAL_SUPPORTED */
+#else /* PNG_sCAL_REALLY_SUPPORTED */
     perl_png_warn (png, "sCAL chunk not supported in this libpng");
-#endif /* PNG_sCAL_SUPPORTED */
+#endif /* PNG_sCAL_REALLY_SUPPORTED */
 }
 
 static void perl_png_set_hIST (perl_libpng_t * png, AV * hIST)
@@ -2042,7 +2051,7 @@ int perl_png_libpng_supports (const char * what)
 #endif /* tEXt */
     }
     if (strcmp (what, "sCAL") == 0) {
-#ifdef PNG_sCAL_SUPPORTED
+#ifdef PNG_sCAL_REALLY_SUPPORTED
         return 1;
 #else
         return 0;

@@ -1,3 +1,9 @@
+0.28_01 2014-02-02
+
+* Support sCAL chunk.
+* use warnings, use strict in main module.
+* "libpng_supports" added pCAL and sCAL to testable options.
+
 0.28 2014-01-23
 
 * Memory handling changed for the benefit of Image::PNG::Cairo.
