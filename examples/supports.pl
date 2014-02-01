@@ -4,6 +4,6 @@ use strict;
 use lib 'blib/lib';
 use lib 'blib/arch';
 use Image::PNG::Libpng ':all';
-print supports ('zTXt'), "\n";
-print supports ('tEXt'), "\n";
+print libpng_supports ('zTXt'), "\n";
+print libpng_supports ('tEXt'), "\n";
 
