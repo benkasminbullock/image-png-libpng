@@ -2048,6 +2048,13 @@ int perl_png_libpng_supports (const char * what)
         return 0;
 #endif /* tEXt */
     }
+    if (strcmp (what, "pCAL") == 0) {
+#ifdef PNG_pCAL_SUPPORTED
+        return 1;
+#else
+        return 0;
+#endif /* tEXt */
+    }
     /* The user asked whether something was supported, but we don't
        know what that thing is. */
     perl_png_warn (0, "Unknown whether '%s' is supported", what);

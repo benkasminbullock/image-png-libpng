@@ -96,6 +96,9 @@ This combines L</create_read_struct>, open, L</init_io>, and
 L</read_png>. The return value is the same as that of
 L</create_read_struct> with the entire PNG image already read in.
 
+The optional argument to L</read_png> can be specified using
+L</set_transforms>.
+
 =head2 write_png_file
 
      $png->write_png_file ('nice.png');
@@ -104,6 +107,9 @@ This combines open, L</init_io>, and L</write_png> to write an entire
 PNG image out to a file. C<$png> must be the object created by
 L</create_write_struct>, so L</read_png_file> followed by a call to
 this does not work.
+
+The optional argument to L</write_png> can be specified using
+L</set_transforms>.
 
 =head2 read_from_scalar
 
@@ -117,7 +123,8 @@ This is useful when image data is stored in a Perl scalar. For example
 
 [% INCLUDE "get-www-png.pl" | xtidy %]
 
-See also L</Input/output manipulation functions>.
+See also L</Input/output manipulation functions>. The optional
+argument to L</read_png> can be specified using L</set_transforms>.
 
 =head2 write_to_scalar
 
@@ -132,6 +139,18 @@ example,
 containing the image data.
 
 See also L</Input/output manipulation functions>.
+
+The optional argument to L</write_png> can be specified using
+L</set_transforms>.
+
+=head2 set_transforms
+
+    $png->set_transforms (PNG_TRANSFORM_BGR);
+
+Set transforms for reading and writing. This is the same as the
+optional argument to L</read_png> or L</write_png>. If both this and
+the optional argument are given, the optional argument overrides what
+is set here.
 
 =head1 New-like functions
 
@@ -981,13 +1000,13 @@ The colour profile.
 
 =back
 
-[% cor(fn="get_sCCP") %]
+[% cor(fn="get_iCCP") %].
 
 =head3 set_iCCP
 
     $png->set_iCCP ({name => 'name', profile => 'profile'});
 
-[% cor(fn="set_sCCP") %]
+[% cor(fn="set_iCCP") %].
 
 =head2 pCAL
 
@@ -1172,13 +1191,20 @@ Does the libpng support compressed text?
 
 =item sCAL
 
-Does the libpng support the sCAL extension?
+Does the libpng support the L</sCAL> extension?
+
+=item pCAL
+
+Does the libpng support the L</pCAL> extension?
 
 =back
 
 =head1 ACCESS FUNCTIONS
 
-These functions are used to access parts of the C<$png> object itself.
+These functions are used to access parts of the C<$png> object
+itself. They are for people who are writing C or XS code and need to
+directly access the C structures within the Perl object rather than go
+via the supplied functions.
 
 =head2 get_internals
 
@@ -1205,15 +1231,6 @@ like the following:
 	cinfo = INT2PTR (png_info *, SvIV ((SV *) SvRV (info)));
 
 An example exists in L<Image::PNG::Cairo>.    
-
-=head2 set_transforms
-
-    $png->set_transforms (PNG_TRANSFORM_BGR);
-
-Set transforms for reading and writing. This is the same as the
-optional argument to L</read_png> or L</write_png>. If both this and
-the optional argument are given, the optional argument overrides what
-is set here.
 
 =head2 copy_row_pointers
 
@@ -1392,6 +1409,12 @@ Other unsupported functions include
 =item png_set_quantize
 
 =item png_set_tRNS_to_alpha
+
+=item png_set_user_limits
+
+=item png_get_user_width_max
+
+=item png_get_user_height_max
 
 =back
 

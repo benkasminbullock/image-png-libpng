@@ -47,4 +47,11 @@ L<Image::Pngslimmer> reduces the size of dynamically created PNG
 images. It's very, very slow at reading PNG data, but seems to work
 OK.
 
+=item Imager
+
+L<Imager>, L<Imager::Files> and L<Imager::Files::PNG> contain support
+for reading and writing PNGs via libpng, as well as support for
+reading and writing various other kinds of image files, changing the
+images, converting, and more.
+
 =back

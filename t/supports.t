@@ -8,6 +8,7 @@ sCAL
 tEXt
 zTXt
 iTXt
+pCAL
 /);
 
 for my $value (@values) {
