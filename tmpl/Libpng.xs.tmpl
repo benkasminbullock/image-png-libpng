@@ -9,6 +9,10 @@
 
 #define PNG_SKIP_SETJMP_CHECK
 #include <png.h>
+#include <stdarg.h>
+#include <time.h>
+
+#include "my-xs.h"
 #include "perl-libpng.c"
 #include "const-c.inc"
 

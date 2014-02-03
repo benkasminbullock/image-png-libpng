@@ -9,6 +9,8 @@ tEXt
 zTXt
 iTXt
 pCAL
+iCCP
+UNKNOWN_CHUNKS
 /);
 
 for my $value (@values) {
@@ -16,5 +18,13 @@ for my $value (@values) {
     ok ($supported == 0 || $supported == 1,
 	"$value is known to Image::PNG::Libpng");
 }
+
+{
+    my $guff;
+    local $SIG{__WARN__} = sub { $guff = $_[0]; };
+    my $supported = libpng_supports ('Pangalactic Gargleblaster');
+    like ($guff, qr/^Unknown whether 'Pangalactic Gargleblaster' is supported/);
+}
+
 
 done_testing ();

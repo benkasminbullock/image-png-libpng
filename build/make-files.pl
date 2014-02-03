@@ -104,8 +104,33 @@ for my $file (@files) {
     if (-f $output) {
         chmod 0644, $output;
     }
-    $tt->process ($template, \%vars, $output)
-        or die "Error processing $template: " . $tt->error ();
+    # Add line numbers to C file.
+    if ($template eq 'perl-libpng.c.tmpl') {
+	my $text = '';
+	open my $in, "<:encoding(utf8)", "$config{tmpl_dir}/$template"
+	    or die $!;
+	while (<$in>) {
+	    s/^(#line)$/sprintf "$1 %d \"%s\"", $. + 1, $template/e; 
+	    $text .= $_;
+	}
+	my $outtext;
+	$tt->process (\$text, \%vars, \$outtext)
+            or die "Error processing $template: " . $tt->error ();
+	my @olines = split /\n/, $outtext;
+	my $n = 0;
+	for (@olines) {
+	    $n++;
+	    s/^#oline$/#line $n "$output"/;
+	}
+	$outtext = join "\n", @olines;
+	open my $o, ">:encoding(utf8)", $output or die $!;
+	print $o $outtext, "\n";
+	close $o or die $!;
+    }
+    else {
+	$tt->process ($template, \%vars, $output)
+            or die "Error processing $template: " . $tt->error ();
+    }
     chmod 0444, $output;
 }
 
@@ -177,7 +202,7 @@ sub xtidy
     $text =~ s/use\s+(strict|warnings);\s+//g;
     $text =~ s/^binmode\s+STDOUT.*?utf8.*?\s+$//gm;
     $text =~ s/use\s+lib.*?;\s+//g;
-#    $text =~ s/use\s+JSON::Parse.*?;\s+//;
+    $text =~ s/use\s+Image::PNG::.*?;\s+//g;
 
     # Replace tabs with spaces.
 
