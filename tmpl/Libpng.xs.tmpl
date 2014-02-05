@@ -173,14 +173,6 @@ int perl_png_get_rowbytes (Png)
         RETVAL
 
 
-int perl_png_get_channels (Png)
-        Image::PNG::Libpng Png
-        CODE:
-        RETVAL = png_get_channels (Png->png, Png->info);
-        OUTPUT:
-        RETVAL
-
-
 SV * perl_png_get_valid (Png)
         Image::PNG::Libpng Png
         CODE:
@@ -379,3 +371,46 @@ void perl_png_copy_row_pointers (Png, row_pointers)
 CODE:
 	perl_png_copy_row_pointers (Png, row_pointers);
 OUTPUT:
+
+[% FOR what IN ['width', 'height'] %]
+int
+perl_png_get_image_[% what %] (Png)
+	Image::PNG::Libpng Png;
+CODE: 
+    	RETVAL = perl_png_get_image_[% what %] (Png);
+OUTPUT:
+	RETVAL
+[% END %]
+
+[% IF 0 %]
+void
+perl_png_set_rgb_to_gray (Png)
+	Image::PNG::Libpng Png;
+CODE: 
+    	perl_png_set_rgb_to_gray (Png);
+
+[% END %]
+
+int
+perl_png_get_channels (Png)
+	Image::PNG::Libpng Png;
+CODE: 
+    	RETVAL = perl_png_get_channels (Png);
+OUTPUT:
+	RETVAL
+
+int
+perl_png_get_bit_depth (Png)
+	Image::PNG::Libpng Png;
+CODE: 
+    	RETVAL = png_get_bit_depth (Png->png, Png->info);
+OUTPUT:
+	RETVAL
+
+int
+perl_png_get_interlace_type (Png)
+	Image::PNG::Libpng Png;
+CODE: 
+    	RETVAL = png_get_interlace_type (Png->png, Png->info);
+OUTPUT:
+	RETVAL

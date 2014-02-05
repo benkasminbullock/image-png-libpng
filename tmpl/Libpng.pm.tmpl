@@ -121,6 +121,14 @@ sub copy_png
     return $opng;
 }
 
+[% FOR what IN ['width', 'height'] %]
+sub [% what %]
+{
+    goto & get_image_[% what %];
+}
+[% END %]
+
+
 1;
 
 # Local Variables:

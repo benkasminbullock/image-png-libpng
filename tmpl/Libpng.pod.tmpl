@@ -450,6 +450,53 @@ This function does not correspond to anything in libpng. The names of
 the colour types are taken from those defined in the libpng header
 file, C<png.h>.
 
+[% FOR what IN ['width', 'height'] %]
+
+=head2 get_image_[% what %]
+
+    my $[% what %] = $png->get_image_[% what %] ();
+
+Get the image's [% what %] from the header.
+
+[% cor(fn="get_image_" _ $what) %]
+
+=head2 [% what %]
+
+    my $[% what %] = $png->[% what %] ();
+
+Alias for get_image_[% what %]. This is not exported, it's intended for use
+with the object only.
+
+[% END # what %]
+
+=head2 get_channels
+
+    my $channels = $png->get_channels ();
+
+Get the number of channels, from one to four. The return value is 1
+for colour type PNG_COLOR_TYPE_GRAY and PNG_COLOR_TYPE_PALETTE, 2 for
+PNG_COLOR_TYPE_GRAY_ALPHA, 3 for PNG_COLOR_TYPE_RGB and 4 for
+PNG_COLOR_TYPE_RGB_ALPHA or PNG_COLOR_TYPE_RGB with a filler byte.
+
+[% cor(fn="get_channels") %]
+
+=head2 get_bit_depth
+
+    my $bit_depth = $png->get_bit_depth ();
+
+Get the bit depth, the number of bits for one channel of one pixel.
+
+[% cor(fn="get_bit_depth") %]
+
+=head2 get_interlace_type
+
+    my $interlace_type = $png->get_interlace_type ();
+
+Get the interlace type. This is either PNG_INTERLACE_NONE or
+PNG_INTERLACE_ADAM7.
+
+[% cor(fn="get_interlace_type") %]
+
 =head1 Image data
 
 These functions deal with accessing the image data itself.
@@ -1314,7 +1361,7 @@ their function.
 
 [% cor(fn="set_packing") %]
 
-=head2 set_packing
+=head2 set_strip_16
 
     $png->set_strip_16 ();
 
@@ -1499,6 +1546,10 @@ program's data area between calls. So this module doesn't deal with
 png_write_chunk, png_write_end, png_write_info, png_write_row, or
 png_write_rows.
 
+=item Fixed point functions
+
+There is no support for the PNG fixed point functions in this Perl module.
+
 =item Other unsupported functions
 
 All libpng deprecated functions are not supported.
@@ -1543,11 +1594,25 @@ Other unsupported functions include
 
 =item png_get_filter_type
 
-=item png_get_channels
+=item png_get_io_ptr
 
 =item png_get_signature
 
 =item png_get_progressive_ptr
+
+=item png_get_valid
+
+=item png_get_x_offset_pixels
+
+=item png_get_x_pixels_per_meter
+
+=item png_get_y_offset_pixels
+
+=item png_get_y_pixels_per_meter
+
+=item png_get_user_width_max
+
+=item png_get_user_height_max
 
 =item png_set_filter_heuristics
 
@@ -1557,9 +1622,19 @@ Other unsupported functions include
 
 =item png_set_user_limits
 
-=item png_get_user_width_max
+=item png_set_rgb_to_gray
 
-=item png_get_user_height_max
+=item png_set_swap
+
+=item png_set_packswap
+
+=item png_set_cHRM_XYZ
+
+There is no Z value allowed in L</set_cHRM> at present.
+
+=item png_set_chunk_cache_max
+
+=item png_get_chunk_cache_max
 
 =back
 

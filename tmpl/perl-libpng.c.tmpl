@@ -2235,6 +2235,32 @@ static void perl_png_copy_row_pointers (perl_libpng_t * png, SV * row_pointers)
     png_set_rows (pngi, png->row_pointers);
 }
 
+#oline
+[% FOR what IN ['width', 'height'] %]
+static int
+perl_png_get_image_[% what %] (perl_libpng_t * png)
+{
+    return png_get_image_[% what %] (pngi);
+}
+[% END %]
+#line
+
+/*
+static void
+perl_png_set_rgb_to_gray (perl_libpng_t * png,)
+{
+    png_set_rgb_to_gray (png->png, );
+}
+*/
+
+static int
+perl_png_get_channels (perl_libpng_t * png)
+{
+    return png_get_channels (pngi);
+}
+
+#undef pngi
+
 /*
    Local Variables:
    mode: c
