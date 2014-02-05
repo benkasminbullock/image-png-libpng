@@ -111,12 +111,14 @@ This combines L</create_read_struct>, open, L</init_io>, and
 L</read_png>. The return value is the same as that of
 L</create_read_struct> with the entire PNG image already read in.
 
-The optional argument to L</read_png> can be specified using
-L</set_transforms>.
+The optional argument to L</read_png> can be specified using an
+optional C<transforms> argument:
+
+    my $png = read_png_file ('file.png', transforms => PNG_TRANSFORM_EXPAND);
 
 =head2 write_png_file
 
-     $png->write_png_file ('nice.png');
+    $png->write_png_file ('nice.png');
 
 This combines open, L</init_io>, and L</write_png> to write an entire
 PNG image out to a file. C<$png> must be the object created by
@@ -138,8 +140,7 @@ This is useful when image data is stored in a Perl scalar. For example
 
 [% example(eg="get-www-png") %]
 
-See also L</Input/output manipulation functions>. The optional
-argument to L</read_png> can be specified using L</set_transforms>.
+See also L</Input/output manipulation functions>.
 
 =head2 write_to_scalar
 
@@ -168,6 +169,18 @@ See also L</Input/output manipulation functions>.
 
 The optional argument to L</write_png> can be specified using
 L</set_transforms>.
+
+=head2 copy_png
+
+    my $outpng = $png->copy_png ();
+
+Copy a PNG from a read to a write structure. There are two kinds of
+object in this module, those created by L</create_read_struct> and
+those created by L</create_write_struct>. This just copies all the
+chunks from one to the other.
+
+
+
 
 =head2 set_transforms
 
@@ -571,9 +584,55 @@ references substituted for the C array of structs used in libpng.
     $png->set_text ($text_chunks);
 
 This sets the text chunks in an array reference C<$text_chunks>. [%
-wfirstarg %]. If it is called more than once, the chunks are not
-overwritten but appended to the existing ones. (This behaviour is
-copied from libpng itself.)
+wfirstarg %]. The input value is an array reference containing hash references. Each hash reference must have the following keys:
+
+=over
+
+=item key
+
+The "key" value for the text
+
+=item text
+
+The "text" value for the text.
+
+=back
+
+If the compression field is not set, a default value of
+PNG_TEXT_COMPRESSION_NONE is applied. The compression field can take the following values:
+
+=over
+
+=item PNG_TEXT_COMPRESSION_NONE
+
+=item PNG_TEXT_COMPRESSION_zTXt
+
+=item PNG_ITXT_COMPRESSION_NONE
+
+=item PNG_ITXT_COMPRESSION_zTXt
+
+=back
+
+Whether or not it's an ITXT field is also decided by the compression
+value.
+
+The C<text_length> value is
+generated from the C<text> input field. Optionally the following
+fields can be added:
+
+=over
+
+=item lang
+
+This can be set to the language's name, if the text chunk is iTXt.
+
+=item itxt_length
+
+=back
+
+If it is called more than once, the chunks are not overwritten but
+appended to the existing ones. (This behaviour is copied from libpng
+itself.)
 
     $png->set_text ([{compression => PNG_TEXT_COMPRESSION_NONE,
                       key => "Copyright",

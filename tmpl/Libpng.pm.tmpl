@@ -16,6 +16,7 @@ read_png_file
 write_png_file
 color_type_name
 get_internals
+copy_png
 /;
 
 our %EXPORT_TAGS = (
@@ -42,8 +43,11 @@ sub write_file
 
 sub read_png_file
 {
-    my ($file_name) = @_;
+    my ($file_name, %options) = @_;
     my $png = create_read_struct ();
+    if ($options{transforms}) {
+	$png->set_transforms ($options{transforms});
+    }
     open my $in, "<:raw", $file_name
         or croak "Cannot open '$file_name' for reading: $!";
     $png->init_io ($in);
@@ -84,9 +88,38 @@ sub get_chunk
 
 sub set_chunk
 {
-
+    my ($png, $chunk, $value) = @_;
+    if ($chunk eq 'IDAT') {
+	croak "Use get_rows";
+    }
+    if ($known_chunks{$chunk}) {
+	no strict 'refs';
+	my $sub = "set_$chunk";
+	return &$sub ($png, $value); 
+    }
+    croak "Unknown chunk $chunk";
 }
 
+sub copy_png
+{
+    my ($png) = @_;
+    my $opng = create_write_struct ();
+    my $valid = $png->get_valid ();
+    $opng->set_IHDR ($png->get_IHDR ());
+    for my $chunk (keys %$valid) {
+	if ($chunk eq 'IHDR') {
+	    next;
+	}
+	if ($chunk eq 'IDAT') {
+	    my $rows = get_rows ($png);
+	    $opng->set_rows ($rows);
+	}
+	elsif ($valid->{$chunk}) {
+	    $opng->set_chunk ($chunk, $png->get_chunk ($chunk));
+	}
+    }
+    return $opng;
+}
 
 1;
 

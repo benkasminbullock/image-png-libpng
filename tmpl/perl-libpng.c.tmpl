@@ -100,6 +100,7 @@ typedef perl_libpng_t * Image__PNG__Libpng;
         return &PL_sv_undef;                    \
     }
 
+//#define PERL_PNG_MESSAGES
 #undef PERL_PNG_MESSAGES
 
 /* Send a message. */
@@ -545,12 +546,21 @@ perl_png_set_text_from_hash (perl_libpng_t * png,
     unsigned int text_length;
     /* The return value of this function. */
     int ok = 1;
+    SV ** compression_sv_ptr;
 
     MESSAGE ("Putting it into something.");
 
     /* Check the compression field of the chunk */
 
-    HASH_FETCH_IV (chunk, compression);
+    compression_sv_ptr =
+	hv_fetch (chunk, "compression", strlen ("compression"), 0);
+    if (compression_sv_ptr) {
+	compression = SvIV (* compression_sv_ptr);
+    }
+    else {
+	MESSAGE ("Using default compression PNG_TEXT_COMPRESSION_NONE");
+	compression = PNG_TEXT_COMPRESSION_NONE;
+    }
     switch (compression) {
     case PNG_TEXT_COMPRESSION_NONE:
         break;
