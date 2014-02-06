@@ -92,7 +92,8 @@ typedef perl_libpng_t * Image__PNG__Libpng;
 
 #define UNUSED_ZERO_ARG 0
 
-/* Return an undefined value. */
+/* Return an undefined value. This is also going to raise an error if
+   the user wants it to, but the code is not here yet. */
 
 #define UNDEF {                                 \
         if (png->raise_undefined) {             \
@@ -100,8 +101,8 @@ typedef perl_libpng_t * Image__PNG__Libpng;
         return &PL_sv_undef;                    \
     }
 
-#define PERL_PNG_MESSAGES
-//#undef PERL_PNG_MESSAGES
+//#define PERL_PNG_MESSAGES
+#undef PERL_PNG_MESSAGES
 
 /* Send a message. */
 
@@ -1507,17 +1508,20 @@ static void perl_png_set_sPLT (perl_libpng_t * png, AV * sPLT_entries)
     unsigned name_length;
 
     num_spalettes = av_len (sPLT_entries) + 1;
+    MESSAGE ("There are %d palettes", num_spalettes);
     if (num_spalettes == 0) {
 	return;
     }
     GET_MEMORY (entries, num_spalettes, png_sPLT_t);
     for (i = 0; i < num_spalettes; i++) {
-	png_sPLT_t entry = {0};
+	png_sPLT_t * entry;
 	HV * perl_spalette;
 	SV ** sv;
-	AV * entries;
+	AV * perl_entries;
 	int nentries;
 	int j;
+	entry = entries + i;
+	MESSAGE ("Copying palette %d", i);
 	sv = av_fetch (sPLT_entries, i, 0);
 	if (SvOK (* sv) && SvROK (* sv) && SvTYPE (SvRV (* sv)) == SVt_PVHV) {
 	    perl_spalette = (HV *) SvRV (* sv);
@@ -1526,22 +1530,25 @@ static void perl_png_set_sPLT (perl_libpng_t * png, AV * sPLT_entries)
 	    perl_png_warn (png, "Not a hash reference at position %d", i);
 	    continue;
 	}
-	HASH_FETCH_PV_MEMBER (perl_spalette, name, (& entry));
-	HASH_FETCH_IV_MEMBER (perl_spalette, depth, (& entry));
+	HASH_FETCH_PV_MEMBER (perl_spalette, name, entry);
+	HASH_FETCH_IV_MEMBER (perl_spalette, depth, entry);
+	MESSAGE ("name = %s depth = %d", entry->name, entry->depth);
 	sv = hv_fetch (perl_spalette, "entries", strlen ("entries"), 0);
 	if (SvOK (* sv) && SvROK (* sv) && SvTYPE (SvRV (* sv)) == SVt_PVAV) {
-	    entries = (AV *) SvRV (* sv);
+	    perl_entries = (AV *) SvRV (* sv);
 	}
 	else {
 	    perl_png_warn (png, "Could not get entries at position %d", i);
 	    continue;
 	}
-	nentries = av_len (entries) + 1;
-	GET_MEMORY (entry.entries, nentries, png_sPLT_entry);
+	nentries = av_len (perl_entries) + 1;
+	entry->nentries = nentries;
+	GET_MEMORY (entry->entries, nentries, png_sPLT_entry);
+	MESSAGE ("Copying %d entries", nentries);
 	for (j = 0; j < nentries; j++) {
 	    png_sPLT_entry * e;
 	    HV * perl_entry;
-	    sv = av_fetch (entries, j, 0);
+	    sv = av_fetch (perl_entries, j, 0);
 	    if (SvOK (* sv) && SvROK (* sv) &&
 		SvTYPE (SvRV (* sv)) == SVt_PVHV) {
 		perl_entry = (HV *) SvRV (* sv);
@@ -1550,7 +1557,8 @@ static void perl_png_set_sPLT (perl_libpng_t * png, AV * sPLT_entries)
 		perl_png_warn (png, "Could not get entry %d", j);
 		continue;
 	    }
-	    e = entry.entries + j;
+	    MESSAGE ("Copying entry %d", j);
+	    e = entry->entries + j;
 #oline
  	    [% FOR field IN ['red', 'green', 'blue', 'alpha', 'frequency'] -%]
 	    HASH_FETCH_IV_MEMBER (perl_entry, [% field %], e);
@@ -1558,8 +1566,12 @@ static void perl_png_set_sPLT (perl_libpng_t * png, AV * sPLT_entries)
 #line
 	}
     }
+    MESSAGE ("Setting the entries");
     png_set_sPLT (pngi, entries, num_spalettes);
-    Safefree (entries);
+    for (i = 0; i < num_spalettes; i++) {
+	PERL_PNG_FREE (entries[i].entries);
+    }
+    PERL_PNG_FREE (entries);
 #else
     UNSUPPORTED (sPLT);
 #endif /* PNG_sPLT_SUPPORTED */
@@ -1957,7 +1969,7 @@ static void perl_png_set_rows (perl_libpng_t * png, AV * rows)
         SV * row_i;
         row_i = * av_fetch (rows, i, 0);
         row_pointers[i] = (unsigned char *) SvPV (row_i, length);
-        MESSAGE ("%d %d\n", i, length);
+        MESSAGE ("Copying row %d length %d\n", i, length);
     }
     png_set_rows (pngi, row_pointers);
     /* "png" keeps a record of the allocated memory in order to free
@@ -2173,7 +2185,8 @@ static void perl_png_set_unknown_chunks (perl_libpng_t * png, AV * chunk_list)
 int perl_png_libpng_supports (const char * what)
 {
 #oline
-[%- FOR type IN ['iTXt','UNKNOWN_CHUNKS', 'zTXt', 'tEXt', 'pCAL', 'iCCP', 'sPLT'] %]
+[%- FOR type IN ['iTXt','UNKNOWN_CHUNKS', 'zTXt', 'tEXt', 'pCAL', 'iCCP',
+		 'sPLT', 'USER_LIMITS'] %]
     if (strcmp (what, "[% type %]") == 0) {
 #ifdef PNG_[% type %]_SUPPORTED
         return 1;
@@ -2387,6 +2400,34 @@ perl_png_get_channels (perl_libpng_t * png)
 {
     return png_get_channels (pngi);
 }
+
+static void
+perl_png_set_user_limits (perl_libpng_t * png,
+			  unsigned int user_width_max,
+			  unsigned int user_height_max)
+{
+#ifdef PNG_USER_LIMITS_SUPPORTED
+    png_set_user_limits (png->png, user_width_max, user_height_max);
+#else
+    UNSUPPORTED (USER_LIMITS);
+#endif
+}
+
+[% FOR what IN ['width', 'height'] %]
+static SV *
+perl_png_get_user_[% what %]_max (perl_libpng_t * png)
+{
+#ifdef PNG_USER_LIMITS_SUPPORTED
+    int uwm;
+
+    uwm = png_get_user_[% what %]_max (png->png);
+    return newSViv (uwm);
+#else
+    UNSUPPORTED (USER_LIMITS);
+    UNDEF;
+#endif
+}
+[% END # what %]
 
 #undef pngi
 

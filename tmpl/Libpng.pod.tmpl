@@ -175,9 +175,10 @@ L</set_transforms>.
     my $outpng = $png->copy_png ();
 
 Copy a PNG from a read to a write structure. There are two kinds of
-object in this module, those created by L</create_read_struct> and
-those created by L</create_write_struct>. This just copies all the
-chunks from one to the other.
+object created by this module, "read a png" objects created by
+L</create_read_struct> and "write a png" objects created by
+L</create_write_struct>. This copies all the valid chunks from a read
+structure to a write structure.
 
 
 
@@ -458,7 +459,7 @@ file, C<png.h>.
 
 Get the image's [% what %] from the header.
 
-[% cor(fn="get_image_" _ $what) %]
+[% cor(fn="get_image_" _ what) %]
 
 =head2 [% what %]
 
@@ -876,6 +877,25 @@ filter types.
 [% cor(fn="set_filter") %] with the second (unused)
 argument omitted. [% unused %]
 
+=head2 set_user_limits
+
+    $png->set_user_limits ($width, $height);
+
+[% cor(fn="set_user_limits") %]
+
+[% FOR what IN ['width', 'height'] %]
+
+=head2 get_user_[% what %]_max
+
+    $png->get_user_[% what %]_max ();
+
+Get the maximum [% what %] the user will allow, as set by
+L</set_user_limits>.
+
+[% cor(fn="get_user_" _ what _ "_max") %]
+
+[% END # what %]
+
 =head1 Other chunks
 
 These routines deal with the other possible chunks of PNGs.
@@ -1267,6 +1287,54 @@ L</get_sCAL>.
 function rather than C<set_sCAL> and the input values are the strings
 themselves rather than numbers.
 
+=head2 sPLT
+
+See [% spec("11sPLT") %]  of the PNG specification.
+
+=head3 get_sPLT
+
+Provisionally, see L</set_sPLT> for documentation, the return value is
+like the input of that.
+
+=head3 set_sPLT
+
+    $png->set_sPLT ([{ name => 'palette', depth => 8, entries => [{red => 1, blue => 2},]}]);
+
+Set suggested palettes. The input is an array reference containing hash references with the following fields:
+
+=over
+
+=item name
+
+The name of the suggested palette.
+
+=item depth
+
+The depth of the suggested palette.
+
+=item entries
+
+The entries of the palette. This is an array reference containing hash references with keys as follows:
+
+=over
+
+=item red
+
+=item blue
+
+=item green
+
+=item frequency
+
+=item alpha
+
+=back
+
+=back
+
+The field C<nentries> which is returned by L</get_sPLT> does not need
+to be specified, it is calculated from the length of C<entries>.
+
 =head1 UNIMPLEMENTED CHUNKS
 
 These chunks have skeleton routines but the actual reading and writing
@@ -1281,18 +1349,6 @@ See [% spec("11tRNS") %]  of the PNG specification.
 Not implemented.
 
 =head3 set_tRNS
-
-Not implemented.
-
-=head2 sPLT
-
-See [% spec("11sPLT") %]  of the PNG specification.
-
-=head3 get_sPLT
-
-Not implemented.
-
-=head3 set_sPLT
 
 Not implemented.
 
@@ -1582,14 +1638,6 @@ Other unsupported functions include
 
 =item png_chunk_benign_error
 
-=item png_get_image_width
-
-=item png_get_image_height
-
-=item png_get_bit_depth
-
-=item png_get_color_type
-
 =item png_get_interlace_type
 
 =item png_get_compression_type
@@ -1604,8 +1652,6 @@ Other unsupported functions include
 
 =item png_get_progressive_ptr
 
-=item png_get_valid
-
 =item png_get_x_offset_pixels
 
 =item png_get_x_pixels_per_meter
@@ -1614,17 +1660,11 @@ Other unsupported functions include
 
 =item png_get_y_pixels_per_meter
 
-=item png_get_user_width_max
-
-=item png_get_user_height_max
-
 =item png_set_filter_heuristics
 
 =item png_set_quantize
 
 =item png_set_tRNS_to_alpha
-
-=item png_set_user_limits
 
 =item png_set_rgb_to_gray
 

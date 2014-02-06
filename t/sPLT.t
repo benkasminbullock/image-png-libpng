@@ -17,9 +17,11 @@ for my $file (@files) {
     my $png = read_png_file ($ffile);
     ok ($png);
 #    print Dumper ($png);
-#    $png->set_verbosity (1);
     my $splt = $png->get_sPLT ();
     ok ($splt);
 #    print Dumper ($splt);
+#    $png->set_verbosity (1);
+    my $out = copy_png ($png, verbosity => 0);
+    ok ($out);
 }
 done_testing ();

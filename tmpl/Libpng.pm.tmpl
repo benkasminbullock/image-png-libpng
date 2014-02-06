@@ -102,8 +102,11 @@ sub set_chunk
 
 sub copy_png
 {
-    my ($png) = @_;
+    my ($png, %options) = @_;
     my $opng = create_write_struct ();
+    if ($options{verbosity}) {
+	$opng->set_verbosity ($options{verbosity});
+    }
     my $valid = $png->get_valid ();
     $opng->set_IHDR ($png->get_IHDR ());
     for my $chunk (keys %$valid) {

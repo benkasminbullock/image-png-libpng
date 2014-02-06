@@ -414,3 +414,23 @@ CODE:
     	RETVAL = png_get_interlace_type (Png->png, Png->info);
 OUTPUT:
 	RETVAL
+
+int
+perl_png_set_user_limits (Png, w, h)
+	Image::PNG::Libpng Png;
+	unsigned w;
+	unsigned h;
+CODE: 
+	perl_png_set_user_limits (Png, w, h);
+
+[% FOR what IN ['width', 'height'] %]
+SV *
+perl_png_get_user_[% what %]_max (Png)
+	Image::PNG::Libpng Png;
+CODE:
+	RETVAL = perl_png_get_user_[% what %]_max (Png);
+OUTPUT:
+	RETVAL
+
+[% END # what %]
+
