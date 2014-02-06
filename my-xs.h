@@ -35,6 +35,12 @@
         field = SvPV (field_sv, field ## _length);              \
     }
 
+#define HASH_FETCH_PV_MEMBER(hash,field,str) {			\
+        SV * field_sv;                                          \
+        HASH_FETCH (hash, field);                               \
+        str->field = SvPV (field_sv, field ## _length);		\
+    }
+
 #define HASH_FETCH_AV(hash,field) {			\
 	SV * field_sv;					\
 	HASH_FETCH (hash, field);			\
@@ -47,18 +53,28 @@
 	}						\
     }
 
-#define HASH_STORE_IV(hash,field)                                       \
-    (void) hv_store (hash, #field, strlen (#field), newSViv (field), 0)
+#define HASH_STORE(hash,field,something)				\
+    (void) hv_store (hash, #field, strlen (#field), something, 0)
 
 #define HASH_STORE_PV(hash,field)                                       \
     (void) hv_store (hash, #field, strlen (#field),			\
 		     newSVpv (field, strlen (field)), 0)
 
+#define HASH_STORE_PV_MEMBER(hash,field,str)				\
+    (void) hv_store (hash, #field, strlen (#field),			\
+		     newSVpv (str->field, strlen (str->field)), 0)
+
 #define HASH_STORE_AV(hash,field)                                       \
-    (void) hv_store (hash, #field, strlen (#field), SvRV (field), 0)
+    (void) hv_store (hash, #field, strlen (#field), \
+		     newRV_inc ((SV *) field), 0)
+
+#define HASH_STORE_IV(hash,field)                            \
+    (void) hv_store (hash, #field, strlen (#field),			\
+		     newSViv (field), 0)
 
 #define HASH_STORE_IV_MEMBER(hash,field,str)                            \
-    (void) hv_store (hash, #field, strlen (#field), newSViv (str.field), 0)
+    (void) hv_store (hash, #field, strlen (#field),			\
+		     newSViv (str->field), 0)
 
 #define ARRAY_FETCH_PV(array,n,value,length)	\
     {						\

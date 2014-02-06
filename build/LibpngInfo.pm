@@ -427,7 +427,7 @@ our @chunks = (
 {
     name => 'sPLT',
     in_valid => 1,
-    auto_type => 'hv',
+    auto_type => 'av',
 },
 
 {

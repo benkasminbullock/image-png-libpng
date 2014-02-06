@@ -110,7 +110,7 @@ for my $file (@files) {
 	open my $in, "<:encoding(utf8)", "$config{tmpl_dir}/$template"
 	    or die $!;
 	while (<$in>) {
-	    s/^(#line)$/sprintf "$1 %d \"%s\"", $. + 1, $template/e; 
+	    s/^(#line)$/sprintf "$1 %d \"tmpl\/%s\"", $. + 1, $template/e; 
 	    $text .= $_;
 	}
 	my $outtext;

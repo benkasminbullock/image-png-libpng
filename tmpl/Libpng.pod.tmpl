@@ -1337,6 +1337,10 @@ libpng.
 
 Does the libpng support the L</pCAL> extension?
 
+=item sPLT
+
+Does the libpng support L<sPLT> chunks?
+
 =item UNKNOWN_CHUNKS
 
 Does the libpng support unknown chunks (see L<Private chunks>)?
@@ -1373,6 +1377,12 @@ their function.
 
 [% cor(fn="set_expand") %]
 
+=head2 set_gray_to_rgb
+
+    $png->set_gray_to_rgb ();
+
+[% cor(fn="set_gray_to_rgb") %]
+
 =head2 get_tRNS_palette
 
     $png->get_tRNS_palette ();
@@ -1384,12 +1394,6 @@ This is not a libpng-equivalent function.
     $png->set_PLTE_pointer ();
 
 This is not a libpng-equivalent function.
-
-=head2 set_gray_to_rgb
-
-    $png->set_gray_to_rgb ();
-
-[% cor(fn="set_gray_to_rgb") %]
 
 =head1 ACCESS FUNCTIONS
 
