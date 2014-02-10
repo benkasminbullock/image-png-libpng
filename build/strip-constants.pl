@@ -23,7 +23,7 @@ my %macros;
     open my $input, "<", $input_file;
     my $text = <$input>;
     close $input;
-    while ($text =~ /^\#define\s+
+    while ($text =~ /^\#\s*define\s+
                      (PNG_\w+)\s+
                      (
                          (?:0[xX]|-)?
@@ -35,6 +35,7 @@ my %macros;
                      )
                     /gxsm) {
         my ($macro, $value) = ($1, $2);
+	print "$macro\n";
         $value =~ s/\(png.*\)//;
 
         # Now we reject constants which aren't necessary for Perl.
