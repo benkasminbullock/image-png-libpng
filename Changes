@@ -1,3 +1,7 @@
+0.31_01 2014-02-14
+
+* Changes to a C file to compile successfully on SunOS/Solaris
+
 0.31 2014-02-11
 
 * Changes to XS access routines "get_internals", "copy_row_pointers".
