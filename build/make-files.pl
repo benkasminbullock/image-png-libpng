@@ -33,7 +33,6 @@ my $tt = Template->new (
 my @libpng_diagnostics = ImagePNGBuild::libpng_diagnostics (\%config);
 
 my @files = qw/
-                  Const.pm
                   Libpng.pm
                   Libpng.pod
                   Libpng.t
@@ -83,9 +82,6 @@ for my $file (@files) {
     elsif ($file eq 'Libpng.pm') {
         $output = $config{main_module_out};
     }
-    elsif ($file eq 'Const.pm') {
-        $output = $config{const_out};
-    }
     elsif ($file eq 'Libpng.pod') {
         $output = $config{main_pod_out};
     }
@@ -110,7 +106,13 @@ for my $file (@files) {
 	open my $in, "<:encoding(utf8)", "$config{tmpl_dir}/$template"
 	    or die $!;
 	while (<$in>) {
-	    s/^(#line)$/sprintf "$1 %d \"tmpl\/%s\"", $. + 1, $template/e; 
+
+# This is better but causes errors on SunOS/Solaris compilers:
+# http://www.cpantesters.org/cpan/report/f25ae7b0-94c3-11e3-ae04-8631d666d1b8
+
+#	    s/^(#line)$/sprintf "$1 %d \"tmpl\/%s\"", $. + 1, $template/e; 
+
+	    s/^(#line)$/sprintf "$1 %d \"%s\"", $. + 1, $template/e; 
 	    $text .= $_;
 	}
 	my $outtext;

@@ -351,10 +351,8 @@ PREINIT:
 PPCODE:
 	png = Png->png;
 	info = Png->info;
-	png_sv = newSV (0);
-	info_sv = newSV (0);
-	sv_setref_pv(png_sv, "Image::PNG::Libpng::png_struct", png);
-	sv_setref_pv(info_sv, "Image::PNG::Libpng::png_info", info);
+	png_sv = newSViv (PTR2IV (png));
+	info_sv = newSViv (PTR2IV (info));
 	XPUSHs(sv_2mortal(png_sv));
 	XPUSHs(sv_2mortal(info_sv));
 

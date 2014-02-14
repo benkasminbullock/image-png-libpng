@@ -1479,8 +1479,8 @@ like the following:
 	png_struct * cpng;
 	png_info * cinfo;
     CODE:
-	cpng = INT2PTR (png_struct *, SvIV ((SV *) SvRV (png)));
-	cinfo = INT2PTR (png_info *, SvIV ((SV *) SvRV (info)));
+	cpng = INT2PTR (png_struct *, SvIV (png));
+	cinfo = INT2PTR (png_info *, SvIV (info));
 
 An example exists in L<Image::PNG::Cairo>.    
 
@@ -1498,12 +1498,11 @@ written.
 The Perl scalar C<$row_pointers> should be set up something like the
 following (where C<rp> is the C pointer):
 
-    RETVAL = newSV (0);
-    xv_setref_pv (RETVAL, "Image::PNG::Libpng::row_pointers", rp);
+    RETVAL = newSViv (PTR2IV (rp));
 
 It's extracted from the Perl scalar using
 
-    rp = INT2PTR (png_byte **, (SV *) SvRV (row_pointers));
+    rp = INT2PTR (png_byte **, SvIV (row_pointers));
 
 where row_pointers is the C<SV *> corresponding to C<$row_pointers> in
 the Perl script.

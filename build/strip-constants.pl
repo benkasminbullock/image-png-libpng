@@ -35,7 +35,6 @@ my %macros;
                      )
                     /gxsm) {
         my ($macro, $value) = ($1, $2);
-	print "$macro\n";
         $value =~ s/\(png.*\)//;
 
         # Now we reject constants which aren't necessary for Perl.
@@ -67,7 +66,7 @@ my %macros;
 
 my %config = ImagePNGBuild::read_config;
 
-my $output_file = "$config{submodule_dir}/Const.pm";
+my $output_file = "lib/Image/PNG/Const.pm";
 
 my $tt = Template->new (
     ABSOLUTE => 1,

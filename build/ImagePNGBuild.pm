@@ -31,7 +31,6 @@ sub read_config
     $config{base_underscore} =~ s/:/_/g;
     $config{out_dir} =~ s/::/\//g;
 #    print "Output directory is $config{out_dir}.\n";
-    $config{submodule_dir} = "lib/$config{out_dir}";
     $config{main_module_out} = "lib/$config{out_dir}.pm";
     $config{const_out} = "lib/Image/PNG/Const.pm";
     $config{main_pod_out} = "lib/$config{out_dir}.pod";

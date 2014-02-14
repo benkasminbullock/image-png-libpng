@@ -1,11 +1,11 @@
+CONST=	lib/Image/PNG/Const.pm
+
 TOUT=perl-libpng.c Libpng.xs \
 	lib/Image/PNG/Libpng.pod \
 	lib/Image/PNG/Libpng.pm \
-	lib/Image/PNG/Const.pm \
 	Makefile.PL typemap t/PLTE.t
 
-TIN=    tmpl/Const.pm.tmpl \
-	tmpl/Libpng.pm.tmpl \
+TIN=    tmpl/Libpng.pm.tmpl \
 	tmpl/Libpng.pod.tmpl \
 	build/LibpngInfo.pm \
 	tmpl/author \
@@ -20,14 +20,16 @@ TIN=    tmpl/Const.pm.tmpl \
 	tmpl/other_modules \
 	build/make-files.pl
 
-all:	$(TOUT)
+all:	$(TOUT) $(CONST)
+
+$(CONST): tmpl/Const.pm.tmpl build/strip-constants.pl
+	build/strip-constants.pl
 
 $(TOUT): $(TIN)
 	build/make-files.pl
 
 clean:
-	-make clean
-	-rm -rf $(TOUT)
+	-rm -rf $(TOUT) $(CONST)
 	-rm -rf Image-PNG-Libpng-0.*/ Image-PNG-Libpng-0.*.tar.gz
 	-rm -f README
 

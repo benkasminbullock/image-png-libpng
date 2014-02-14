@@ -2368,7 +2368,7 @@ static void perl_png_copy_row_pointers (perl_libpng_t * png, SV * row_pointers)
 
     height = png_get_image_height (pngi);
 
-    crow_pointers = INT2PTR (png_byte **, SvIV ((SV *) SvRV (row_pointers)));
+    crow_pointers = INT2PTR (png_byte **, SvIV (row_pointers));
 
     GET_MEMORY (png->row_pointers, height, png_byte *);
     for (i = 0; i < height; i++) {
