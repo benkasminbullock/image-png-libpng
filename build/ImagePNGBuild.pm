@@ -55,7 +55,10 @@ sub get_functions
     my @functions;
     while (<$input>) {
         if (/^\S+.*?perl_png_(\w+)\s*\(/) {
-            push @functions, $1;
+	    my $f = $1;
+	    if ($f !~ /DESTROY/) {
+		push @functions, $1;
+	    }
         }
     }
     close $input;
