@@ -21,9 +21,11 @@
 #endif /* version or fixed point */
 #endif /* PNG_sCAL_SUPPORTED */
 
-/* Common structure for carrying around all our baggage. */
+/* Container for PNG information. This corresponds to an
+   "Image::PNG::Libpng" in Perl. */
 
-typedef struct perl_libpng {
+typedef struct perl_libpng
+{
     png_structp png;
     png_infop info;
     png_infop end_info;

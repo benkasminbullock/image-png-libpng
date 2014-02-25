@@ -1,4 +1,4 @@
-#line 2 "tmpl/Libpng.xs.tmpl"
+#line 2 "Libpng.xs.tmpl"
 #include "EXTERN.h"
 #include "perl.h"
 #include "XSUB.h"
@@ -432,3 +432,26 @@ OUTPUT:
 
 [% END # what %]
 
+void
+perl_png_set_image_data (Png, image_data, own = & PL_sv_undef)
+	Image::PNG::Libpng Png;
+	void * image_data;
+	SV * own;
+CODE:
+	if (Png->type != perl_png_write_obj) {
+		perl_png_error (Png, "Cannot set image data in read PNG");
+	}
+	Png->image_data = image_data;
+	Png->memory_gets++;
+
+void
+perl_png_set_row_pointers (Png, row_pointers)
+	Image::PNG::Libpng Png;
+	SV * row_pointers;
+CODE:
+	if (Png->type != perl_png_write_obj) {
+		perl_png_error (Png, "Cannot set row pointers in read PNG");
+	}
+	Png->row_pointers = INT2PTR (png_bytepp, SvIV (row_pointers));
+        png_set_rows (Png->png, Png->info, Png->row_pointers);
+	Png->memory_gets++;

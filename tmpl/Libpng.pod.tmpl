@@ -1488,12 +1488,11 @@ An example exists in L<Image::PNG::Cairo>.
 
     $png->copy_row_pointers ($row_pointers);
 
-This is a routine which allows an XS module communicating with
-Image::PNG::Libpng to directly set the value of the row pointers for
-the PNG image. The memory is copied so whatever is in the row pointers
-can be freed immediately after calling this. However, the image data
-it points to is not copied, so this needs to be valid until the PNG is
-written.
+This is allows XS routines to directly set the value of the row
+pointers for the PNG image. The memory is copied so whatever is in the
+row pointers can be freed immediately after calling this. However, the
+image data it points to is not copied, so this needs to be valid until
+the PNG is written.
 
 The Perl scalar C<$row_pointers> should be set up something like the
 following (where C<rp> is the C pointer):
@@ -1505,7 +1504,31 @@ It's extracted from the Perl scalar using
     rp = INT2PTR (png_byte **, SvIV (row_pointers));
 
 where row_pointers is the C<SV *> corresponding to C<$row_pointers> in
-the Perl script.
+the Perl script. See also L</set_row_pointers> which does the same
+thing but takes ownership of the memory.
+
+=head2 set_image_data
+
+    $png->set_image_data ($image_data);
+
+Set the internal image data pointer to C<$image_data>. C<$image_data>
+should contain a pointer to memory stored as an SvIV allocated with
+Newx or a similar function. This transfers ownership of the memory to
+C<$png>, which will free it with Safefree when C<$png> is
+destroyed. Calling this function with any value does not actually
+change the content of the PNG image itself.
+
+=head2 set_row_pointers
+
+    $png->set_row_pointers ($row_pointers);
+
+This sets the rows of the PNG image to C<$row_pointers> using
+C<png_set_rows>. C<$row_pointers> must contain a pointer to memory
+stored as an SvIV allocated with a Perl memory allocator like C<Newx>
+or a similar function. This also transfers ownership of the memory to
+C<$png>, which will free it with C<Safefree> when C<$png> is
+destroyed. See also L</copy_row_pointers>, which does the same thing
+except for the freeing of the memory.
 
 =head1 EXPORTS
 
