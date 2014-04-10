@@ -1,3 +1,7 @@
+0.34 2014-04-11
+
+* Plug memory leak
+
 0.33 2014-02-21
 
 * New functions "set_row_pointers" and "set_image_data" for access to

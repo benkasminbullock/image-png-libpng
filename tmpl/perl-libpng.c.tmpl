@@ -512,10 +512,10 @@ perl_png_get_text (perl_libpng_t * png)
             MESSAGE ("text %d:\n", i);
             
             hash = perl_png_textp_to_hash (png, text_ptr + i);
-            hash_ref = newRV_inc ((SV *) hash);
+            hash_ref = newRV_noinc ((SV *) hash);
             av_push (text_chunks, hash_ref);
         }
-        text_ref = newRV_inc ((SV *) text_chunks);
+        text_ref = newRV_noinc ((SV *) text_chunks);
         return text_ref;
     }
     else {
@@ -732,7 +732,7 @@ perl_png_get_tIME (perl_libpng_t * png)
         HV * time;
         time = newHV ();
         perl_png_timep_to_hash (mod_time, time);
-        return newRV_inc ((SV *) time);
+        return newRV_noinc ((SV *) time);
     }
     else {
         UNDEF;
@@ -990,7 +990,7 @@ perl_png_get_IHDR (perl_libpng_t * png)
     HASH_STORE_IV (IHDR, compression_method);
     HASH_STORE_IV (IHDR, filter_method);
 
-    return newRV_inc ((SV *) IHDR);
+    return newRV_noinc ((SV *) IHDR);
 }
 
 /* Set the IHDR of a PNG image from the values specified in a Perl
@@ -1118,7 +1118,7 @@ perl_png_colours_to_av (png_colorp colours, int n_colours)
         PERL_PNG_STORE_COLOUR (green);
         PERL_PNG_STORE_COLOUR (blue);
 #undef PERL_PNG_STORE_COLOUR
-        av_push (perl_colours, newRV ((SV *) palette_entry));
+        av_push (perl_colours, newRV_noinc ((SV *) palette_entry));
     }
     return perl_colours;
 }
@@ -1138,7 +1138,7 @@ perl_png_get_PLTE (perl_libpng_t * png)
         UNDEF;
     }
     perl_colours = perl_png_colours_to_av (colours, n_colours);
-    return newRV_inc ((SV *) perl_colours);
+    return newRV_noinc ((SV *) perl_colours);
 }
 
 /* Set the palette chunk of a PNG image to the palette described in
@@ -1242,7 +1242,7 @@ static SV * perl_png_get_bKGD (perl_libpng_t * png)
     if (VALID(bKGD)) {
         png_color_16p background;
         if (png_get_bKGD (pngi, & background)) {
-            return newRV_inc ((SV *) perl_png_color_16_to_hv (background));
+            return newRV_noinc ((SV *) perl_png_color_16_to_hv (background));
         }
     }
     UNDEF;
@@ -1296,7 +1296,7 @@ static SV * perl_png_get_pCAL (perl_libpng_t * png)
 	}
 	HASH_STORE_AV (ice, params);
     }
-    return newRV_inc ((SV *) ice);
+    return newRV_noinc ((SV *) ice);
 #else
     UNSUPPORTED(pCAL);
     UNDEF;
@@ -1381,7 +1381,7 @@ static SV * perl_png_get_iCCP (perl_libpng_t * png)
 	HASH_STORE_PV (ice, name);
 	profile_sv = newSVpv ((char *) profile, proflen);
 	(void) hv_store (ice, "profile", strlen ("profile"), profile_sv, 0);
-        return newRV_inc ((SV *) ice);
+        return newRV_noinc ((SV *) ice);
     }
     UNDEF;
 #else /* PNG_iCCP_SUPPORTED */
@@ -1424,7 +1424,7 @@ static SV * perl_png_get_tRNS (perl_libpng_t * png)
     if (VALID (tRNS)) {
         HV * ice;
         ice = newHV ();
-        return newRV_inc ((SV *) ice);
+        return newRV_noinc ((SV *) ice);
     }
     UNDEF;
 }
@@ -1458,7 +1458,7 @@ perl_png_spalette_to_hv (png_sPLT_tp spalette)
 	HASH_STORE_IV_MEMBER (perl_entry, [% field %], entry);
 	[% END %]
 #line
-	av_push (entries, newRV_inc ((SV *) perl_entry));
+	av_push (entries, newRV_noinc ((SV *) perl_entry));
     }
     HASH_STORE_AV (perl_spalette, entries);
     return perl_spalette;
@@ -1490,9 +1490,9 @@ static SV * perl_png_get_sPLT (perl_libpng_t * png)
 	spalette = spalettes + i;
 	MESSAGE ("Getting suggested palette %d", i);
 	perl_spalette = perl_png_spalette_to_hv (spalette);
-	av_push (perl_spalettes, newRV ((SV *) perl_spalette));
+	av_push (perl_spalettes, newRV_noinc ((SV *) perl_spalette));
     }
-    return newRV_inc ((SV *) perl_spalettes);
+    return newRV_noinc ((SV *) perl_spalettes);
 #else
     UNSUPPORTED (sPLT);
     UNDEF;
@@ -1592,7 +1592,7 @@ static SV * perl_png_get_sCAL (perl_libpng_t * png)
 	HASH_STORE_IV (ice, unit);
 	HASH_STORE_PV (ice, width);
 	HASH_STORE_PV (ice, height);
-        return newRV_inc ((SV *) ice);
+        return newRV_noinc ((SV *) ice);
     }
     UNDEF;
 #else /* PERL_PNG_sCAL_s_SUPPORTED */
@@ -1652,7 +1652,7 @@ static SV * perl_png_get_hIST (perl_libpng_t * png)
 	for (i = 0; i < n_colours; i++) {
 	    av_push (hist_av, newSViv (hist[i]));
 	}
-	return newRV_inc ((SV *) hist_av);
+	return newRV_noinc ((SV *) hist_av);
     }
     UNDEF;
 #else
@@ -1676,7 +1676,7 @@ static SV * perl_png_get_sBIT (perl_libpng_t * png)
 	HASH_STORE_IV_MEMBER (sig_bit, [% colour %], (& colours));
 	[% END %]
 #line
-        return newRV_inc ((SV *) sig_bit);
+        return newRV_noinc ((SV *) sig_bit);
     }
     UNDEF;
 }
@@ -1701,7 +1701,7 @@ static SV * perl_png_get_oFFs (perl_libpng_t * png)
         HASH_STORE_IV (offset, x_offset);
         HASH_STORE_IV (offset, y_offset);
         HASH_STORE_IV (offset, unit_type);
-        return newRV_inc ((SV *) offset);
+        return newRV_noinc ((SV *) offset);
     }
     UNDEF;
 }
@@ -1731,7 +1731,7 @@ static SV * perl_png_get_pHYs (perl_libpng_t * png)
         HASH_STORE_IV (phys, res_x);
         HASH_STORE_IV (phys, res_y);
         HASH_STORE_IV (phys, unit_type);
-        return newRV_inc ((SV *) phys);
+        return newRV_noinc ((SV *) phys);
     }
     UNDEF;
 }
@@ -1773,7 +1773,7 @@ static SV * perl_png_get_tRNS_palette (perl_libpng_t * png)
             SV * trans_i = newSViv (png_trans[i]);
             av_push (perl_trans, trans_i);
         }
-        return newRV_inc ((SV *) perl_trans);
+        return newRV_noinc ((SV *) perl_trans);
     }
     UNDEF;
 }
@@ -1813,7 +1813,7 @@ static SV * perl_png_get_valid (perl_libpng_t * png)
 #line
 #undef V
 
-    return newRV_inc ((SV *) perl_valid);
+    return newRV_noinc ((SV *) perl_valid);
 }
 
 /*  ___                                  _       _        
@@ -1871,7 +1871,7 @@ perl_png_get_rows (perl_libpng_t * png)
     perl_rows = av_make (height, row_svs);
     MESSAGE ("There are %d elements in the array.\n", (int) av_len (perl_rows));
     PERL_PNG_FREE (row_svs);
-    return newRV_inc ((SV *) perl_rows);
+    return newRV_noinc ((SV *) perl_rows);
 }
 
 static void
@@ -2092,10 +2092,10 @@ static SV * perl_png_get_unknown_chunks (perl_libpng_t * png)
             STORE(data);
             STORE(location);
 #undef STORE
-            perl_chunk_ref = newRV_inc ((SV *) perl_chunk);
+            perl_chunk_ref = newRV_noinc ((SV *) perl_chunk);
             av_push (chunk_list, perl_chunk_ref);
         }
-        return newRV_inc ((SV *) chunk_list);
+        return newRV_noinc ((SV *) chunk_list);
     }
 #else
     UNSUPPORTED(READ_UNKNOWN_CHUNKS);
@@ -2328,7 +2328,7 @@ static SV * perl_png_get_cHRM (perl_libpng_t * png)
                          newSVnv ([% key %]), 0);
 [% END -%]
 #line
-        return newRV_inc ((SV *) ice);
+        return newRV_noinc ((SV *) ice);
     }
     UNDEF;
 }
