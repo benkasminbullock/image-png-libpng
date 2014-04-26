@@ -374,7 +374,7 @@ our @chunks = (
 {
     name => 'tRNS',
     in_valid => 1,
-    auto_type => 'hv',
+    auto_type => 'sv',
 },
 
 {
@@ -480,6 +480,7 @@ for my $colour (qw/white red green blue/) {
 # List of colours which are in png_color_8 or png_color_16.
 
 my @colours = qw/red green blue gray alpha/;
+my @noalpha = qw/red green blue gray/;
 
 sub template_vars
 {
@@ -491,6 +492,7 @@ sub template_vars
     $vars_ref->{chunks} = \@chunks;
     $vars_ref->{chunk_hash} = \%chunks;
     $vars_ref->{colours} = \@colours;
+    $vars_ref->{noalpha} = \@noalpha;
 #    for my $name (keys %{$vars_ref->{chunk}}) {
 #        print "$name.\n";
 #    }

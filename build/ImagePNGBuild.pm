@@ -19,7 +19,8 @@ sub read_config
     while (<$config_fh>) {
         if (/^(\w+):\s*(.*?)\s*$/) {
             $config{$1} = $2;
-        } else {
+        }
+	else {
             die "Bad line '$_' in $config_file";
         }
     }

@@ -17,6 +17,7 @@ write_png_file
 color_type_name
 get_internals
 copy_png
+image_data_diff
 /;
 
 our %EXPORT_TAGS = (
@@ -26,6 +27,8 @@ our %EXPORT_TAGS = (
 require XSLoader;
 [% INCLUDE version %]
 XSLoader::load('Image::PNG::Libpng', $VERSION);
+
+use Image::PNG::Const ':all';
 
 # Old undocumented function name
 
@@ -122,14 +125,15 @@ sub copy_png
     my $rows = $png->get_rows ();
     $opng->set_rows ($rows);
 
-    for my $chunk (keys %$valid) {
-	if ($chunk eq 'IHDR' || $chunk eq 'IDAT') {
-	    next;
-	}
-	elsif ($valid->{$chunk}) {
-	    if ($strip_all) {
-		next;
-	    }
+    # Set PLTE up first because hIST needs it to be set.
+    if ($valid->{PLTE}) {
+	$opng->set_chunk ('PLTE', $png->get_chunk ('PLTE'));
+    }
+    if (! $strip_all) {
+	# Make a list of valid chunks excluding IHDR (header), IDAT
+	# (image data), and PLTE (palette).
+	my @valid = grep {!/IHDR|IDAT|PLTE/ && $valid->{$_}} sort keys %$valid;
+	for my $chunk (@valid) {
 	    $opng->set_chunk ($chunk, $png->get_chunk ($chunk));
 	}
     }
@@ -143,6 +147,33 @@ sub [% what %]
 }
 [% END %]
 
+sub image_data_diff
+{
+    my ($file1, $file2) = @_;
+    my $png1 = read_png_file ($file1, transforms => PNG_TRANSFORM_EXPAND);
+    my $png2 = read_png_file ($file2, transforms => PNG_TRANSFORM_EXPAND);
+    my $ihdr1 = $png1->get_IHDR ();
+    my $ihdr2 = $png2->get_IHDR ();
+    my @fields = qw/height width/;
+    for my $field (@fields) {
+	if ($ihdr1->{$field} != $ihdr2->{$field}) {
+	    return "$field differs: $file1: ".
+	    "$ihdr1->{field}; $file2: $ihdr2->{field}";
+	}
+    }
+    my $h = $ihdr1->{height};
+    my $rows1 = $png1->get_rows ();
+    my $rows2 = $png2->get_rows ();
+    for my $r (0..$h - 1) {
+ 	my $row1 = $rows1->[$r];
+	my $row2 = $rows2->[$r];
+	if ($row1 ne $row2) {
+	    return "Row $r of image data differs";
+	}
+    }
+    # No difference.
+    return;
+}
 
 1;
 

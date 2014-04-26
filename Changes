@@ -1,3 +1,10 @@
+0.36 2014-04-26
+
+* Implements get_sBIT, set_sBIT (previously incorrectly implemented)
+* Implements get_tRNS, set_tRNS (previously unimplemented)
+* Distribution now includes testing over all valid members of "PngSuite"
+  for copy-correctness of "copy_png".
+
 0.35 2014-04-26
 
 * Fix bug caused by premature freeing of memory due to changes in

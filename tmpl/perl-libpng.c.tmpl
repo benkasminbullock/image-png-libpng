@@ -1427,18 +1427,91 @@ perl_png_set_tRNS_pointer (perl_libpng_t * png, png_bytep trans, int num_trans)
 
 static SV * perl_png_get_tRNS (perl_libpng_t * png)
 {
-    if (VALID (tRNS)) {
-        HV * ice;
-        ice = newHV ();
-        return newRV_noinc ((SV *) ice);
+    png_byte colour_type;
+    png_bytep trans;
+    int num_trans;
+    png_uint_32 status;
+    png_color_16p trans_values;
+    if (! VALID (tRNS)) {
+	UNDEF;
     }
-    UNDEF;
+    status = png_get_tRNS (pngi, & trans, & num_trans, & trans_values);
+    colour_type = png_get_color_type (pngi);
+    if (colour_type & PNG_COLOR_MASK_PALETTE) {
+	AV * trans_av;
+	int i;
+
+	trans_av = newAV ();
+
+	for (i = 0; i < num_trans; i++) {
+	    av_push (trans_av, newSViv (trans[i]));
+	}
+	return newRV_noinc ((SV *) trans_av);
+    }
+    else {
+	HV * trans_hv;
+	trans_hv = newHV ();
+#oline
+        [% FOR colour IN noalpha %]
+	HASH_STORE_IV_MEMBER (trans_hv, [% colour %], trans_values);
+	[% END %]
+#line
+	return newRV_noinc ((SV *) trans_hv);
+    }
 }
 
 /* Empty code. */
 
-static void perl_png_set_tRNS (perl_libpng_t * png, HV * tRNS)
+static void perl_png_set_tRNS (perl_libpng_t * png, SV * tRNS)
 {
+    png_byte colour_type;
+    png_byte trans[256] = {0};
+    int num_trans;
+    png_uint_32 status;
+    png_color_16 trans_values = {0};
+    colour_type = png_get_color_type (pngi);
+    if (colour_type & PNG_COLOR_MASK_PALETTE) {
+	AV * trans_av;
+	int i;
+	if (SvTYPE (SvRV (tRNS)) != SVt_PVAV) {
+	    /* unhandled error */
+	}
+	trans_av = (AV *) SvRV (tRNS);
+	num_trans = av_len (trans_av) + 1;
+	if (num_trans > 256) {
+	    /* unhandled error */
+	}
+	for (i = 0; i < num_trans; i++) {
+	    int ti;
+	    SV ** ti_sv;
+	    ti_sv = av_fetch (trans_av, i, 0); 
+	    if (! ti_sv) {
+		/* unhandled error */
+	    }
+	    ti = SvIV (* ti_sv);
+	    if (ti < 0 || ti > 0xFF) {
+		/* unhandled error */
+	    }
+	    trans[i] = ti;
+	}
+
+	png_set_tRNS (pngi, trans, num_trans, & trans_values); 
+
+    }
+    else {
+	HV * trans_hv;
+	if (SvTYPE (SvRV (tRNS)) != SVt_PVHV) {
+	    /* unhandled error */
+	}
+	trans_hv = (HV *) SvRV (tRNS);
+#oline
+        [% FOR colour IN noalpha %]
+	    HASH_FETCH_IV_MEMBER (trans_hv, [% colour %], (& trans_values));
+	[% END %]
+#line
+	num_trans = 1;
+	png_set_tRNS (pngi, trans, num_trans, & trans_values); 
+    }
 }
 
 static HV *
@@ -1636,6 +1709,7 @@ static void perl_png_set_hIST (perl_libpng_t * png, AV * hIST)
 	ARRAY_FETCH_IV (hIST, i, hist[i]);
     }
     png_set_hIST (pngi, hist);
+    PERL_PNG_FREE (hist);
 #else
     UNSUPPORTED(hIST);
 #endif
@@ -1675,11 +1749,16 @@ static SV * perl_png_get_sBIT (perl_libpng_t * png)
 {
     if (VALID (sBIT)) {
         HV * sig_bit;
-        png_color_8 colours = {0};
+        png_color_8p colours;
+	png_uint_32 status;
         sig_bit = newHV ();
+	status = png_get_sBIT (pngi, & colours);
+	if (status != PNG_INFO_sBIT) {
+	    /* error */
+	}
 #oline
         [% FOR colour IN colours %]
-	HASH_STORE_IV_MEMBER (sig_bit, [% colour %], (& colours));
+	HASH_STORE_IV_MEMBER (sig_bit, [% colour %], colours);
 	[% END %]
 #line
         return newRV_noinc ((SV *) sig_bit);
@@ -2397,6 +2476,7 @@ perl_png_get_channels (perl_libpng_t * png)
 {
     return png_get_channels (pngi);
 }
+
 
 static void
 perl_png_set_user_limits (perl_libpng_t * png,

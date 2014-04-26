@@ -45,7 +45,7 @@ for my $file (@ARGV) {
     }
 
     my $ihdr = $png->get_IHDR ();
-    for my $k (keys %$ihdr) {
+    for my $k (sort keys %$ihdr) {
 	if ($k eq 'color_type') {
 	    print "$k: ", color_type_name ($ihdr->{$k}), "\n";
 	}
@@ -57,7 +57,7 @@ for my $file (@ARGV) {
     for my $key (sort keys %$valid) {
 	if ($valid->{$key}) {
 	    print "Valid $key chunk.\n";
-	    if ($key ne 'IDAT') {
+	    if ($key ne 'IDAT' && $key ne 'tIME') {
 		my $value = $png->get_chunk ($key);
 		print Dumper ($value);
 	    }
@@ -69,7 +69,7 @@ for my $file (@ARGV) {
         for my $t (@$text) {
 	    $i++;
             print "Text chunk $i:\n";
-            for my $k (keys %$t) {
+            for my $k (sort keys %$t) {
                 my $v = $t->{$k};
                 if (! defined $v) {
                     $v = 'undefined';
