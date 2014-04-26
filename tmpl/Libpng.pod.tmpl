@@ -332,13 +332,8 @@ to be zero, and the number of bytes to check is assumed to be eight.
     }
 
 This function returns a hash with a key for each possible chunk which
-may or may not be valid. The chunks which you can test for are
-
-=over
-[% FOR chunk IN chunks %]
-=item [% chunk.name %]
-[% END %]
-=back
+may or may not be valid. The chunks which you can test for are 
+[% FOR chunk IN chunks %]L</[% chunk.name %]>[% IF loop.count < loop.size - 1 %], [% ELSIF loop.count == loop.size - 1 %], and [% END %][% END %].
 
 Whereas L</libpng_supports> tells you whether the installed libpng on
 your system supports various chunks, this tells you whether the chunks
@@ -381,8 +376,10 @@ So, for example, to get the width and height of an image,
     my $ihdr = $png->get_IHDR ();
     printf "Your image is %d x %d\n", $ihdr->{width}, $ihdr->{height};
 
-[% cor(fn="get_IHDR") %], with a single Perl hash reference
-used instead of the several pointers to integers used in libpng.
+[% cor(fn="get_IHDR") %], with a single Perl hash reference used
+instead of the several pointers to integers used in libpng. It does
+not return the fields C<filter_method> and C<compression_method>,
+which are always 0.
 
 =head2 set_IHDR
 
@@ -400,9 +397,8 @@ Set the IHDR chunk (the image header) of the PNG image.
 [%- IF ! field.unused %]
 =item [% field.name %]
 
-[%- IF field.text %]
-[% field.text %]
-[%- END -%]
+[% IF field.text %][% field.text %] [% END -%]
+[%- IF field.set %][% field.set %] [% END -%]
 [%- IF field.retvalues -%]
 This can have the values [% field.retvalues.join (", ") %].
 [%- END %]
@@ -420,7 +416,7 @@ used instead of the seven integers. The variables
 [%- IF field.unused -%]
 C<[%- field.name %]>, [% END -%]
 [%- END %]
-in C<png_set_IHDR> can only take one possible value, so the routine
+in C<png_set_IHDR> can only take one possible value, 0, so the routine
 ignores them. [% unused %]
 
 =head2 get_color_type

@@ -977,8 +977,10 @@ perl_png_get_IHDR (perl_libpng_t * png)
     int bit_depth;
     int color_type;
     int interlace_method;
+    /*
     int compression_method;
     int filter_method;
+    */
     /* libpng return value */
     int status;
     /* The return value. */
@@ -987,15 +989,17 @@ perl_png_get_IHDR (perl_libpng_t * png)
     IHDR = newHV ();
     status = png_get_IHDR (pngi, & width, & height,
                            & bit_depth, & color_type, & interlace_method,
-                           & compression_method, & filter_method);
+                           0, 0);
+    /*& compression_method, & filter_method);*/
     HASH_STORE_IV (IHDR, width);
     HASH_STORE_IV (IHDR, height);
     HASH_STORE_IV (IHDR, bit_depth);
     HASH_STORE_IV (IHDR, color_type);
     HASH_STORE_IV (IHDR, interlace_method);
+    /*
     HASH_STORE_IV (IHDR, compression_method);
     HASH_STORE_IV (IHDR, filter_method);
-
+    */
     return newRV_noinc ((SV *) IHDR);
 }
 

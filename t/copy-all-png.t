@@ -10,7 +10,7 @@ my @files = <$dir/*.png>;
 
 # Files beginning with an x are corrupted.
 # http://www.schaik.com/pngsuite/#corrupted
-@files = map {s!$dir/!!r} @files;
+@files = map {s!$dir/!!;$_;} @files;
 @files = grep !/^x/, @files;
 
 for my $file (@files) {

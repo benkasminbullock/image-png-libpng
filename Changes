@@ -1,3 +1,10 @@
+0.37 2014-04-27
+
+* Fixup for too-modern test (used s///r flag)
+* "get_IHDR" no longer returns "compression_method" and
+  "filter_method" (always 0)
+* Some documentation cleanup.
+
 0.36 2014-04-26
 
 * Implements get_sBIT, set_sBIT (previously incorrectly implemented)

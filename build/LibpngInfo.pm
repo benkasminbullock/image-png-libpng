@@ -10,31 +10,35 @@ my @ihdr_fields = (
     name => 'width',
     c => 'png_uint_32',
     text => <<EOF,
-The width of the image in pixels. This cannot be zero, negative, or omitted.
+The width of the image in pixels.
 EOF
+    set => 'This cannot be zero, negative, or omitted.',
 },
 {
     name => 'height',
     c => 'png_uint_32',
     text => <<EOF,
-The height of the image in pixels. This cannot be zero, negative, or omitted.
+The height of the image in pixels. 
 EOF
+    set => 'This cannot be zero, negative, or omitted.',
 },
 {
     name => 'bit_depth',
     c => 'int',
     text => <<EOF,
 The bit depth of the image (the number of bits used for each colour in
-a pixel).  This cannot be omitted.
+a pixel).
 EOF
+    set => 'This cannot be omitted.',
     retvalues => [1, 2, 4, 8, 16],
 },
 {
     name => 'color_type',
         c => 'int',
             text => <<EOF,
-The colour type. This cannot be omitted.
+The colour type.
 EOF
+    set => 'This cannot be omitted.',
     retvalues => [qw/
                     PNG_COLOR_TYPE_GRAY
                     PNG_COLOR_TYPE_GRAY_ALPHA
@@ -48,8 +52,9 @@ EOF
     name => 'interlace_method',
     c => 'int',
     text => <<EOF,
-The method of interlacing. If this is omitted, it's set to PNG_INTERLACE_NONE.
+The method of interlacing.
 EOF
+    set => "If this is omitted, it's set to PNG_INTERLACE_NONE.",
     retvalues => [qw/
                     PNG_INTERLACE_NONE
                     PNG_INTERLACE_ADAM7
