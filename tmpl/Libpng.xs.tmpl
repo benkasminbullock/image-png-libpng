@@ -455,3 +455,16 @@ CODE:
 	Png->row_pointers = INT2PTR (png_bytepp, SvIV (row_pointers));
         png_set_rows (Png->png, Png->info, Png->row_pointers);
 	Png->memory_gets++;
+
+int
+perl_png_set_rgb_to_gray_fixed (Png, error_action = 1, red_weight=-1, green_weight=-1)
+	Image::PNG::Libpng Png;
+	int error_action;
+	int red_weight;
+	int green_weight;
+CODE:
+	png_set_rgb_to_gray_fixed (Png->png, error_action, red_weight, green_weight);
+	RETVAL = png_get_rgb_to_gray_status (Png->png);
+	png_read_update_info (Png->png, Png->info);
+OUTPUT:
+	RETVAL

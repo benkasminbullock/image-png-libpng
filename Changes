@@ -1,3 +1,8 @@
+0.35 2014-04-26
+
+* Fix bug caused by premature freeing of memory due to changes in
+  version 0.34. "copy_png" should be OK again.
+
 0.34 2014-04-11
 
 * Plug memory leak
