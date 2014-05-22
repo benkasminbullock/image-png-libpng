@@ -56,10 +56,9 @@ void perl_png_write_png (Png, transforms = PNG_TRANSFORM_IDENTITY)
 void perl_png_init_io (Png, fp)
         Image::PNG::Libpng  Png
         FILE * fp
-        CODE:
+CODE:
         png_init_io (Png->png, fp);
         Png->init_io_done = 1;
-        OUTPUT:
 
 void perl_png_read_info (Png)
         Image::PNG::Libpng  Png

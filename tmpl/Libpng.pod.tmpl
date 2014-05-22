@@ -1120,11 +1120,17 @@ See [% spec("11sBIT") %]  of the PNG specification.
 
     my $sbit = $png->get_sBIT ();
 
+The return value is a hash reference containing integer values for the
+keys C<red>, C<blue>, C<green>, and C<gray>.
+
 [% cor(fn="get_sBIT") %]
 
 =head3 set_sBIT
 
     $png->set_sBIT ({red => 1, blue => 2, green => 3});
+
+The argument is a hash reference containing integer values for the
+keys C<red>, C<blue, C<green>, and C<gray>.
 
 [% cor(fn="set_sBIT") %]
 

@@ -2158,14 +2158,6 @@ static SV * perl_png_get_unknown_chunks (perl_libpng_t * png)
 
             png_chunk = unknown_chunks + i;
             perl_chunk = newHV ();
-	    /* This is possibly an unnecessary check since it's been
-	       done within libpng. */
-            if (strlen ((const char *) png_chunk->name) != PERL_PNG_CHUNK_NAME_LENGTH) {
-                perl_png_error (png, "Chunk name '%s' has wrong number of "
-                                "characters: %d required",
-                                png_chunk->name,
-                                PERL_PNG_CHUNK_NAME_LENGTH);
-            }
 
 	    /* Make Perl scalars from the chunk name and the PNG data
 	       segment. */
