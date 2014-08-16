@@ -1,3 +1,8 @@
+0.38 2014-08-17
+
+* Compilation guards for various kinds of libpng.
+* More tests for libpng support in libpng_supports.
+
 0.37 2014-04-27
 
 * Fixup for too-modern test (used s///r flag)

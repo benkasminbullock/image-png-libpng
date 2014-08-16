@@ -1,4 +1,4 @@
-version: 0.37
+version: 0.38
 base: Image::PNG::Libpng
 author: Ben Bullock
 author_pause: BKB
