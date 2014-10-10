@@ -50,7 +50,7 @@ typedef struct perl_libpng
     void * scalar_data;
     /* Contains what Perl says the length of the data in "image_data"
        is. */
-    unsigned int data_length;
+    STRLEN data_length;
     /* How much of the data in "image_data" we have read. */
     int read_position;
     /* If the following variable is set to a true value, the module
@@ -543,16 +543,16 @@ perl_png_set_text_from_hash (perl_libpng_t * png,
 {
     int compression;
     char * key;
-    unsigned int key_length;
+    STRLEN key_length;
 #ifdef PNG_iTXt_SUPPORTED
     char * language_tag;
-    unsigned int language_tag_length;
+    STRLEN language_tag_length;
     char * translated_key;
-    unsigned int translated_key_length;
+    STRLEN translated_key_length;
 #endif /* PNG_iTXt_SUPPORTED */
     int is_itxt = 0;
     char * text;
-    unsigned int text_length;
+    STRLEN text_length;
     /* The return value of this function. */
     int ok = 1;
     SV ** compression_sv_ptr;
@@ -796,7 +796,7 @@ int
 perl_png_sig_cmp (SV * png_header, int start, int num_to_check)
 {
     unsigned char * header;
-    unsigned int length;
+    STRLEN length;
     int ret_val;
     header = (unsigned char *) SvPV (png_header, length);
     ret_val = png_sig_cmp (header, start, num_to_check);
@@ -1320,13 +1320,13 @@ static void perl_png_set_pCAL (perl_libpng_t * png, HV * pCAL)
 {
 #ifdef PNG_pCAL_SUPPORTED
     char * purpose;
-    unsigned int purpose_length;
+    STRLEN purpose_length;
     int x0;
     int x1;
     int type;
     int n_params;
     char * units;
-    unsigned int units_length;
+    STRLEN units_length;
     AV * params;
     char ** png_params;
     HASH_FETCH_PV (pCAL, purpose);
@@ -1341,7 +1341,7 @@ static void perl_png_set_pCAL (perl_libpng_t * png, HV * pCAL)
 	n_params = av_len (params) + 1;
 	if (n_params) {
 	    int i;
-	    unsigned int length;
+	    STRLEN length;
 	    GET_MEMORY (png_params, n_params, char *);
 	    for (i = 0; i < n_params; i++) {
 		ARRAY_FETCH_PV (params, i, png_params[i], length);
@@ -1415,9 +1415,9 @@ static void perl_png_set_iCCP (perl_libpng_t * png, HV * iCCP)
 {
 #ifdef PNG_iCCP_SUPPORTED
     char * name;
-    unsigned int name_length;
+    STRLEN name_length;
     char * profile;
-    unsigned int profile_length;
+    STRLEN profile_length;
     int compression_method;
 
     compression_method = PNG_COMPRESSION_TYPE_BASE;
@@ -1615,7 +1615,7 @@ static void perl_png_set_sPLT (perl_libpng_t * png, AV * sPLT_entries)
     int i;
     int num_spalettes;
     png_sPLT_tp entries;
-    unsigned name_length;
+    STRLEN name_length;
 
     num_spalettes = av_len (sPLT_entries) + 1;
     MESSAGE ("There are %d palettes", num_spalettes);
@@ -1715,8 +1715,8 @@ static void perl_png_set_sCAL (perl_libpng_t * png, HV * sCAL)
     int unit;
     char * width;
     char * height;
-    unsigned int width_length;
-    unsigned int height_length;
+    STRLEN width_length;
+    STRLEN height_length;
     HASH_FETCH_IV (sCAL, unit);
     HASH_FETCH_PV (sCAL, width);
     HASH_FETCH_PV (sCAL, height);
@@ -2131,7 +2131,7 @@ static void perl_png_set_rows (perl_libpng_t * png, AV * rows)
     GET_MEMORY (row_pointers, n_rows, unsigned char *);
     for (i = 0; i < n_rows; i++) {
         /* Need to check that this is the same as the width of the image. */
-        unsigned int length;
+        STRLEN length;
         SV * row_i;
         row_i = * av_fetch (rows, i, 0);
         row_pointers[i] = (unsigned char *) SvPV (row_i, length);
@@ -2289,9 +2289,9 @@ static void perl_png_set_unknown_chunks (perl_libpng_t * png, AV * chunk_list)
 	SV ** chunk_pointer;
         png_unknown_chunk * png_chunk = 0;
         char * name;
-        unsigned int name_length;
+        STRLEN name_length;
         char * data;
-        unsigned int data_length;
+        STRLEN data_length;
 
         MESSAGE ("%d.\n", i);
         /* Get the chunk name and check it is four bytes long. */
@@ -2398,7 +2398,7 @@ perl_png_set_keep_unknown_chunks (perl_libpng_t * png, int keep,
         png->memory_gets++;
         for (i = 0; i < num_chunks; i++) {
             const char * chunk_i_name;
-            unsigned int chunk_i_length;
+            STRLEN chunk_i_length;
             SV ** chunk_i_sv_ptr;
             int j;
             chunk_i_sv_ptr = av_fetch (chunk_list_av, i, 0);
