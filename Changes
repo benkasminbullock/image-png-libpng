@@ -1,3 +1,11 @@
+0.40 2015-09-26
+
+* Fixes bug related to use of memory after freeing.
+
+0.39 2014-10-17
+
+* Fixes bugs related to 64 bit systems (ARC)
+
 0.38 2014-08-17
 
 * Compilation guards for various kinds of libpng.

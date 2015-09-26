@@ -316,21 +316,29 @@ perl_png_destroy (perl_libpng_t * png)
     if (! png) {
         return;
     }
+    /* Allow whatever copied rows to be freed. */
+    if (png->copied_rows) {
+	SvREFCNT_dec ((SV *) png->copied_rows);
+	png->copied_rows = 0;
+    }
     if (png->type == perl_png_write_obj) {
         png_destroy_write_struct (& png->png, & png->info);
+	png->png = 0;
+	png->info = 0;
         free_png (png);
+	png = 0;
     }
     else if (png->type == perl_png_read_obj) {
         png_destroy_read_struct (& png->png, & png->info, & png->end_info);
+	png->png = 0;
+	png->info = 0;
+	png->end_info = 0;
         free_png (png);
+	png = 0;
     }
     else {
         /* There was an attempt to free some corrupted memory. */
         perl_png_error (png, "Attempt to destroy an object of unknown type");
-    }
-    /* Allow whatever copied rows to be freed. */
-    if (png->copied_rows) {
-	SvREFCNT_dec ((SV *) png->copied_rows);
     }
 }
 

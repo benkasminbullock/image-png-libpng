@@ -49,6 +49,11 @@ my %macros;
             next;
         }
 
+	# Delete fake inline macro things.
+	if ($macro =~ /PNG_get_.*int_\d+/) {
+	    next;
+	}
+
         # The following heebie jeebies turns values of the form (X |
         # Y) into numbers like (1 | 4). It also removes newlines and
         # tidies spaces in the values.
