@@ -27,7 +27,7 @@ my $tt = Template->new (
             0,
         ],
     },
-#    STRICT => 1,
+    STRICT => 1,
 );
 
 my @libpng_diagnostics = ImagePNGBuild::libpng_diagnostics (\%config);

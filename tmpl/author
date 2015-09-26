@@ -13,13 +13,6 @@ Public Licence.
 
 =head1 SUPPORT
 
-=head2 Mailing list
-
-There is a mailing list at
-L<http://groups.google.com/group/perlimagepng>. It is not necessary to
-be a member of the list to post messages to the list or participate in
-discussions.
-
 =head2 Reporting a bug
 
 There is a bug tracker at L<[% config.repo %]/issues>.

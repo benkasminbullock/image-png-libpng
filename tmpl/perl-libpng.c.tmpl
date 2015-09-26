@@ -1981,7 +1981,7 @@ static SV * perl_png_get_valid (perl_libpng_t * png)
 #define V(x) \
     (void) hv_store (perl_valid, #x, strlen (#x), newSViv (valid & PNG_INFO_ ## x), 0)
 #oline
-[% FOR chunk IN chunks %][% IF chunk.in_valid %]V([% chunk.name %]);[% END %][% END %]
+[% FOR chunk IN chunks %][% IF chunk.defined('in_valid') && chunk.in_valid %]V([% chunk.name %]);[% END %][% END %]
 #line
 #undef V
 

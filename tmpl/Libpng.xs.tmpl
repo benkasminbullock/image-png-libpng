@@ -315,7 +315,7 @@ void perl_png_DESTROY (Png)
 	OUTPUT:
 
 [%- FOR chunk IN chunks %]
-[%- IF chunk.auto_type %]
+[%- IF chunk.defined('auto_type') %]
 SV * perl_png_get_[% chunk.name %] (Png)
         Image::PNG::Libpng Png
         CODE:

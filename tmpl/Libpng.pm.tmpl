@@ -75,7 +75,7 @@ sub write_png_file
 
 my %known_chunks = (
 [% FOR chunk IN chunks %]
-[% IF chunk.in_valid %][% chunk.name %] => 1,[% END %]
+[% IF chunk.defined('in_valid') && chunk.in_valid %][% chunk.name %] => 1,[% END %]
 [% END %]
 );
 
