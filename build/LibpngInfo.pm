@@ -374,6 +374,7 @@ our @chunks = (
     name => 'PLTE',
     in_valid => 1,
     auto_type => 'av',
+    redirect => 'Palettes',
 },
 
 {
@@ -410,6 +411,7 @@ our @chunks = (
     in_valid => 1,
     auto_type => 'sv',
     default => "0",
+    redirect => 'PNG timestamps',
 },
 
 {
@@ -444,6 +446,7 @@ our @chunks = (
 {
     name => 'IDAT',
     in_valid => 1,
+    redirect => 'Image data',
 },
 {
     name => 'tEXt',
@@ -460,6 +463,7 @@ our @chunks = (
 {
     name => 'IHDR',
     auto_type => 'hv',
+    redirect => 'The image header',
 },
 {
     name => 'hIST',

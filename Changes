@@ -1,3 +1,9 @@
+0.42 2016-02-18
+
+- Adds "png_compare", a function to compare image data in two PNGs
+- Removes reference to mailing list from metadata
+- Fixes documentation internal links
+
 0.41 2015-09-26
 
 * Remove broken image, download, and mailing list links from documentation.

@@ -19,6 +19,7 @@ color_type_name
 get_internals
 copy_png
 image_data_diff
+png_compare
 /;
 
 our %EXPORT_TAGS = (
@@ -150,7 +151,7 @@ sub [% what %]
 
 sub image_data_diff
 {
-    my ($file1, $file2) = @_;
+    my ($file1, $file2, %options) = @_;
     my $png1 = read_png_file ($file1, transforms => PNG_TRANSFORM_EXPAND);
     my $png2 = read_png_file ($file2, transforms => PNG_TRANSFORM_EXPAND);
     my $ihdr1 = $png1->get_IHDR ();
@@ -169,11 +170,46 @@ sub image_data_diff
  	my $row1 = $rows1->[$r];
 	my $row2 = $rows2->[$r];
 	if ($row1 ne $row2) {
+	    if ($options{print_bytes}) {
+		my @bytes1 = unpack "C*", $row1;
+		my @bytes2 = unpack "C*", $row2;
+		for my $byte (0..$#bytes1) {
+		    printf ("%02X,%02X ", $bytes1[$byte], $bytes2[$byte]);
+		}
+		print "\n";
+	    }
 	    return "Row $r of image data differs";
 	}
     }
     # No difference.
     return;
+}
+
+sub png_compare
+{
+    my ($file1, $file2, %options) = @_;
+    my $png1 = read_png_file ($file1, transforms => PNG_TRANSFORM_EXPAND);
+    my $png2 = read_png_file ($file2, transforms => PNG_TRANSFORM_EXPAND);
+    my $ihdr1 = $png1->get_IHDR ();
+    my $ihdr2 = $png2->get_IHDR ();
+    my @fields = qw/height width/;
+    for my $field (@fields) {
+	if ($ihdr1->{$field} != $ihdr2->{$field}) {
+	    return 1;
+	}
+    }
+    my $h = $ihdr1->{height};
+    my $rows1 = $png1->get_rows ();
+    my $rows2 = $png2->get_rows ();
+    for my $r (0..$h - 1) {
+ 	my $row1 = $rows1->[$r];
+	my $row2 = $rows2->[$r];
+	if ($row1 ne $row2) {
+	    return 1;
+	}
+    }
+    # No difference.
+    return 0;
 }
 
 1;
