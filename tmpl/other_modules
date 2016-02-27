@@ -49,7 +49,7 @@ OK.
 
 =item Imager
 
-L<Imager>, L<Imager::Files> and L<Imager::Files::PNG> contain support
+L<Imager>, L<Imager::Files> and C<Imager::Files::PNG> contain support
 for reading and writing PNGs via libpng, as well as support for
 reading and writing various other kinds of image files, changing the
 images, converting, and more.

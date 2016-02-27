@@ -5,21 +5,31 @@
 use warnings;
 use strict;
 use Template;
+use Perl::Build 'get_commit';
 BEGIN {
-    use FindBin;
-    use lib "$FindBin::Bin";
+    use FindBin '$Bin';
+    use lib "$Bin";
     use ImagePNGBuild;
     use LibpngInfo 'template_vars', '@chunks';
 };
 use autodie;
+use Getopt::Long;
+
+#my $verbose = 1;
+my $verbose;
+
+# Read the configuration file "tmpl/config".
 
 my %config = ImagePNGBuild::read_config ();
+
+# Start the template up
 
 my $tt = Template->new (
     ABSOLUTE => 1,
     INCLUDE_PATH => [
 	$config{tmpl_dir},
-	"$FindBin::Bin/../examples",
+	"$Bin/../examples",
+	"/home/ben/projects/Perl-Build/lib/Perl/Build/templates",
     ],
     FILTERS => {
         xtidy => [
@@ -30,7 +40,7 @@ my $tt = Template->new (
     STRICT => 1,
 );
 
-my @libpng_diagnostics = ImagePNGBuild::libpng_diagnostics (\%config);
+# The output files from this script.
 
 my @files = qw/
                   Libpng.pm
@@ -43,8 +53,19 @@ my @files = qw/
                   typemap
               /;
 
+# This holds the variables passed to $tt.
+
 my %vars;
+
+my @libpng_diagnostics = ImagePNGBuild::libpng_diagnostics (\%config);
 $vars{config} = \%config;
+
+# Extract the git commit from the log, via Perl::Build.
+
+my %pbv = (base => $Bin);
+my $commit = get_commit (%pbv);
+$vars{commit} = $commit;
+
 my $functions = ImagePNGBuild::get_functions (\%config);
 for my $chunk (@chunks) {
     if ($chunk->{auto_type}) {
@@ -91,13 +112,17 @@ for my $file (@files) {
     else {
         $output = "$config{submodule_dir}/$file";
     }
+    $output = "$Bin/../$output";
     push @outputs, $output;
-
-#    print "$output\n";
-#    print "Processing $template into $output.\n";
+    if ($verbose) {
+	print "Processing $template into $output.\n";
+    }
     $vars{input} = $template;
     $vars{output} = $output;
     if (-f $output) {
+	if ($verbose) {
+	    print "Overwriting existing $output.\n";
+	}
         chmod 0644, $output;
     }
     # Add line numbers to C file.
@@ -130,8 +155,12 @@ for my $file (@files) {
 	close $o or die $!;
     }
     else {
+	if ($verbose) {
+	    print "Writing $output\n";
+	}
 	$tt->process ($template, \%vars, $output)
             or die "Error processing $template: " . $tt->error ();
+	die unless -f $output;
     }
     chmod 0444, $output;
 }

@@ -1,3 +1,4 @@
+[% start_year=2011 %]
 [%- noinfo = "No info structure" -%]
 [%- xnoinfo = BLOCK -%]
 L</[% noinfo %]>
@@ -60,6 +61,11 @@ Image::PNG::Libpng - Perl interface to the C library "libpng".
 =head1 SYNOPSIS
 
 [% example(eg='synopsis') %]
+
+=head1 VERSION
+
+This document describes Image::PNG::Libpng version [% config.version %],
+corresponding to git commit [% commit.commit %] at [% commit.date %].
 
 =head1 DESCRIPTION
 
@@ -160,11 +166,11 @@ L</set_transforms>.
 
     my $outpng = $png->copy_png ();
 
-Copy a PNG from a read to a write structure. There are two kinds of
-object created by this module, "read a png" objects created by
+Copy a PNG from a read to a write structure. This function bridges two
+kinds of object, "read a png" objects created by
 L</create_read_struct> and "write a png" objects created by
-L</create_write_struct>. This copies all the valid chunks from a read
-structure to a write structure.
+L</create_write_struct>. This function copies all the valid chunks
+from a read structure to a write structure.
 
 =head2 set_transforms
 
@@ -175,17 +181,32 @@ optional argument to L</read_png> or L</write_png>. If both this and
 the optional argument are given, the optional argument overrides what
 is set here.
 
+=head2 png_compare
+
+    if (png_compare ('a.png', 'b.png') == 0) {
+	print "The PNGs are the same.\n";
+    }
+
+This compares the image data in two PNGs and returns 0 if they contain
+exactly the same image data, or 1 if they contain different image
+data. For a more detailed comparison, see L</image_data_diff>. This
+does not compare to see if the PNG files "look like" each other, but
+whether each pixel contains exactly the same values. Please see
+L<Image::Similar> for a looser comparison of images.
+
 =head1 New-like functions
 
 There are two different "new"-like functions, depending on whether you
-want to read or write a PNG.
+want to read or write a PNG. (See L</copy_png> for a function to copy
+one to the other.)
 
 =head2 create_read_struct
 
      my $png = create_read_struct ();
 
 Create a structure for reading a PNG. The return value can be used as
-an object with the other functions as methods.
+an object with the other functions as methods. It can be copied to a
+write structure with L</copy_png>.
 
 [% cor(fn="create_read_struct") %] plus C<create_info_struct> (see [%
 xnoinfo %]) with the error and warning handler variables set up to use
@@ -213,8 +234,8 @@ These functions mirror libpng's functions.
 
 Set the file which C<$png> reads or writes to C<$file>. C<$file> must
 be an already-opened Perl file handle. If C<$png> was created with
-L<create_write_struct>, C<$file> must be opened for writing. If
-C<$png> was created with L<create_read_struct>, C<$file> must be open
+L</create_write_struct>, C<$file> must be opened for writing. If
+C<$png> was created with L</create_read_struct>, C<$file> must be open
 for reading.
 
 Since PNG files are binary files, it is safest to specify the "raw"
@@ -487,12 +508,12 @@ These functions deal with accessing the image data itself.
 This returns the rows of the PNG image, after uncompressing and
 unfiltering, as binary data. The return value, C<$rows> in the
 example, is an array reference with a number of rows equal to the
-height of the PNG image. Each row consists of the actual binary data,
-which you will need to cut out using a routine like L<substr> or
-L<unpack> to access pixel values. This binary data is likely to
-contain bytes equal to zero.
+height of the PNG image. Each row consists of the actual binary
+data. Pixel values must be extracted using a function such as
+C<substr> or C<unpack>. This binary data is likely to contain bytes
+equal to zero.
 
-You can get the number of bytes in each row using L</get_rowbytes>.
+L</get_rowbytes> gives the number of bytes in each row.
 
 Each row is a Perl string. Perl terminates each row of data with an
 extra zero byte at the end.
@@ -1378,7 +1399,7 @@ Does the libpng support the L</pCAL> extension?
 
 =item sPLT
 
-Does the libpng support L<sPLT> chunks?
+Does the libpng support L</sPLT> chunks?
 
 =item UNKNOWN_CHUNKS
 
@@ -1780,18 +1801,18 @@ The starting point is the plain text libpng manual at
 L<http://libpng.org/pub/png/libpng-manual.txt> and the manual page
 libpng.3, which you can read using "man 3 libpng".
 
-Be warned that the documentation which comes with libpng is rather
-sketchy. See L</Differences from libpng>. It doesn't contain full
-specifications (prototypes, return values) for all of the functions in
-the library. If you are considering programming in C using libpng, you
-will definitely also need to look at the header file "png.h".  In some
-cases you will also need to look at the source code of the library.
+The documentation which comes with libpng is rather sketchy. See
+L</Differences from libpng>. It doesn't contain full specifications
+(prototypes, return values) for all of the functions in the
+library. For programming in C using libpng, look at the header file
+F<png.h>.  In some cases, you need to look at the source code of the
+library.
 
 =item Other documentation
 
 There is a collection of function definitions under the title
 "Interface Definitions for libpng12" at
-L<http://refspecs.freestandards.org/LSB_3.1.1/LSB-Desktop-generic/LSB-Desktop-generic/libpng12man.html>
+L<https://refspecs.linuxbase.org/LSB_4.0.0/LSB-Desktop-generic/LSB-Desktop-generic/libpng12man.html>
 as part of the "Linux Standard Base Desktop Specification". These
 contain extensive information on the prototypes and return values for
 the libpng routines, something which is often only available elsewhere

@@ -1,3 +1,8 @@
+0.43 2016-02-27
+
+- Documents png_compare function
+- Documents pnginspect script
+
 0.42 2016-02-18
 
 - Adds "png_compare", a function to compare image data in two PNGs

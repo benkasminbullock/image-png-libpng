@@ -8,7 +8,6 @@ TOUT=perl-libpng.c Libpng.xs \
 TIN=    tmpl/Libpng.pm.tmpl \
 	tmpl/Libpng.pod.tmpl \
 	build/LibpngInfo.pm \
-	tmpl/author \
 	tmpl/config \
 	tmpl/perl-libpng.c.tmpl \
 	tmpl/Libpng.xs.tmpl \

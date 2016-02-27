@@ -75,7 +75,10 @@ my $output_file = "lib/Image/PNG/Const.pm";
 
 my $tt = Template->new (
     ABSOLUTE => 1,
-    INCLUDE_PATH => [$config{tmpl_dir}],
+    INCLUDE_PATH => [
+	$config{tmpl_dir},
+	"/home/ben/projects/Perl-Build/lib/Perl/Build/templates",
+    ],
 )
     or die "". Template->error ();
 my %vars;

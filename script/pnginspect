@@ -1,6 +1,32 @@
 #!/home/ben/software/install/bin/perl
 
-# This is a primitive "dumper" for PNG image data.
+=pod
+
+=head1 NAME
+
+pnginspect - print contents of PNG files
+
+=head1 SYNOPSIS
+
+    pnginspect a.png b.png c.png
+
+=head1 DESCRIPTION
+
+This is a primitive "dumper" for PNG image data.
+
+=head1 SEE ALSO
+
+=over
+
+=item L<Image::PNG::Libpng>
+
+=back
+
+=head1 AUTHOR
+
+Ben Bullock <bkb@cpan.org>
+
+=cut
 
 use warnings;
 use strict;
