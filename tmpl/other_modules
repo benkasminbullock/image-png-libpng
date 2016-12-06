@@ -11,19 +11,18 @@ with PNG and other image formats.
 
 =item Image::Info
 
-L<Image::Info> is a module for getting information out of various
-types of images. It has good support for PNG and is written in pure
-Perl (doesn't require a C compiler). As well as basics such as height,
-width, and colour type, it can get text chunks, modification time,
-palette, gamma (gAMA chunk), resolution (pHYs chunk), and significant
-bits (sBIT chunk). At the time of writing (version 1.31) it doesn't
-support other chunks.
+L<Image::Info> gets information out of images. It supports PNG and is
+written in pure Perl, so it doesn't require a C compiler. As well as
+basics such as height, width, and colour type, it can get text chunks,
+modification time, palette, gamma (gAMA chunk), resolution (pHYs
+chunk), and significant bits (sBIT chunk). At the time of writing
+(version 1.31) it doesn't support other chunks.
 
 =item Image::ExifTool
 
 L<Image::ExifTool> is a pure Perl (doesn't require a C compiler)
-solution for accessing the text segments of images. It has extensive
-support for PNG text segments.
+solution for accessing the text segments of images. It supports PNG
+text segments.
 
 =item Alien::PNG
 
@@ -53,5 +52,9 @@ L<Imager>, L<Imager::Files> and C<Imager::Files::PNG> contain support
 for reading and writing PNGs via libpng, as well as support for
 reading and writing various other kinds of image files, changing the
 images, converting, and more.
+
+=item Image::PNG::Write::BW
+
+L<Image::PNG::Write::BW> writes black and white PNGs from strings.
 
 =back
