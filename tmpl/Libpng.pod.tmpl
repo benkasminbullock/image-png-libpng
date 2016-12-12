@@ -1742,7 +1742,7 @@ are marked "(F)" and warnings are marked "(W)".
 =item [% diagnostic.message %]
 
 (
-[%- IF diagnostic.type == "error" -%]
+[%- IF diagnostic.type == "croak" -%]
 F
 [%- ELSIF diagnostic.type == "warn" -%]
 W

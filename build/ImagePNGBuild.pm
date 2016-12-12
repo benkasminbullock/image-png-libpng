@@ -78,11 +78,13 @@ sub libpng_diagnostics
                          # Comment describing the diagnostic
                          (?:/\*\s*((?:[^\*]|\*[^/])+?)\s*\*/)?[\s|\\]+
                          # Diagnostic call
-                         perl_png_(warn|error)\s*
-                         # First argument is the carry-all
-                         \(\s*png\s*,\s*
+                         (warn|croak)\s*
+                         \(
+			 \s*
                          # Text message
-                         ((?:"[^"]*"[\s\\]*)+)
+                         (
+			     (?:"[^"]*"[\s\\]*)+
+			 )
                      @xgsm) {
         my $comment = $1;
         my $type = $2;
