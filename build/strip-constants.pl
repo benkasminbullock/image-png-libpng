@@ -6,11 +6,12 @@
 use warnings;
 use strict;
 use autodie;
-use FindBin;
+use FindBin '$Bin';
 use Template;
+use Perl::Build::Pod ':all';
 BEGIN {
-    use FindBin;
-    use lib "$FindBin::Bin";
+    use FindBin '$Bin';
+    use lib "$Bin";
     use ImagePNGBuild;
 };
 use autodie;
@@ -77,7 +78,7 @@ my $tt = Template->new (
     ABSOLUTE => 1,
     INCLUDE_PATH => [
 	$config{tmpl_dir},
-	"/home/ben/projects/Perl-Build/lib/Perl/Build/templates",
+	pbtmpl (),
     ],
 )
     or die "". Template->error ();

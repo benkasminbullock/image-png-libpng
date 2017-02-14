@@ -6,6 +6,7 @@ use warnings;
 use strict;
 use Template;
 use Perl::Build 'get_commit';
+use Perl::Build::Pod ':all';
 BEGIN {
     use FindBin '$Bin';
     use lib "$Bin";
@@ -29,7 +30,7 @@ my $tt = Template->new (
     INCLUDE_PATH => [
 	$config{tmpl_dir},
 	"$Bin/../examples",
-	"/home/ben/projects/Perl-Build/lib/Perl/Build/templates",
+	pbtmpl (),
     ],
     FILTERS => {
         xtidy => [
@@ -216,32 +217,3 @@ push @mani, @extras;
 push @mani, 'makeitfile';
 
 exit;
-
-# This removes some obvious boilerplate from the examples, to shorten
-# the documentation, and indents it to show POD that it is code.
-
-sub xtidy
-{
-    my ($text) = @_;
-
-    # Remove shebang.
-
-    $text =~ s/^#!.*$//m;
-
-    # Remove sobvious.
-
-    $text =~ s/use\s+(strict|warnings);\s+//g;
-    $text =~ s/^binmode\s+STDOUT.*?utf8.*?\s+$//gm;
-    $text =~ s/use\s+lib.*?;\s+//g;
-    $text =~ s/use\s+Image::PNG::.*?;\s+//g;
-
-    # Replace tabs with spaces.
-
-    $text =~ s/ {0,7}\t/        /g;
-
-    # Add indentation.
-
-    $text =~ s/^(.*)/    $1/gm;
-
-    return $text;
-}
