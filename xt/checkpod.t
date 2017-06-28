@@ -15,8 +15,8 @@ for my $filepath (
     "$Bin/../lib/Image/PNG/Const.pm",
 ) {
     my $errors = pod_checker ($filepath);
-    ok (@$errors == 0, "No errors");
-    ok (pod_encoding_ok ($filepath));
-    ok (pod_no_cut ($filepath));
+    ok (@$errors == 0, "$filepath - No errors");
+    ok (pod_encoding_ok ($filepath), "$filepath - Pod encoding ok");
+    ok (pod_no_cut ($filepath), "$filepath - No =cut in POD");
 }
 done_testing ();

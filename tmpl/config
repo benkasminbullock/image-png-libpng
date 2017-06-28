@@ -1,9 +1,9 @@
-version: 0.43
+version: 0.44
 base: Image::PNG::Libpng
 author: Ben Bullock
 author_pause: BKB
 email: bkb@cpan.org
-year: 2016
+year: 2017
 abstract: Perl interface to libpng
 license: perl
 repo: https://github.com/benkasminbullock/image-png-libpng
