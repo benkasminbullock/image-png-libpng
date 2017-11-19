@@ -2512,6 +2512,7 @@ perl_png_set_user_limits (perl_libpng_t * png,
 #endif
 }
 
+
 [% FOR what IN ['width', 'height'] %]
 static SV *
 perl_png_get_user_[% what %]_max (perl_libpng_t * png)
