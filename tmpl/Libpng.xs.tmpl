@@ -468,6 +468,8 @@ CODE:
 OUTPUT:
 	RETVAL
 
+#if 0
+
 void
 perl_png_set_compression_level (Png, level)
 	Image::PNG::Libpng Png;
@@ -511,3 +513,4 @@ perl_png_set_crc_action  (Png, crit_action, ancil_action);
 CODE:
 	png_set_crc_action (Png->png, crit_action, ancil_action);
 
+#endif /* 0 */

@@ -1,7 +1,3 @@
-0.44_01 2017-11-20
-
-- Support for png_set_compression_level and friends
-
 0.44 2017-06-28
 
 - Revert back to old method of detecting libpng, discard Devel::CheckLib
