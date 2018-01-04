@@ -98,7 +98,7 @@ sub set_chunk
 {
     my ($png, $chunk, $value) = @_;
     if ($chunk eq 'IDAT') {
-	croak "Use get_rows";
+	croak "Use set_rows";
     }
     if ($known_chunks{$chunk}) {
 	no strict 'refs';
