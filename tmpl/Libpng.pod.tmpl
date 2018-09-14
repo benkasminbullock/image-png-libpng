@@ -18,7 +18,8 @@ It does not take a second "info" argument. See [% xnoinfo -%].
 [% libpngdoc = "The libpng documentation" %]
 [% pngspec = "The PNG specification" %]
 [% MACRO spec(subsection) BLOCK -%]
-L<http://www.w3.org/TR/PNG/#[%- subsection -%]>
+L<this subsection|http://www.w3.org/TR/PNG/#[%- subsection -%]>
+of L</[% pngspec %]>
 [%- END %]
 [%- wfirstpng = BLOCK -%]
 The first argument, C<$png>, is a writeable PNG structure created with 
@@ -43,10 +44,10 @@ with L</libpng_supports> as follows:
 [% perl_libpng_c = "L<in the file C<perl-libpng.c> in the top directory of the distribution|" _ source_link  _ "perl-libpng.c>" %]
 [% unused_title = "Unused arguments omitted" %]
 [% unused = "See L<" _ unused_title _ ">." %]
-[%- MACRO example BLOCK %]
-[%- file = eg _ ".pl" %]
+[%- MACRO example(pl) BLOCK %]
+[%- file = pl _ ".pl" %]
 [%- INCLUDE $file | xtidy %]
-This example is in F<examples/[% file %]> in the distribution.
+(This example is included as L<F<[% file %]>|https://fastapi.metacpan.org/source/BKB/Image-PNG-Libpng-[% config.version %]/examples/[% file %]> in the distribution.)
 
 [%- END # macro -%]
 
@@ -60,29 +61,28 @@ Image::PNG::Libpng - Perl interface to the C library "libpng".
 
 =head1 SYNOPSIS
 
-[% example(eg='synopsis') %]
+[% example('synopsis') %]
 
 =head1 VERSION
 
-This document describes Image::PNG::Libpng version [% config.version %],
-corresponding to git commit [% commit.commit %] at [% commit.date %].
+This document describes Image::PNG::Libpng version [% config.version
+%], corresponding to git commit L<[% commit.commit %]|[% config.repo
+%]/commit/[% commit.commit %]> at [% commit.date %].
 
 =head1 DESCRIPTION
 
 Image::PNG::Libpng is a Perl library for accessing the contents of PNG
 (Portable Network Graphics) images. Image::PNG::Libpng enables Perl to
-use the "libpng" library for reading and writing files in the PNG
-format. Image::PNG::Libpng does not contain "libpng". "libpng" must be
-installed on the computer prior to installing Image::PNG::Libpng.
+use the "libpng" library to read and write files in PNG
+format. Image::PNG::Libpng does not contain libpng. It must be
+installed prior to installing Image::PNG::Libpng.
 
 Image::PNG::Libpng consists of Perl subroutines which mirror
 the C functions in libpng, plus helper subroutines to make it easier
 to read and write PNG data in Perl. 
 
-For those familiar with libpng, to know what the differences between
-this module and libpng are, please go to the section L</Differences
-from libpng>. For those not familiar with libpng, the module basically
-mirrors the C interface of libpng.
+For those familiar with libpng, the section L</Differences
+from libpng> explains the differences with libpng.
 
 =head1 FUNCTIONS
 
@@ -126,9 +126,10 @@ L<Carp/croak> is used to signal errors opening or closing the file.
     $png->write_png_file ('nice.png');
 
 This combines open, L</init_io>, and L</write_png> to write an entire
-PNG image out to a file. C<$png> must be the object created by
-L</create_write_struct>, so L</read_png_file> followed by a call to
-this does not work.
+PNG image out to the file name specified by the argument. C<$png> must
+be the object created by L</create_write_struct>, so L</read_png_file>
+followed by a call to this does not work. See L</copy_png> if you need
+to do that kind of operation.
 
 The optional argument to L</write_png> can be specified using
 L</set_transforms>.
@@ -140,12 +141,13 @@ L<Carp/croak> is used to signal errors opening or closing the file.
      my $png = read_from_scalar ($string);
 
 This creates an image structure C<$png> from the contents of a Perl
-scalar variable C<$string> containing a PNG image. [% rfirstpng %] It
+scalar variable C<$string> containing PNG image data, for example data
+read from a file, or data obtained from a web page. [% rfirstpng %] It
 reads in all the data from the structure on being called.
 
 This is useful when image data is stored in a Perl scalar. For example
 
-[% example(eg="get-www-png") %]
+[% example('get-www-png') %]
 
 See also L</Input/output manipulation functions>.
 
@@ -159,7 +161,7 @@ containing the image data.
 
 So, for example,
 
-[% example(eg="png-cgi") %]
+[% example('png-cgi') %]
 
 See also L</Input/output manipulation functions>.
 
@@ -178,7 +180,7 @@ from a read structure to a write structure.
 
 The following example demonstrates copying a PNG.
 
-[% example(eg='copy-png') %]
+[% example('copy-png') %]
 
 =head2 set_transforms
 
@@ -466,7 +468,7 @@ Given a numerical colour type in C<$color_type>, return the equivalent
 name. The name is in upper case, with words separated by underscores,
 as in C<RGB_ALPHA>.
 
-[% example(eg="color-type-name") %]
+[% example('color-type-name') %]
 
 This function does not correspond to anything in libpng. The names of
 the colour types are taken from those defined in the libpng header
@@ -486,8 +488,8 @@ Get the image's [% what %] from the header.
 
     my $[% what %] = $png->[% what %] ();
 
-Alias for get_image_[% what %]. This is not exported, it's intended for use
-with the object only.
+Alias for L</get_image_[% what %]>. This is not exported, it's
+intended for use with the object only.
 
 [% END # what %]
 
@@ -586,7 +588,7 @@ time stamp information.
         warn "Your PNG is now getting old. Don't forget to oil it to prevent rust.";
     }
 
-The return value is either the undefined value, if no tIME chunk
+The return value is either the undefined value, if no C<tIME> chunk
 exists in the PNG, or a hash reference containing fields "year",
 "month", "day", "hour", "minute" and "second". "Month" and "day" start
 from 1 rather than 0.
@@ -595,9 +597,13 @@ The "modification time value" of the PNG image is a chunk written into
 the PNG file itself, and may not have the same value as the operating
 system's modification time for the file. The tIME chunk is not a
 compulsory requirement for PNG files, and most PNG image files do not
-contain this chunk. PNG tIME chunks do not contain a time
-zone. "Universal Time (UTC) should be specified rather than local
-time."
+contain this chunk. 
+[%- MACRO timezone BLOCK -%]
+PNG tIME chunks do not contain a time zone. According to [%
+spec("11tIME") %], "Universal Time (UTC) should be specified rather
+than local time."
+[%- END -%]
+[% timezone %]
 
 [% cor(fn="get_tIME") %], with a Perl hash reference
 substituted for the C struct C<png_timep> used in libpng.
@@ -614,9 +620,8 @@ argument, a hash reference containing the fields C<year>, C<month>,
 C<day>, C<hour>, C<minute>, and C<second>.  Month and day start from
 1, not 0. If the argument is omitted, the time is set to the current
 time. If any of year, hour, minute or second is omitted, these are set
-to zero. If month or day are omitted, these are set to 1. PNG tIME
-chunks do not contain a time zone: according to the PNG specification,
-"Universal Time (UTC) should be specified rather than local time."
+to zero. If month or day are omitted, these are set to 1. 
+[% timezone %]
 
 [% cor(fn="set_tIME") %], with a Perl hash reference
 substituted for the C struct C<png_timep> used in libpng.
@@ -636,14 +641,13 @@ text chunk. The element representing one chunk is a hash reference
 with the text fields such as "key", "lang_key", "compression" taken
 from the PNG's information.
 
-The text data is uncompressed by libpng. If it is international text,
-Image::PNG::Libpng automatically puts it into Perl's internal
-Unicode encoding (UTF-8). 
-
-Note that PNG international text is required to be in the UTF-8
-encoding, and non-international text is required to contain whitespace
-and printable ASCII characters only. See L</[% pngspec %]> for more on
-the requirements of a PNG text section.
+The text data is uncompressed by libpng. If it is international text
+(C<ITXT>), Image::PNG::Libpng automatically puts it into Perl's
+internal Unicode encoding (UTF-8). This is valid because PNG
+international text C<ITXT> is required to be in the UTF-8 encoding,
+and non-international text is required to contain whitespace and
+printable ASCII characters only. See L</[% pngspec %]> for more on the
+requirements of a PNG text section.
 
 [% cor(fn="get_text") %], with a Perl array of hash
 references substituted for the C array of structs used in libpng.
@@ -669,7 +673,8 @@ The "text" value for the text.
 =back
 
 If the compression field is not set, a default value of
-PNG_TEXT_COMPRESSION_NONE is applied. The compression field can take the following values:
+PNG_TEXT_COMPRESSION_NONE is applied. The compression field can take
+the following values:
 
 =over
 
@@ -983,7 +988,7 @@ C<png_color> struct.
 =head2 cHRM
 
 See [% spec("11cHRM") %] "cHRM Primary chromaticities and white
-point" of the PNG specification.
+point".
 
 =head3 get_cHRM
 
@@ -1026,7 +1031,7 @@ arguments.
 
 =head2 gAMA
 
-See [% spec("11gAMA") %] of the PNG specification.
+See [% spec("11gAMA") %].
 
 =head3 get_gAMA
 
@@ -1047,7 +1052,7 @@ Set the gamma value or gAMA chunk.
 
 =head2 sRGB
 
-See [% spec("11sRGB") %]  of the PNG specification.
+See [% spec("11sRGB") %].
 
 =head3 get_sRGB
 
@@ -1092,7 +1097,7 @@ C<$srgb> is one of the following (integer numbers).
 
 =head2 pHYs
 
-See [% spec("11pHYs") %]  of the PNG specification.
+See [% spec("11pHYs") %].
 
 =head3 get_pHYs
 
@@ -1140,7 +1145,7 @@ Set oFFs chunk.
 
 =head2 sBIT
 
-See [% spec("11sBIT") %]  of the PNG specification.
+See [% spec("11sBIT") %].
 
 =head3 get_sBIT
 
@@ -1162,7 +1167,7 @@ keys C<red>, C<blue>, C<green>, and C<gray>.
 
 =head2 iCCP
 
-See [% spec("11iCCP") %]  of the PNG specification.
+See [% spec("11iCCP") %].
 
 =head3 get_iCCP
 
@@ -1226,7 +1231,7 @@ The units as a string.
 
 =item params
 
-If this exists its value is a reference to an array containing the
+If this exists, its value is a reference to an array containing the
 parameter list of the pCAL chunk.
 
 =back
@@ -1244,7 +1249,7 @@ of L</get_pCAL>.
 
 =head2 hIST
 
-See [% spec("11hIST") %]  of the PNG specification.
+See [% spec("11hIST") %].
 
 =head3 get_hIST
 
@@ -1311,18 +1316,19 @@ themselves rather than numbers.
 
 =head2 sPLT
 
-See [% spec("11sPLT") %]  of the PNG specification.
+See [% spec("11sPLT") %].
 
 =head3 get_sPLT
 
-Provisionally, see L</set_sPLT> for documentation, the return value is
+Provisional. See L</set_sPLT> for documentation, the return value is
 like the input of that.
 
 =head3 set_sPLT
 
     $png->set_sPLT ([{ name => 'palette', depth => 8, entries => [{red => 1, blue => 2},]}]);
 
-Set suggested palettes. The input is an array reference containing hash references with the following fields:
+Set suggested palettes. The input is an array reference containing
+hash references with the following fields:
 
 =over
 
@@ -1336,7 +1342,8 @@ The depth of the suggested palette.
 
 =item entries
 
-The entries of the palette. This is an array reference containing hash references with keys as follows:
+The entries of the palette. This is an array reference containing hash
+references with keys as follows:
 
 =over
 
@@ -1359,7 +1366,7 @@ to be specified, it is calculated from the length of C<entries>.
 
 =head2 tRNS
 
-See [% spec("11tRNS") %]  of the PNG specification.
+See [% spec("11tRNS") %].
 
 =head3 get_tRNS
 
@@ -1440,11 +1447,21 @@ their function.
 
     $png->set_filler ($filler, $flags);
 
+Set transformations in $png such that a filler byte C<$filler> is
+added when an 8-bit grayscale image or 24-bit RGB image is read, and a
+filler byte is deleted when an 8-bit grayscale image or 24-bit RGB
+image is written. C<$flags> may be C<PNG_FLAG_FILLER_AFTER> or zero.
+
 [% cor(fn="set_filler") %]
 
 =head2 set_packing
 
     $png->set_packing ();
+
+When reading a PNG, expand the image to 1 pixel per byte for
+bit-depths 1, 2 and 4 without changing the order of the pixels. If not
+called, pack pixels of bit_depths 1, 2 and 4 into bytes as small as
+possible, for example, 8 pixels per byte for 1-bit files
 
 [% cor(fn="set_packing") %]
 
@@ -1452,11 +1469,18 @@ their function.
 
     $png->set_strip_16 ();
 
+Strip the pixels of a PNG stream with 16 bits per channel to 8 bits
+per channel.
+
 [% cor(fn="set_strip_16") %]
 
 =head2 set_expand
 
     $png->set_expand ();
+
+Set transformation in C<$png> such that paletted images are expanded
+to RGB, grayscale images of bit-depth less than 8 are expanded to
+8-bit images, and tRNS chunks are expanded to alpha channels.
 
 [% cor(fn="set_expand") %]
 
@@ -1492,30 +1516,28 @@ This is not a libpng-equivalent function.
 
 This returns the undefined value if the image data in F<a.png> is the
 same as the image data in F<b.png>. If the image data is different, it
-prints a message describing the first difference found, for example
-the height is different, or row 0 of the image data is different,
-etc. This function is used in testing this module.
+returns a readable text message describing the first difference found,
+for example the height is different, or row 0 of the image data is
+different, etc. 
+
+This function is used in testing this module. See also L</png_compare>.
 
 =head1 ACCESS FUNCTIONS
 
-These functions are used to access parts of the C<$png> object
-itself. They are for people who are writing C or XS code and need to
-directly access the C structures within the Perl object rather than go
-via the supplied functions.
+These functions access the libpng C structures within the Perl
+object. They are for people writing XS or C code.
 
 =head2 get_internals
 
     my ($png_struct, $png_info) = get_internals ($png);
 
-This allows writers of XS extensions to Image::PNG::Libpng access to
-the internal C<png_structp> and C<png_infop> contained in C<$png>. The
-return value is a list containing the png_structp as the first
-argument and the png_infop as the second argument, wrapped up as
-references to objects of type C<Image::PNG::Libpng::png_struct> and
-C<Image::PNG::Libpng::png_info>.
+This function returns the C<png_structp> and C<png_infop> contained in
+C<$png>. The return value is a list containing the C<png_structp> as
+the first argument and the C<png_infop> as the second argument,
+wrapped up as references to objects of type
+C<Image::PNG::Libpng::png_struct> and C<Image::PNG::Libpng::png_info>.
 
-To access the values of the actual pointers from XS, use something
-like the following:
+To access the values of the pointers, use something like this:
 
     void access_png_internals (png, info)
 	SV * png;
@@ -1533,9 +1555,9 @@ An example exists in L<Image::PNG::Cairo>.
 
     $png->copy_row_pointers ($row_pointers);
 
-This is allows XS routines to directly set the value of the row
-pointers for the PNG image. The memory is copied so whatever is in the
-row pointers can be freed immediately after calling this. However, the
+This allows XS routines to directly set the value of the row pointers
+for the PNG image. The memory is copied, so whatever is in the row
+pointers can be freed immediately after calling this. However, the
 image data it points to is not copied, so this needs to be valid until
 the PNG is written.
 
@@ -1557,9 +1579,9 @@ thing but takes ownership of the memory.
     $png->set_image_data ($image_data);
 
 Set the internal image data pointer to C<$image_data>. C<$image_data>
-should contain a pointer to memory stored as an SvIV allocated with
-Newx or a similar function. This transfers ownership of the memory to
-C<$png>, which will free it with Safefree when C<$png> is
+should contain a pointer to memory stored as an C<SvIV> allocated with
+C<Newx> or a similar function. This transfers ownership of the memory
+to C<$png>, which will free it with C<Safefree> when C<$png> is
 destroyed. Calling this function with any value does not actually
 change the content of the PNG image itself.
 
@@ -1670,8 +1692,8 @@ about Perl's internal structures to be able to create a memory-safe
 interface to these functions. The partial read/write functions would
 rely on preserving pointers to data structures within the Perl
 program's data area between calls. So this module doesn't deal with
-png_write_chunk, png_write_end, png_write_info, png_write_row, or
-png_write_rows.
+C<png_write_chunk>, C<png_write_end>, C<png_write_info>, C<png_write_row>, or
+C<png_write_rows>.
 
 =item Fixed point functions
 
@@ -1685,39 +1707,25 @@ Other unsupported functions include
 
 =over
 
-=item png_set_crc_action
-
-=item png_set_sig_bytes
-
-=item png_get_compression_buffer_size
-
-=item png_set_compression_buffer_size
-
-=item png_set_write_status_fn
-
-=item png_set_unknown_chunk_location
-
-=item png_set_check_for_invalid_index
-
-=item png_set_benign_errors
-
 =item png_benign_error
 
 =item png_chunk_benign_error
 
-=item png_get_interlace_type
+=item png_get_chunk_cache_max
+
+=item png_get_compression_buffer_size
 
 =item png_get_compression_type
 
-=item png_set_text_compression_strategy
-
 =item png_get_filter_type
+
+=item png_get_interlace_type
 
 =item png_get_io_ptr
 
-=item png_get_signature
-
 =item png_get_progressive_ptr
+
+=item png_get_signature
 
 =item png_get_x_offset_pixels
 
@@ -1727,25 +1735,43 @@ Other unsupported functions include
 
 =item png_get_y_pixels_per_meter
 
-=item png_set_filter_heuristics
-
-=item png_set_quantize
-
-=item png_set_tRNS_to_alpha
-
-=item png_set_rgb_to_gray
-
-=item png_set_swap
-
-=item png_set_packswap
+=item png_set_benign_errors
 
 =item png_set_cHRM_XYZ
 
 There is no Z value allowed in L</set_cHRM> at present.
 
+=item png_set_check_for_invalid_index
+
 =item png_set_chunk_cache_max
 
-=item png_get_chunk_cache_max
+=item png_set_compression_buffer_size
+
+=item png_set_crc_action
+
+=item png_set_filter_heuristics
+
+=item png_set_packswap
+
+=item png_set_quantize
+
+=item png_set_rgb_to_gray
+
+=item png_set_scale_16
+
+=item png_set_sig_bytes
+
+=item png_set_strip_alpha
+
+=item png_set_swap
+
+=item png_set_tRNS_to_alpha
+
+=item png_set_text_compression_strategy
+
+=item png_set_unknown_chunk_location
+
+=item png_set_write_status_fn
 
 =back
 
