@@ -169,12 +169,15 @@ EOF
 	my $ccflags = $Config{ccflags};
 	# The C compiler to use
 	my $cc = $Config{cc};
+	if (! $cc) {
+	    die "I cannot find a C compiler in your \%Config";
+	}
 	open my $output, ">", $c_file_name
             or die "Error opening file '$c_file_name' for writing: $!";
 	print $output $test_c;
 	close $output
             or die "Error closing file '$c_file_name': $!";
-	my $compile = "cc $ccflags $inc -o $exe_file_name $c_file_name $ldflags $libs";
+	my $compile = "$cc $ccflags $inc -o $exe_file_name $c_file_name $ldflags $libs";
 	msg ("The compile command is '$compile'");
 	$compile_ok = (system ($compile) == 0);
 	if ($compile_ok) {
