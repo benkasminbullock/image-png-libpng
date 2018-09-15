@@ -497,10 +497,13 @@ intended for use with the object only.
 
     my $channels = $png->get_channels ();
 
-Get the number of channels, from one to four. The return value is 1
-for colour type PNG_COLOR_TYPE_GRAY and PNG_COLOR_TYPE_PALETTE, 2 for
+Get the number of channels, from one to four. This means the number of
+components of one pixel. The return value is 1 for colour type
+PNG_COLOR_TYPE_GRAY and PNG_COLOR_TYPE_PALETTE, 2 for
 PNG_COLOR_TYPE_GRAY_ALPHA, 3 for PNG_COLOR_TYPE_RGB and 4 for
-PNG_COLOR_TYPE_RGB_ALPHA or PNG_COLOR_TYPE_RGB with a filler byte.
+PNG_COLOR_TYPE_RGB_ALPHA or PNG_COLOR_TYPE_RGB with a filler
+byte. This doesn't necessarily correspond to the number of bytes,
+since the bit depth can also be 1, 2, 4, 8, or 16.
 
 [% cor(fn="get_channels") %]
 
@@ -533,10 +536,11 @@ These functions deal with accessing the image data itself.
 This returns the rows of the PNG image, after uncompressing and
 unfiltering, as binary data. The return value, C<$rows> in the
 example, is an array reference with a number of rows equal to the
-height of the PNG image. Each row consists of the actual binary
-data. Pixel values must be extracted using a function such as
-C<substr> or C<unpack>. This binary data is likely to contain bytes
-equal to zero.
+height of the PNG image. Each element of the array reference is a
+string containing the binary data making up a row of the image. The
+values of individual pixels can be extracted from using a function
+such as C<substr> or C<unpack>. This binary data is likely to contain
+bytes equal to zero.
 
 L</get_rowbytes> gives the number of bytes in each row.
 
@@ -551,19 +555,9 @@ extra zero byte at the end.
 
 Set the rows of data to be written in to the PNG to C<@rows>. C<@rows>
 needs to contain at least the same number of rows of data as the
-height of the PNG image, and the length of each entry needs to be at
-least the width of the entry times the number of bytes required for
-each pixel.
-
-C<set_rows> does not copy the row data, it just tells libpng where the
-data is to be found. Thus, if you call this routine as above with an
-array C<@rows>, then you alter the contents of C<@rows>, then call
-L</write_png>, the contents written by C<write_png> will be the
-contents of C<@rows> at the time you called C<write_png>, rather than
-the contents at the time you called C<set_rows>. Thus I recommend that
-you only use this immediately before calling L</write_png> to prevent
-odd problems from occuring. (note to self - this is stupid, should
-just copy the row data).
+height of the PNG image set with L</set_IHDR>, and the length of each
+entry needs to be at least the width of the image multiplied by the
+number of bytes required for each pixel.
 
 [% cor(fn="set_rows") %].
 
@@ -1807,15 +1801,6 @@ W
 =head1 BUGS
 
 This section documents some known deficiencies in the module.
-
-=head2 set_rows is unreliable
-
-The method L</set_rows> doesn't actually copy or write any
-information. All it does is set a pointer to the pointers to the rows
-in the PNG data structure. The actual data is only written when you
-ask to write it. So if you "set_rows" to some data, then delete or
-change that data before asking to write the png with L</write_png>,
-you will get a memory error.
 
 =head2 Conditional compilation
 

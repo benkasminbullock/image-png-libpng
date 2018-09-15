@@ -37,8 +37,6 @@ typedef struct perl_libpng
     /* Number of times we have called "calloc"-like functions, for
        detecting memory leaks. */
     int memory_gets;
-    /* Pointer to rows we copied. */
-    AV * copied_rows;
     /* Transforms to apply. */
     int transforms;
 
@@ -51,6 +49,7 @@ typedef struct perl_libpng
     STRLEN data_length;
     /* How much of the data in "image_data" we have read. */
     int read_position;
+    unsigned char * all_rows;
     /* If the following variable is set to a true value, the module
        prints messages about what it is doing. */
     int verbosity : 1;
@@ -273,10 +272,10 @@ perl_png_destroy (perl_libpng_t * png)
     if (! png) {
         return;
     }
-    /* Allow whatever copied rows to be freed. */
-    if (png->copied_rows) {
-	SvREFCNT_dec ((SV *) png->copied_rows);
-	png->copied_rows = 0;
+    /* Free row data. */
+    if (png->all_rows) {
+	PERL_PNG_FREE (png->all_rows);
+	png->all_rows = 0;
     }
     if (png->type == perl_png_write_obj) {
         png_destroy_write_struct (& png->png, & png->info);
@@ -2066,6 +2065,7 @@ static void perl_png_set_rows (perl_libpng_t * png, AV * rows)
     png_uint_32 height;
     png_uint_32 width;
     int bit_depth;
+    int channels;
 
     /* All of the following are ignored. */
     int color_type;
@@ -2074,15 +2074,32 @@ static void perl_png_set_rows (perl_libpng_t * png, AV * rows)
     int filter_method;
     /* libpng return value */
     int status;
+    /* Minimum number of bytes we need to store one row. */
+    int rbytes;
+    /* Number of bytes in all the rows. */
+    int arbytes;
+    /* All the rows. */
+    unsigned char * ar;
+    /* Our row. */
+    unsigned char * r;
 
     status = png_get_IHDR (pngi, & width, & height,
                            & bit_depth, & color_type, & interlace_method,
                            & compression_method, & filter_method);
 
+    channels = png_get_channels (pngi);
+    rbytes = width * bit_depth * channels;
+    if (rbytes % 8 == 0) {
+	rbytes /= 8;
+    }
+    else {
+	rbytes = rbytes / 8 + 1;
+    }
+
     if (png->row_pointers) {
         /* There was an attempt to set the rows of an image after they
            had already been set. */
-        croak ("Row pointers already allocated");
+        croak ("Row pointers already set");
     }
     /* Check that this is the same as the height of the image. */
     n_rows = av_len (rows) + 1;
@@ -2093,20 +2110,36 @@ static void perl_png_set_rows (perl_libpng_t * png, AV * rows)
     }
     MESSAGE ("%d rows.\n", n_rows);
     GET_MEMORY (row_pointers, n_rows, unsigned char *);
+    arbytes = height * rbytes;
+    GET_MEMORY (ar, arbytes, unsigned char); 
+    r = ar;
     for (i = 0; i < n_rows; i++) {
         /* Need to check that this is the same as the width of the image. */
         STRLEN length;
         SV * row_i;
+	/* The data from Perl's row. */
+	unsigned char * pr;
         row_i = * av_fetch (rows, i, 0);
-        row_pointers[i] = (unsigned char *) SvPV (row_i, length);
+	pr = (unsigned char *) SvPV (row_i, length);
+	if (length > rbytes) {
+	    warn ("Row %d is %d bytes, which is too long; truncating to %d",
+		  i, length, rbytes);
+	    length = rbytes;
+	}
+	memcpy (r, pr, length);
+        row_pointers[i] = r;
         MESSAGE ("Copying row %d, length %d", i, length);
+	r += rbytes;
+    }
+    if (r != ar + arbytes) {
+	croak ("%s:%d: Mismatch %p != %p", __FILE__, __LINE__,
+	       r, ar + arbytes);
     }
     png_set_rows (pngi, row_pointers);
     /* "png" keeps a record of the allocated memory in order to free
        it. */
     png->row_pointers = row_pointers;
-    png->copied_rows = rows;
-    SvREFCNT_inc ((SV *) rows);
+    png->all_rows = ar;
 }
 
 /*  __  __                                                                      
