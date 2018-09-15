@@ -8,6 +8,8 @@ use 5.008001;
 use lib 'inc';
 use CheckForLibPng;
 
+# Set argument to any true value to get debugging messages.
+
 my $vars = check_for_libpng (undef);
 
 if (! $vars) {
@@ -15,13 +17,12 @@ if (! $vars) {
     exit;
 }
 
-WriteMakefile (
+my %wm = (
     NAME         => '[% config.base %]',
     VERSION      => '[% config.version %]',
     ABSTRACT     => '[% config.abstract %]',
     OBJECT       => 'Libpng.o',
     LIBS         => '-lpng',
-#    INC          => $inc,
     AUTHOR => '[% config.author %] <[% config.email %]>',
     LICENSE => 'perl',
     META_MERGE => {
@@ -30,13 +31,24 @@ WriteMakefile (
             "repository" => "[% config.repo %]",
         },
         no_index => {
-            directory => ['tmpl', 'build'],
+            directory => ['tmpl', 'build', 'inc'],
         },
     },
     MIN_PERL_VERSION => '5.008001',
     EXE_FILES => ['script/pnginspect',],
 #    OPTIMIZE => '-Wall -O',
 );
+
+if ($vars) {
+    if ($vars->{inc}) {
+	$wm{INC} = "$vars->{inc}";
+    }
+    if ($vars->{lib}) {
+	$wm{LIBS} = "$vars->{lib} $wm{LIBS}";
+    }
+}
+
+WriteMakefile (%wm);
 
 my @names;
 
