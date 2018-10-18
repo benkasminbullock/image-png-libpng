@@ -53,3 +53,5 @@ junk
 # Generated.
 
 README
+
+inc/CheckForLibpng.pm

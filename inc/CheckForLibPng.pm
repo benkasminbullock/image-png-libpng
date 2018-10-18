@@ -5,6 +5,9 @@
 #  \____|_| |_|\___|\___|_|\_\ |_|  \___/|_|    |_|_|_.__/| .__/|_| |_|\__, |
 #                                                         |_|          |___/ 
 #
+# This file lives in ~/projects/check4libpng/lib and should be copied
+# from there.
+#
 # 0.03 2018-09-16
 #
 # - Use $Config{cc} to get the C compiler
