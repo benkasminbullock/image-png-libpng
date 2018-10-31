@@ -165,25 +165,17 @@ perl_png_warning_fn (png_structp png_ptr, png_const_charp warning_msg)
    no memory leaks. All allocation is done via Newxz ("calloc") rather
    than "malloc". */
 
-#define GET_MEMORY(thing, number, type) {				\
-        Newxz (thing, number, type);					\
-        if (! thing) {                                                  \
-            /* A request for more memory was refused. The first two
-               parameters are the file name and line number of where
-               this happened. */                \
-            croak ("%s:%d: Call to calloc for "           \
-                            "%d '%s' failed: out of memory",            \
-                            __FILE__, __LINE__, number, #thing);        \
-        }                                                               \
-        png->memory_gets++;                                             \
+#define GET_MEMORY(thing, number, type) {	\
+        Newxz (thing, number, type);		\
+        png->memory_gets++;                     \
     }
 
 /* Free memory using the following in order to keep count of the
    number of objects still in use. */
 
-#define PERL_PNG_FREE(thing) {                  \
-        png->memory_gets--;                     \
-        Safefree (thing);			\
+#define PERL_PNG_FREE(thing) {   \
+        png->memory_gets--;      \
+        Safefree (thing);	 \
     }
 
 static perl_libpng_t *
