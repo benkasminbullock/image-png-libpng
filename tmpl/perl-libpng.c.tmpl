@@ -29,7 +29,11 @@ typedef struct perl_libpng
     png_structp png;
     png_infop info;
     png_infop end_info;
-    enum {perl_png_unknown_obj, perl_png_read_obj, perl_png_write_obj} type;
+    enum {
+	perl_png_unknown_obj,
+	perl_png_read_obj,
+	perl_png_write_obj,
+    } type;
     /* Allocated memory which holds the rows. */
     png_bytepp  row_pointers;
     /* Allocated memory which holds the image data. */
@@ -231,9 +235,9 @@ static void free_png (perl_libpng_t * png)
     if (png->memory_gets != 1) {
         /* The module's internal check for memory errors was tripped
            somehow. This probably indicates a bug in the module. */
-        warn ( "Memory leak detected: there are %d "
-                       "allocated pieces of memory which have not "
-                       "been freed.\n", png->memory_gets - 1);
+        warn ("Memory leak detected: there are %d "
+	      "allocated pieces of memory which have not "
+	      "been freed.\n", png->memory_gets - 1);
     }
     Safefree (png);
 }
@@ -242,6 +246,10 @@ static void
 perl_png_destroy_write_struct (perl_libpng_t * png)
 {
     return;
+
+    /* See the documentation under "No destructors" for why this is
+       commented out. */
+
     /*
     png_destroy_write_struct (& png->png, & png->info);
     free_png (png);
@@ -252,6 +260,10 @@ static void
 perl_png_destroy_read_struct (perl_libpng_t * png)
 {
     return;
+
+    /* See the documentation under "No destructors" for why this is
+       commented out. */
+
     /*
     png_destroy_read_struct (& png->png, & png->info, & png->end_info);
     free_png (png);
@@ -335,7 +347,10 @@ static SV * make_text_sv (perl_libpng_t * png, const png_textp text_ptr)
             is_itxt = 1;
 
             if (! is_utf8_string ((unsigned char *) text, length)) {
-                warn ( "According to its compression type, a text chunk in the current PNG file claims to be ITXT but Perl's 'is_utf8_string' says that its encoding is invalid.");
+                warn ("According to its compression type, a text chunk "
+		      "in the current PNG file claims to be ITXT but "
+		      "Perl's 'is_utf8_string' says that its encoding "
+		      "is invalid.");
                 is_itxt = 0;
             }
         }
@@ -363,7 +378,9 @@ static SV * lang_key_to_sv (perl_libpng_t * png, const char * lang_key)
         length = strlen (lang_key);
         sv = newSVpv (lang_key, length);
         if (! is_utf8_string ((unsigned char *) lang_key, length)) {
-            warn ( "A language key 'lang_key' member of a 'png_text' structure in the file failed Perl's 'is_utf8_string' test, which says that its encoding is invalid.");
+            warn ( "A language key 'lang_key' member of a 'png_text' "
+		   "structure in the file failed Perl's 'is_utf8_string' "
+		   "test, which says that its encoding is invalid.");
             is_itxt = 0;
         }
         if (is_itxt) {
