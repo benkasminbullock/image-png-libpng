@@ -2592,6 +2592,7 @@ perl_png_kungfu (perl_libpng_t * png)
     int i;
     png_bytepp rows;
     int rowpixels;
+    int bytes;
 
     alphapix = 1;
     png_get_IHDR (pngi, & width, & height,
@@ -2600,13 +2601,23 @@ perl_png_kungfu (perl_libpng_t * png)
     rows = png_get_rows (pngi);
     rowbytes = png_get_rowbytes (pngi);
     rowpixels = rowbytes;
+    switch (bit_depth) {
+    case 8:
+	bytes = 1;
+	break;
+    case 16:
+	bytes = 2;
+	break;
+    default:
+	return &PL_sv_undef;
+    }
     switch (color_type) {
     case PNG_COLOR_TYPE_RGB_ALPHA:
-	datapix = bit_depth * 3 / 8;
+	datapix = 3;
 	rowpixels /= 4;
 	break;
     case PNG_COLOR_TYPE_GRAY_ALPHA:
-	datapix = bit_depth / 8;
+	datapix = 1;
 	rowpixels /= 2;
 	break;
     default:
@@ -2617,38 +2628,73 @@ perl_png_kungfu (perl_libpng_t * png)
     datapix *= npixels;
     Newx (alphabytes, alphapix, unsigned char); 
     Newx (databytes, datapix, unsigned char); 
+			int p;
     for (i = 0; i < height; i++) {
 	int j;
 	png_bytep row;
 	row = rows[i];
-	for (j = 0; j < width; j++) {
-	    int k;
-	    int o;
-	    o = i*height + j;
-	    switch (color_type) {
-	    case PNG_COLOR_TYPE_RGB_ALPHA:
-		for (k = 0; k < 3; k++) {
-		    databytes[3*o + k] = row[4*j + k];
+	switch (bytes) {
+	case 1:
+	    for (j = 0; j < width; j++) {
+		int k;
+		int o;
+		o = i*width + j;
+		switch (color_type) {
+		case PNG_COLOR_TYPE_RGB_ALPHA:
+		    for (k = 0; k < 3; k++) {
+			p = 3*o+k;
+			databytes[p] = row[4*j + k];
+		    }
+		    alphabytes[o] = row[4*j+3];
+		    break;
+		    break;
+		case PNG_COLOR_TYPE_GRAY_ALPHA:
+		    databytes[o] = row[2*j];
+		    alphabytes[o] = row[2*j+1];
+		    break;
+		default:
+		    break;
 		}
-		alphabytes[o] = row[4*j+3];
-		break;
-	    case PNG_COLOR_TYPE_GRAY_ALPHA:
-		databytes[o] = row[2*j];
-		alphabytes[o] = row[2*j+1];
-		break;
-	    default:
-		break;
 	    }
+	    break;
+	case 2:
+	    for (j = 0; j < width; j++) {
+		int k;
+		int o;
+		int byte;
+		o = i*width + j;
+		switch (color_type) {
+		case PNG_COLOR_TYPE_RGB_ALPHA:
+		    for (k = 0; k < 3; k++) {
+			for (byte = 0; byte < 2; byte++) {
+			    databytes[6*o + 2*k + byte] = row[8*j + 2*k + byte];
+			}
+		    }
+		    for (byte = 0; byte < 2; byte++) {
+			alphabytes[2*o+byte] = row[8*j+6+byte];
+		    }
+		    break;
+		case PNG_COLOR_TYPE_GRAY_ALPHA:
+		    for (byte = 0; byte < 2; byte++) {
+			databytes[2*o+byte] = row[4*j+byte];
+			alphabytes[2*o+byte] = row[4*j+2+byte];
+		    }
+		    break;
+		default:
+		    break;
+		}
+	    }
+	    break;
 	}
     }
     data = newSVpv ((const char *) databytes, datapix);
     alpha = newSVpv ((const char *) alphabytes, alphapix);
+    Safefree (alphabytes);
+    Safefree (databytes);
     kungfu = newHV ();
     hv_store (kungfu, "data", strlen ("data"), data, 0);
     hv_store (kungfu, "alpha", strlen ("alpha"), alpha, 0);
     kungfu_ref = newRV_noinc ((SV*) kungfu);
-    Safefree (alphabytes);
-    Safefree (databytes);
     return kungfu_ref;
 }
 
