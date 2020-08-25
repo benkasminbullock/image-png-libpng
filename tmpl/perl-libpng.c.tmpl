@@ -2571,6 +2571,87 @@ perl_png_get_user_[% what %]_max (perl_libpng_t * png)
 }
 [% END # what %]
 
+static SV *
+perl_png_kungfu (perl_libpng_t * png)
+{
+    HV * kungfu;
+    SV * kungfu_ref;
+    SV * data;
+    SV * alpha;
+    int datapix;
+    png_uint_32 width;
+    png_uint_32 height;
+    int bit_depth;
+    int color_type;
+    int interlace_method;
+    int rowbytes;
+    int alphapix;
+    int npixels;
+    unsigned char * databytes;
+    unsigned char * alphabytes;
+    int i;
+    png_bytepp rows;
+    int rowpixels;
+
+    alphapix = 1;
+    png_get_IHDR (pngi, & width, & height,
+		  & bit_depth, & color_type, & interlace_method,
+		  0, 0);
+    rows = png_get_rows (pngi);
+    rowbytes = png_get_rowbytes (pngi);
+    rowpixels = rowbytes;
+    switch (color_type) {
+    case PNG_COLOR_TYPE_RGB_ALPHA:
+	datapix = bit_depth * 3 / 8;
+	rowpixels /= 4;
+	break;
+    case PNG_COLOR_TYPE_GRAY_ALPHA:
+	datapix = bit_depth / 8;
+	rowpixels /= 2;
+	break;
+    default:
+	return &PL_sv_undef;
+    }
+    npixels = height * rowpixels;
+    alphapix = npixels;
+    datapix *= npixels;
+    Newx (alphabytes, alphapix, unsigned char); 
+    Newx (databytes, datapix, unsigned char); 
+    for (i = 0; i < height; i++) {
+	int j;
+	png_bytep row;
+	row = rows[i];
+	for (j = 0; j < width; j++) {
+	    int k;
+	    int o;
+	    o = i*height + j;
+	    switch (color_type) {
+	    case PNG_COLOR_TYPE_RGB_ALPHA:
+		for (k = 0; k < 3; k++) {
+		    databytes[3*o + k] = row[4*j + k];
+		}
+		alphabytes[o] = row[4*j+3];
+		break;
+	    case PNG_COLOR_TYPE_GRAY_ALPHA:
+		databytes[o] = row[2*j];
+		alphabytes[o] = row[2*j+1];
+		break;
+	    default:
+		break;
+	    }
+	}
+    }
+    data = newSVpv ((const char *) databytes, datapix);
+    alpha = newSVpv ((const char *) alphabytes, alphapix);
+    kungfu = newHV ();
+    hv_store (kungfu, "data", strlen ("data"), data, 0);
+    hv_store (kungfu, "alpha", strlen ("alpha"), alpha, 0);
+    kungfu_ref = newRV_noinc ((SV*) kungfu);
+    Safefree (alphabytes);
+    Safefree (databytes);
+    return kungfu_ref;
+}
+
 #undef pngi
 
 /*
