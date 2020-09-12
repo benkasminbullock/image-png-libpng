@@ -2572,10 +2572,10 @@ perl_png_get_user_[% what %]_max (perl_libpng_t * png)
 [% END # what %]
 
 static SV *
-perl_png_kungfu (perl_libpng_t * png)
+perl_png_split_alpha (perl_libpng_t * png)
 {
-    HV * kungfu;
-    SV * kungfu_ref;
+    HV * split;
+    SV * split_ref;
     SV * data;
     SV * alpha;
     int datapix;
@@ -2628,7 +2628,7 @@ perl_png_kungfu (perl_libpng_t * png)
     datapix *= npixels;
     Newx (alphabytes, alphapix, unsigned char); 
     Newx (databytes, datapix, unsigned char); 
-			int p;
+    int p;
     for (i = 0; i < height; i++) {
 	int j;
 	png_bytep row;
@@ -2691,11 +2691,11 @@ perl_png_kungfu (perl_libpng_t * png)
     alpha = newSVpv ((const char *) alphabytes, alphapix);
     Safefree (alphabytes);
     Safefree (databytes);
-    kungfu = newHV ();
-    hv_store (kungfu, "data", strlen ("data"), data, 0);
-    hv_store (kungfu, "alpha", strlen ("alpha"), alpha, 0);
-    kungfu_ref = newRV_noinc ((SV*) kungfu);
-    return kungfu_ref;
+    split = newHV ();
+    hv_store (split, "data", strlen ("data"), data, 0);
+    hv_store (split, "alpha", strlen ("alpha"), alpha, 0);
+    split_ref = newRV_noinc ((SV*) split);
+    return split_ref;
 }
 
 #undef pngi
