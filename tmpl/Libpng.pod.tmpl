@@ -219,6 +219,15 @@ used by L<pnginspect> to get the various valid chunks.
 Set the specified chunk. Croaks if given C<IDAT> chunk, use
 L</set_rows> instead. Croaks if given unknown chunk.
 
+=head2 split_alpha
+
+    my $split = $png->split_alpha ();
+    my $alpha = $split->{alpha};
+    my $colour = $split->{data};
+
+Split the alpha channel away from the other data. This only works for
+RGBA images or gray/alpha images.
+
 =head1 New-like functions
 
 There are two different "new"-like functions, depending on whether you
