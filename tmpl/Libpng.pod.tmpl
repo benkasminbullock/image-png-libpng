@@ -228,6 +228,10 @@ L</set_rows> instead. Croaks if given unknown chunk.
 Split the alpha channel away from the other data. This only works for
 RGBA images or gray/alpha images.
 
+If your purpose of splitting out the Alpha channel is simply to
+discard it, you may get better performance by using
+C<PNG_TRANSFORM_STRIP_ALPHA> in L</read_png> instead.
+
 =head1 New-like functions
 
 There are two different "new"-like functions, depending on whether you
