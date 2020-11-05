@@ -1,3 +1,7 @@
+0.47_01 2020-11-06
+
+- Makefile.PL and printf fixes
+
 0.47 2020-09-17
 
 - Added "split_alpha"
