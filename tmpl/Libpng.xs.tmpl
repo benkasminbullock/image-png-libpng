@@ -469,8 +469,6 @@ CODE:
 OUTPUT:
 	RETVAL
 
-#if 1
-
 void
 perl_png_set_compression_level (Png, level)
 	Image::PNG::Libpng Png;
@@ -505,6 +503,8 @@ perl_png_set_compression_window_bits  (Png,   window_bits);
 	int window_bits;
 CODE:
 	png_set_compression_window_bits (Png->png, window_bits);
+
+#if 0
 
 void
 perl_png_set_crc_action  (Png, crit_action, ancil_action);
