@@ -1,4 +1,5 @@
 [% start_year=2011 %]
+[% danger="⛐🤪⚠" %]
 [%- noinfo = "No info structure" -%]
 [%- xnoinfo = BLOCK -%]
 L</[% noinfo %]>
@@ -209,8 +210,9 @@ L<Image::Similar> for a looser comparison of images.
     my $timechunk = $png->get_chunk ('tIME');
 
 Get the specified chunk. Croaks if given C<IDAT> chunk, use
-L</get_rows> instead. Returns undef if given unknown chunk. This is
-used by L<pnginspect> to get the various valid chunks.
+L</get_rows> instead. Returns undef if given unknown chunk. 
+
+This is used by L<pnginspect> to get the valid chunks.
 
 =head2 set_chunk
 
@@ -930,6 +932,80 @@ L</set_user_limits>.
 
 [% END # what %]
 
+=head2 set_compression_level
+
+    $png->set_compression_level ($number);
+
+Set the compression level used to make the PNG. A value of 0
+corresponds to no compression at all, otherwise C<$number> may take
+values of 1 to 9, with smaller values giving faster, and larger values
+giving better, that is with smaller output, compression. These
+correspond to the -1, -2, ... -9 options to the C<gzip> utility, or
+the compression level parameter of C<zlib>. Calling with -1 reverts to
+the default compression. Calling with any other number outside the
+range 0 to 9 results in a fatal error.
+
+([% danger %] The libpng documentation, and online sites derived from it,
+incorrectly states that the underlying function
+C<png_set_compression_level> takes only arguments from 0 to 9 and that
+this function should be called with a value of 6 to obtain the default
+compression; libpng in fact uses the value of -1 via the macro
+C<PNG_Z_DEFAULT_COMPRESSION> to set its default compression. This may
+be confirmed by examining the source code of F<pnglibconf.h>,
+F<pngwrite.c>, and F<pngwutil.c> in the libpng
+distribution. Image::PNG::Libpng supports the libpng default value of
+-1 but doesn't allow other negative numbers. Whether or not the value
+0 results in no compression is untested as of Image::PNG::Libpng
+version 0.49.)
+
+[% MACRO untested(func) BLOCK %]
+=head2 [% func %]
+
+    $png->[% func %] ($argument);
+
+[% danger %] Untested function corresponding to C<png_[%- func
+-%]>. Takes one integer argument.
+
+[%- END %]
+
+[% untested("set_compression_mem_level") %]
+
+Sets the C<memLevel> parameter of C<deflateInit2> in zlib when writing
+PNG image data. Argument between 1 for minimum memory and 9 for
+maximum speed. The default is 8. See L</zlib documentation>.
+
+[% untested("set_compression_window_bits") %]
+
+Sets the C<windowBits> parameter of C<deflateInit2> in zlib when
+writing PNG image data. Argument value must be between 8 and 15 for
+libpng. The default is 15. See the L</zlib documentation>.
+
+[% untested("set_compression_strategy") %]
+
+Sets the C<strategy> parameter of C<deflateInit2> when writing PNG
+image data. Setting this with libpng overrides libpng's default
+behaviour of changing the value depending on the filter in use. For
+zlib, the argument is either 0 for default behaviour, or 1 to 4.  See
+the L</zlib documentation>. libpng uses the default strategy 0
+(C<Z_DEFAULT_STRATEGY>) for unfiltered image data, and 1
+(C<Z_FILTERED>) for filtered image data.
+
+[% untested("set_text_compression_level") %]
+
+As L</set_compression_level> but for compressed text.
+
+[% untested("set_text_compression_mem_level") %]
+
+As L</set_compression_mem_level> but for compressed text.
+
+[% untested("set_text_compression_window_bits") %]
+
+As L</set_compression_window_bits> but for compressed text.
+
+[% untested("set_text_compression_strategy") %]
+
+As L</set_compression_strategy> but for compressed text.
+
 =head1 Other chunks
 
 These routines deal with the other possible chunks of PNGs.
@@ -1214,7 +1290,8 @@ pCAL is an extension of the PNG specification. See L<http://www.libpng.org/pub/p
 
     my $pcal = $png->get_pCAL ();
 
-Implemented but not tested. Return value is a hash with the following keys:
+[% danger %] Implemented but not tested. Return value is a hash with
+the following keys:
 
 =over
 
@@ -1251,8 +1328,8 @@ parameter list of the pCAL chunk.
 
     $png->set_pCAL ($values);
 
-Implemented but not tested. The input is just the same as the output
-of L</get_pCAL>.
+[% danger %] Implemented but not tested. The input is just the same as
+the output of L</get_pCAL>.
 
 [% cor(fn="set_pCAL") %]
 
@@ -1448,9 +1525,9 @@ Does the libpng support unknown chunks (see L<Private chunks>)?
 
 =head1 UNDOCUMENTED FUNCTIONS
 
-These functions aren't fully documented and are subject to change. You
-can examine the source code or the libpng documentation to discover
-their function.
+[% danger %] These functions aren't fully documented and are subject to
+change. You can examine the source code or the libpng documentation to
+discover their function.
 
 =head2 set_filler
 
@@ -1630,13 +1707,12 @@ the first argument to each function.
 
 =head2 [% unused_title %]
 
-This module eliminates all the unevaluated arguments of libpng. For
-example, libpng requires the user to pass a pointer to a C<png_struct>
-before calling the library to ask for its version number (see
-L</get_libpng_ver>), but the library ignores the this structure
-anyway, so this module does not duplicate this. There are many similar
-instances of unevaluated arguments, which have all been eliminated
-from this module.
+[% danger %] This module eliminates all the unevaluated arguments of
+libpng. For example, libpng requires the user to pass a pointer to a
+C<png_struct> to call the libpng version number function, (see
+L</get_libpng_ver>), but it actually completely ignores this
+structure. There are many similar instances of unevaluated arguments,
+which have all been eliminated from this module.
 
 If you are interested in exactly which libpng arguments are omitted,
 you can find each instance [% perl_libpng_c %] in the macro
@@ -1644,22 +1720,24 @@ C<UNUSED_ZERO_ARG>.
 
 =head2 Function return values are used to return values
 
-In libpng, some functions return results using references, and some
-return results using the function's return value. For example
-C<png_get_rows> (see L</get_rows>) uses the return value of the
-function to return an array of pointers, but C<png_get_PLTE> (see
-L</get_PLTE>) uses a pointer reference to return an array of pointers,
-and the return value to indicate errors. 
+libpng is very inconsistent in its calling conventions. Some functions
+return results using references, and some return results using the
+function's return value. For example C<png_get_rows> (see
+L</get_rows>) uses the return value of the function to return an array
+of pointers, but C<png_get_PLTE> (see L</get_PLTE>) uses a pointer
+reference to return an array of pointers, and the return value to
+indicate errors.
 
 Image::PNG::Libpng uses only the return value. Errors and
 non-existence are indicated by a return value of the undefined
 value.
 
-In libpng, some functions use the return value to indicate errors, and
-some of the functions don't indicate errors but fail silently. Some of
-the functions which use the return value to indicate an error use a
-non-zero value to indicate an error, and some of them use a zero value
-to indicate an error.
+Further to this, libpng's error handling is also very inconsistent.
+Some functions use the return value to indicate errors, and some of
+the functions don't indicate errors at all, but just fail
+silently. Even more inconsistently, some of the functions which use
+the return value to indicate an error use a non-zero value, and some
+use a zero value, to indicate an error.
 
 =head2 No destructors
 
@@ -1683,8 +1761,9 @@ This module does not offer an interface to C<png_malloc> and C<png_free>.
 =item Error handling functions
 
 This module does not offer an interface to C<png_error> and
-C<png_get_error_ptr>. It redirects the error and warning handlers to
-Perl's error stream.
+C<png_get_error_ptr> or any of the other error handling functions of
+libpng. It redirects the error and warning handlers to Perl's error
+stream.
 
 =item Input/output manipulation functions
 
@@ -1695,14 +1774,14 @@ L</write_to_scalar>.
 
 =item Partial read/write functions
 
-This module does not yet offer an interface to the partial read and
-write functions of libpng. The reason is because I don't know enough
-about Perl's internal structures to be able to create a memory-safe
-interface to these functions. The partial read/write functions would
-rely on preserving pointers to data structures within the Perl
-program's data area between calls. So this module doesn't deal with
-C<png_write_chunk>, C<png_write_end>, C<png_write_info>, C<png_write_row>, or
-C<png_write_rows>.
+This module does not currently offer an interface to the partial read
+and write functions of libpng. The reason is because I don't know
+enough about Perl's internal structures to be able to create a
+memory-safe interface to these functions. The partial read/write
+functions would rely on preserving pointers to data structures within
+the Perl program's data area between calls. So this module doesn't
+deal with C<png_write_chunk>, C<png_write_end>, C<png_write_info>,
+C<png_write_row>, or C<png_write_rows>.
 
 =item Fixed point functions
 
@@ -1756,7 +1835,22 @@ There is no Z value allowed in L</set_cHRM> at present.
 
 =item png_set_compression_buffer_size
 
+=item png_set_compression_method
+
+[% danger %] This is a useless function in libpng corresponding to the
+useless C<method> parameter of zlib functions like
+C<deflateInit2>. See L</zlib documentation>. The underlying libpng
+function just produces a warning if the user sets the value to
+anything but 8, the value of the macro C<Z_DEFLATED>, and then lets
+zlib produce an error.
+
+=item png_set_text_compression_method
+
+Unsupported for the same reasons as L</png_set_compression_method>.
+
 =item png_set_crc_action
+
+See L</Error handling functions>.
 
 =item png_set_filter_heuristics
 
@@ -1776,16 +1870,14 @@ There is no Z value allowed in L</set_cHRM> at present.
 
 =item png_set_tRNS_to_alpha
 
-=item png_set_text_compression_strategy
-
 =item png_set_unknown_chunk_location
 
 =item png_set_write_status_fn
 
 =back
 
-Unfortunately there are a raft of functions in libpng, many completely
-undocumented.
+[% danger %] Unfortunately there are a raft of functions in libpng,
+many completely undocumented.
 
 =back
 
@@ -1848,6 +1940,15 @@ Perl itself, and not within this module's code, it is not feasible to
 mitigate this, so please check the return value of C<open> in the
 usual way, or use L<autodie>, to avoid this problem.
 
+=head2 Not all constants are available
+
+Some of the libpng constants are defined in F<pnglibconf.h> or
+F<pngconf.h> but L<Image::PNG::Const> only looks at F<png.h> to make
+its constants. Because of this, some constant values like
+C<PNG_Z_DEFAULT_COMPRESSION> aren't currently available in
+L<Image::PNG::Const>. This probably should be fixed to extract the
+constants from the other files in a future version.
+
 =head1 STANDALONE SCRIPT
 
 A standalone script, L<pnginspect>, is installed with the
@@ -1870,7 +1971,7 @@ The starting point is the plain text libpng manual at
 L<http://libpng.org/pub/png/libpng-manual.txt> and the manual page
 libpng.3, which you can read using "man 3 libpng".
 
-The documentation which comes with libpng is rather sketchy. See
+[% danger %] The documentation which comes with libpng is rather sketchy. See
 L</Differences from libpng>. It doesn't contain full specifications
 (prototypes, return values) for all of the functions in the
 library. For programming in C using libpng, look at the header file
@@ -1890,6 +1991,10 @@ the first hits on search engines if you search for a function name in
 libpng.
 
 =back
+
+=head2 zlib documentation
+
+See L<https://zlib.net/manual.html> for the zlib documentation.
 
 [% INCLUDE "other_modules" %]
 
