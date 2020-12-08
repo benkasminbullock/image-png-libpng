@@ -1,36 +1,45 @@
-CONST=	lib/Image/PNG/Const.pm
+CONST=lib/Image/PNG/Const.pm
 
-TOUT=perl-libpng.c Libpng.xs \
-	lib/Image/PNG/Libpng.pod \
+TOUT= \
+	Libpng.xs \
+	Makefile.PL \
 	lib/Image/PNG/Libpng.pm \
-	Makefile.PL typemap t/PLTE.t
+	lib/Image/PNG/Libpng.pod \
+	perl-libpng.c \
+	t/PLTE.t \
+	typemap \
 
-TIN=    tmpl/Libpng.pm.tmpl \
-	tmpl/Libpng.pod.tmpl \
+
+TIN= \
 	build/LibpngInfo.pm \
-	tmpl/config \
-	tmpl/perl-libpng.c.tmpl \
-	tmpl/Libpng.xs.tmpl \
-	tmpl/Libpng.t.tmpl \
+	build/make-files.pl \
 	tmpl/Const.t.tmpl \
-	tmpl/PLTE.t.tmpl \
-	tmpl/typemap.tmpl \
+	tmpl/Libpng.pm.tmpl \
+	tmpl/Libpng.pod.tmpl \
+	tmpl/Libpng.t.tmpl \
+	tmpl/Libpng.xs.tmpl \
 	tmpl/Makefile.PL.tmpl \
+	tmpl/PLTE.t.tmpl \
+	tmpl/config \
 	tmpl/other_modules \
-	build/make-files.pl
+	tmpl/perl-libpng.c.tmpl \
+	tmpl/typemap.tmpl \
+
 
 all:	$(TOUT) $(CONST)
 
-$(CONST): tmpl/Const.pm.tmpl build/strip-constants.pl
-	build/strip-constants.pl
+$(CONST): \
+	build/strip-constants.pl \
+	tmpl/Const.pm.tmpl \
+
 
 $(TOUT): $(TIN)
 	build/make-files.pl
 
 clean:
-	-rm -rf $(TOUT) $(CONST)
-	-rm -rf Image-PNG-Libpng-0.*/ Image-PNG-Libpng-0.*.tar.gz
-	-rm -f README
+	rm -rf $(TOUT) $(CONST)
+	rm -rf Image-PNG-Libpng-0.*/ Image-PNG-Libpng-0.*.tar.gz
+	rm -f README
 
 # Local Variables:
 # mode: makefile
