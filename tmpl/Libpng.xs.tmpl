@@ -142,7 +142,7 @@ const char * perl_png_text_compression_name (text_compression)
 
 const char * perl_png_get_libpng_ver ()
         CODE:
-        RETVAL = png_get_libpng_ver (0);
+        RETVAL = png_get_libpng_ver (UNUSED_ZERO_ARG);
         OUTPUT:
         RETVAL
 
@@ -208,7 +208,7 @@ void perl_png_set_filter (Png, filters)
         Image::PNG::Libpng Png
         int filters;
         CODE:
-        png_set_filter (Png->png, 0, filters);
+        png_set_filter (Png->png, UNUSED_ZERO_ARG, filters);
         OUTPUT:
 
 void perl_png_set_verbosity (Png, verbosity = 0)

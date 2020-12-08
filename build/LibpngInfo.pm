@@ -480,15 +480,15 @@ for my $chunk (@chunks) {
     $chunks{$chunk->{name}} = $chunk;
 }
 
-for my $colour (qw/white red green blue/) {
+for my $color (qw/white red green blue/) {
     for my $coord (qw/x y/) {
-        push @{$chunks{cHRM}{fields}}, "${colour}_$coord"
+        push @{$chunks{cHRM}{fields}}, "${color}_$coord"
     }
 }
 
 # List of colours which are in png_color_8 or png_color_16.
 
-my @colours = qw/red green blue gray alpha/;
+my @colors = qw/red green blue gray alpha/;
 my @noalpha = qw/red green blue gray/;
 
 sub template_vars
@@ -500,7 +500,7 @@ sub template_vars
     $vars_ref->{transforms} = \@transforms;
     $vars_ref->{chunks} = \@chunks;
     $vars_ref->{chunk_hash} = \%chunks;
-    $vars_ref->{colours} = \@colours;
+    $vars_ref->{colors} = \@colors;
     $vars_ref->{noalpha} = \@noalpha;
 #    for my $name (keys %{$vars_ref->{chunk}}) {
 #        print "$name.\n";
