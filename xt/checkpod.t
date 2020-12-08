@@ -17,6 +17,11 @@ for my $filepath (
     my $errors = pod_checker ($filepath);
     ok (@$errors == 0, "$filepath - No errors");
     ok (pod_encoding_ok ($filepath), "$filepath - Pod encoding ok");
+}
+use Perl::Build::Pod ':all';
+for my $filepath (
+    "$Bin/../lib/Image/PNG/Libpng.pod",
+) {
     ok (pod_no_cut ($filepath), "$filepath - No =cut in POD");
 }
 done_testing ();
