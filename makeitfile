@@ -28,10 +28,8 @@ TIN= \
 
 all:	$(TOUT) $(CONST)
 
-$(CONST): \
-	build/strip-constants.pl \
-	tmpl/Const.pm.tmpl \
-
+$(CONST): build/strip-constants.pl tmpl/Const.pm.tmpl
+	build/strip-constants.pl
 
 $(TOUT): $(TIN)
 	build/make-files.pl
