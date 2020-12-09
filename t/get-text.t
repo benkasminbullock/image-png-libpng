@@ -15,8 +15,10 @@ if (! libpng_supports ('iTXt') ||
 # and similar, this appears to be a bug in libpng version 1.6.3.
 
 my $libpngver = Image::PNG::Libpng::get_libpng_ver ();
-if ($libpngver =~ /^1\.6\.[0-3]([^0-9]|$)/) {
-    plan skip_all => "Skip - trips bugs in libpng versions prior to 1.6.4";
+
+if ($libpngver =~ /^1\.[0-5]/ ||
+    $libpngver =~ /^1\.6\.[0-3]([^0-9]|$)/) {
+    plan skip_all => "Skip - iTXt trips bugs in libpng version $libpngver";
 }
 
 use utf8;
