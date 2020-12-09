@@ -70,13 +70,19 @@ This document describes Image::PNG::Libpng version [% config.version
 %], corresponding to git commit L<[% commit.commit %]|[% config.repo
 %]/commit/[% commit.commit %]> at [% commit.date %].
 
+Unless otherwise qualified, comments in this document on the libpng
+source code and documentation refer to libpng version [%
+config.mylibpng %]. Libpng is not bundled with this distribution, so
+your installed version may vary.
+
 =head1 DESCRIPTION
 
 Image::PNG::Libpng is a Perl library for accessing the contents of PNG
 (Portable Network Graphics) images. Image::PNG::Libpng enables Perl to
 use the "libpng" library to read and write files in PNG
-format. Image::PNG::Libpng does not contain libpng. It must be
-installed prior to installing Image::PNG::Libpng.
+format. Image::PNG::Libpng does not contain the libpng library. The
+libpng library must be installed on your computer prior to installing
+Image::PNG::Libpng.
 
 Image::PNG::Libpng consists of Perl subroutines which mirror
 the C functions in libpng, plus helper subroutines to make it easier
@@ -1937,8 +1943,7 @@ The eXIf chunk is not supported yet.
 
 =back
 
-[% danger %] Unfortunately there are a raft of functions in libpng,
-many completely undocumented.
+[% danger %] This is not an exhaustive list of libpng functions.
 
 =back
 
@@ -1968,7 +1973,7 @@ W
 
 =head1 BUGS
 
-This section documents some known deficiencies in the module.
+This section documents some known problems you may encounter.
 
 =head2 Conditional compilation
 
@@ -2016,12 +2021,22 @@ If some of your text chunks are incorrectly formatted, L</set_text>
 just silently refuses to add them rather than warning you. This
 behaviour may be modified in future versions.
 
-=head2 Beware of old libpngs
+=head2 Issues with old versions of libpng
 
-[% danger %] Judging from CPAN testers results, some fairly up-to-date
-Linux systems have old, buggy libpngs associated with them. There is
-not very much I can do about this except disable some of the
-functionality of this module when it is compiled on such systems.
+[% danger %] Some operating systems, in particular Linux systems, use
+old versions of libpng. The following are known issues with older
+libpng versions:
+
+=head3 Text chunk handling
+
+[% danger %] Versions of libpng up to 1.6.3 produce erratic results
+with C<iTXt> (international text) chunks.
+
+=head3 Compression level
+
+[% danger %] Versions of libpng up to 1.5 behave erratically when
+L</set_compression_level> or other C<set_compression_*> functions are
+used to alter the compression of the image data.
 
 =head1 STANDALONE SCRIPT
 

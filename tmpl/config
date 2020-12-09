@@ -1,4 +1,4 @@
-version: 0.48_09
+version: 0.48_10
 base: Image::PNG::Libpng
 author: Ben Bullock
 author_pause: BKB
@@ -7,3 +7,4 @@ year: 2020
 abstract: Perl interface to libpng
 license: perl
 repo: https://github.com/benkasminbullock/image-png-libpng
+mylibpng: 1.6.37
