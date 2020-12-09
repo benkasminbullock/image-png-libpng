@@ -1892,10 +1892,9 @@ There is no Z value allowed in L</set_cHRM> at present.
 
 [% danger %] This is a useless function in libpng corresponding to the
 useless C<method> parameter of zlib functions like
-C<deflateInit2>. See L</zlib documentation>. The underlying libpng
-function just produces a warning if the user sets the value to
-anything but 8, the value of the macro C<Z_DEFLATED>, and then lets
-zlib produce an error.
+C<deflateInit2>. See L</zlib documentation>. The libpng function just
+produces a warning if the user sets the value to anything but 8, the
+value of the macro C<Z_DEFLATED>, and then lets zlib produce an error.
 
 =item png_set_text_compression_method
 

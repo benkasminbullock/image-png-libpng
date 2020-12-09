@@ -1,4 +1,4 @@
-0.48_05 2020-12-09
+0.48_06 2020-12-09
 
 - Allow user to set compression level
 - Add untested set_compression_* and set_text_compression_* functions
