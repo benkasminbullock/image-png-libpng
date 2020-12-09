@@ -521,10 +521,10 @@ perl_png_set_text_from_hash (perl_libpng_t * png,
     char * key;
     STRLEN key_length;
 #ifdef PNG_iTXt_SUPPORTED
-    char * language_tag;
-    STRLEN language_tag_length;
-    char * translated_key;
-    STRLEN translated_key_length;
+    char * lang;
+    STRLEN lang_length;
+    char * lang_key;
+    STRLEN lang_key_length;
 #endif /* PNG_iTXt_SUPPORTED */
     int is_itxt = 0;
     char * text;
@@ -584,10 +584,10 @@ perl_png_set_text_from_hash (perl_libpng_t * png,
         text_out->text_length = text_length;
 #ifdef PNG_iTXt_SUPPORTED
         if (is_itxt) {
-            HASH_FETCH_PV (chunk, language_tag);
-            HASH_FETCH_PV (chunk, translated_key);
-            text_out->lang = (char *) language_tag;
-            text_out->lang_key = (char *) translated_key;
+            HASH_FETCH_PV (chunk, lang);
+            HASH_FETCH_PV (chunk, lang_key);
+            text_out->lang = (char *) lang;
+            text_out->lang_key = (char *) lang_key;
         }
 #endif
     }

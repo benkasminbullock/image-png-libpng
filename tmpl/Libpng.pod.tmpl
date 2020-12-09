@@ -425,7 +425,7 @@ So, for example, to get the width and height of an image,
 [% cor(fn="get_IHDR") %], with a single Perl hash reference used
 instead of the several pointers to integers used in libpng. It does
 not return the fields C<filter_method> and C<compression_method>,
-which are always 0.
+which are always 0. [% unused %]
 
 =head2 set_IHDR
 
@@ -628,11 +628,12 @@ substituted for the C struct C<png_timep> used in libpng.
 
 Set the modification time of the PNG to the values given by the
 argument, a hash reference containing the fields C<year>, C<month>,
-C<day>, C<hour>, C<minute>, and C<second>.  Month and day start from
-1, not 0. If the argument is omitted, the time is set to the current
-time. If any of year, hour, minute or second is omitted, these are set
-to zero. If month or day are omitted, these are set to 1. 
-[% timezone %]
+C<day> for the day of the month, C<hour>, C<minute>, and C<second>.
+The numbering for C<month> and C<day> is from 1, not 0. If any of
+year, hour, minute or second is omitted from the hash reference, these
+are set to zero. If month or day are omitted, these are set to 1.  [%
+timezone %] If the entire argument is omitted or contains an invalid
+value, the time is set to the current time.
 
 [% cor(fn="set_tIME") %], with a Perl hash reference
 substituted for the C struct C<png_timep> used in libpng.
@@ -646,22 +647,22 @@ text information.
 
     my $text_chunks = $png->get_text ();
 
-This subroutine gets all the text chunks in the PNG image and returns
-them as an array reference. Each element of the array represents one
-text chunk. The element representing one chunk is a hash reference
-with the text fields such as "key", "lang_key", "compression" taken
-from the PNG's information.
+This gets all of the text chunks in the PNG image and returns them as
+an array reference. Each element of the array represents one text
+chunk. This element is a hash reference with keys such as C<key>,
+C<lang_key>, or C<compression> taken from the PNG's information.
 
 The text data is uncompressed by libpng. If it is international text
-(C<ITXT>), Image::PNG::Libpng automatically puts it into Perl's
-internal Unicode encoding (UTF-8). This is valid because PNG
-international text C<ITXT> is required to be in the UTF-8 encoding,
-and non-international text is required to contain whitespace and
-printable ASCII characters only. See L</[% pngspec %]> for more on the
-requirements of a PNG text section.
+(C<ITXT>), it is put into Perl's internal Unicode encoding if it is
+found to be valid UTF-8. (PNG "international text", C<ITXT> is
+required to be in the UTF-8 encoding, and non-international text is
+required to contain whitespace and printable ASCII characters
+only. See L</[% pngspec %]> for more on the requirements of a PNG text
+section.)
 
-[% cor(fn="get_text") %], with a Perl array of hash
-references substituted for the C array of structs used in libpng.
+[% cor(fn="get_text") %], with a Perl array of hash references
+substituted for the C array of structs used by libpng. See
+L</set_text> for details of the keys and values which may be returned.
 
 =head2 set_text
 
@@ -673,59 +674,109 @@ hash reference must have the following keys:
 
 =over
 
-=item key
+=item C<key>
 
-The "key" value for the text
+The "key" value for the text. According to the PNG specification, this
+should be between one and 79 bytes in length, so if you supply a key
+longer than that the chunk cannot be added.
 
-=item text
+=item C<text>
 
 The "text" value for the text.
 
 =back
 
-If the compression field is not set, a default value of
-PNG_TEXT_COMPRESSION_NONE is applied. The compression field can take
-the following values:
+The optional key C<compression> controls the compression of the
+text. If C<compression> is not supplied, a default value of
+PNG_TEXT_COMPRESSION_NONE is applied. The C<compression> field can
+take the following values, available from L<Image::PNG::Const>:
 
 =over
 
 =item PNG_TEXT_COMPRESSION_NONE
 
+TEXT = Printable ASCII and space characters.
+
 =item PNG_TEXT_COMPRESSION_zTXt
+
+TEXT = Printable ASCII and space characters.
 
 =item PNG_ITXT_COMPRESSION_NONE
 
+ITXT = International text, should be UTF-8.
+
 =item PNG_ITXT_COMPRESSION_zTXt
 
-=back
-
-Whether or not it's an ITXT field is also decided by the compression
-value.
-
-The C<text_length> value is
-generated from the C<text> input field. Optionally the following
-fields can be added:
-
-=over
-
-=item lang
-
-This can be set to the language's name, if the text chunk is iTXt.
-
-=item itxt_length
+ITXT = International text, should be UTF-8.
 
 =back
+
+Whether or not the value of C<text> is an ITXT field is also decided
+by the compression value. People who want to fiddle with the text
+compression can do so via L</set_text_compression_level> and the other
+functions described below that.
 
 If it is called more than once, the chunks are not overwritten but
 appended to the existing ones. (This behaviour is copied from libpng
 itself.)
 
-    $png->set_text ([{compression => PNG_TEXT_COMPRESSION_NONE,
-                      key => "Copyright",
-                      text => "Copyright (C) 1997 The Dukes of Hazzard",
-              }]);
-
 [% cor(fn="set_text") %].
+
+=head3 Example
+
+[% example('set-text') %]
+
+=head3 Other fields
+
+The following fields can also be used in C<set_text>:
+
+=over
+
+=item C<itxt_length>
+
+The string length of international text in bytes.
+
+[% danger %] This is ignored by libpng for the purposes of writing
+text. If the text is marked as international text, libpng adds the
+length of the string in bytes in this field rather than in
+L</text_length>.
+
+=item C<lang>
+
+This should be set to name of the language of the text, if the text
+chunk is iTXt. According to the PNG specification, "It is an ISO
+646.IRV:1991 [ISO 646] string consisting of hyphen-separated words of
+1-8 alphanumeric characters each (for example cn, en-uk, no-bok,
+x-klingon, x-KlInGoN)." 
+
+Support for writing C<lang> was added in version 0.49 of this
+module. (Prior to that undocumented support existed via a
+differently-named key.)
+
+[% danger %] This module does not attempt to check the supplied value,
+but merely passes it to libpng. libpng appears not to check the value
+either, nor to enforce restrictions on its length.
+
+=item C<lang_key>
+
+This corresponds to the "Translated keyword" of the PNG
+specification. Note that the user needs to supply L</key> and L</lang>
+as well as C<lang_key>.
+
+Support for writing C<lang_key> was added in version 0.49 of this
+module.  (Prior to that undocumented support existed via a
+differently-named key.)
+
+=item C<text_length>
+
+The string length in bytes. The user may set this, but it is ignored
+when writing PNG text chunks, instead this module uses the string
+length obtained from Perl. This key is used to set the length of the
+string when reading text via L</get_text>. If the text is marked as
+international text, L</itxt_length> is used to return its length in
+bytes, rather than this.
+
+=back
 
 =head1 Private chunks
 
@@ -774,7 +825,7 @@ The "size" field of the PNG structure is not stored, because the
 
 =head2 set_unknown_chunks
 
-This currently does not fully function.
+[% danger %] This currently does not fully function.
 
 [% cor(fn="set_unknown_chunks") %]
 
@@ -826,8 +877,8 @@ C<ITXT_zTXt>.
 This function returns the version of the libpng library which the
 module is using.
 
-[% cor(fn="get_libpng_ver") %]. However, it
-doesn't require the C<png_structp> argument of the C function.
+[% cor(fn="get_libpng_ver") %]. However, it doesn't require the
+C<png_structp> argument of the C function. [% unused %]
 
 =head2 access_version_number
 
@@ -941,8 +992,8 @@ corresponds to no compression at all, otherwise C<$number> may take
 values of 1 to 9, with smaller values giving faster, and larger values
 giving better, that is with smaller output, compression. These
 correspond to the -1, -2, ... -9 options to the C<gzip> utility, or
-the compression level parameter of C<zlib>. Calling with -1 reverts to
-the default compression. Calling with any other number outside the
+the compression level parameter of C<zlib>. Calling with C<-1> reverts
+to the default compression. Calling with any other number outside the
 range 0 to 9 results in a fatal error.
 
 ([% danger %] The libpng documentation, and online sites derived from it,
@@ -957,6 +1008,8 @@ distribution. Image::PNG::Libpng supports the libpng default value of
 -1 but doesn't allow other negative numbers. Whether or not the value
 0 results in no compression is untested as of Image::PNG::Libpng
 version 0.49.)
+
+This function was added to the module in version 0.49.
 
 [% MACRO untested(func) BLOCK %]
 =head2 [% func %]
@@ -1948,6 +2001,12 @@ its constants. Because of this, some constant values like
 C<PNG_Z_DEFAULT_COMPRESSION> aren't currently available in
 L<Image::PNG::Const>. This probably should be fixed to extract the
 constants from the other files in a future version.
+
+=head2 Text chunk addition fails silently
+
+If some of your text chunks are incorrectly formatted, L</set_text>
+just silently refuses to add them rather than warning you. This
+behaviour may be modified in future versions.
 
 =head1 STANDALONE SCRIPT
 
