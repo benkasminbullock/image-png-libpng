@@ -19,37 +19,14 @@ use Image::PNG::Libpng ':all';
 plan skip_all => "tEXt is not supported" unless libpng_supports ('iTXt');
 
 my $file = "$Bin/set-text.png";
-if (-f $file) {
-    unlink $file;
-}
-my $png = create_write_struct ();
-$png->set_verbosity (1);
-$png->set_IHDR ({width => 1, height => 1, bit_depth => 8, color_type => PNG_COLOR_TYPE_GRAY});
-$png->set_rows (['X']);
 my $text = [
 	{key => 'baba', lang => 'binkers', lang_key => 'ばば', text => 'ぶぶ',
 	 compression => PNG_ITXT_COMPRESSION_NONE},
 	{key => 'bobo', lang => 'bonkers', lang_key => 'ぼぼ', text => 'びび',
 	 compression => PNG_ITXT_COMPRESSION_zTXt},
     ];
-$png->set_text ($text);
-$png->write_png_file ($file);
-my $check = read_png_file ($file);
-my $check_text = $check->get_text ();
-for my $i (0..$#$text) {
-    my $x = $text->[$i];
-    my $y = $check_text->[$i];
-    for my $k (keys %$x) {
-	ok (defined $y->{$k}, "Got key $k back for text chunk $i");
-	is ($y->{$k}, $x->{$k}, "Value for $k is the same for text chunk $i");
-    }
-}
+round_trip ($file, $text);
 
-
-
-if (-f $file) {
-    unlink $file;
-}
 my $longfile = "$Bin/long-set-text.png";
 my $longtext = [
     {lang => 'verylonglanguageindeed', key => 'bonkers', lang_key => 'binkers',
