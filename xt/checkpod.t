@@ -12,7 +12,7 @@ binmode STDERR, ":encoding(utf8)";
 use Perl::Build::Pod ':all';
 for my $filepath (
     "$Bin/../lib/Image/PNG/Libpng.pod",
-    "$Bin/../lib/Image/PNG/Const.pm",
+#    "$Bin/../lib/Image/PNG/Const.pm",
 ) {
     my $errors = pod_checker ($filepath);
     ok (@$errors == 0, "$filepath - No errors");
