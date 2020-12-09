@@ -1,0 +1,4 @@
+f: png_set_text_compression_method
+cat: useless-method
+
+f: 

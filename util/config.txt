@@ -1,0 +1,4 @@
+{
+	"dir":"/home/ben/software/libpng/lpng1637",
+	"perldir":"/home/ben/projects/image-png-libpng/tmpl"
+}

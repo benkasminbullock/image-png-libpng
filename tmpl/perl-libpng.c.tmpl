@@ -2329,7 +2329,7 @@ int perl_png_libpng_supports (const char * what)
 [%- FOR type IN ['iTXt','UNKNOWN_CHUNKS', 'zTXt', 'tEXt', 'pCAL', 'iCCP',
 		 'sPLT', 'USER_LIMITS', 'tIME', 'TEXT', 'HANDLE_AS_UNKNOWN',
 		 'USER_CHUNKS', 'CONVERT_tIME', 'bKGD', 'cHRM', 'gAMA',
-		 'hIST', 'oFFs', 'pHYs', 'sBIT', 'sRGB', 'tRNS',
+		 'hIST', 'oFFs', 'pHYs', 'sBIT', 'sRGB', 'tRNS', 'WRITE_CUSTOMIZE_ZTXT_COMPRESSION', 'WRITE_CUSTOMIZE_COMPRESSION',
 		 ] %]
     if (strcmp (what, "[% type %]") == 0) {
 #ifdef PNG_[% type %]_SUPPORTED

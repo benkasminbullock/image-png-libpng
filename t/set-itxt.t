@@ -16,7 +16,12 @@ use FindBin '$Bin';
 use Image::PNG::Const ':all';
 use Image::PNG::Libpng ':all';
 
-plan skip_all => "tEXt is not supported" unless libpng_supports ('iTXt');
+plan skip_all => "iTXt is not supported by your libpng" unless libpng_supports ('iTXt');
+
+my $libpngver = Image::PNG::Libpng::get_libpng_ver ();
+if ($libpngver =~ /^1\.[0-5]/) {
+    plan skip_all => "Skip tests due to bugs in libpng versions prior to 1.6";
+}
 
 my $file = "$Bin/set-text.png";
 my $text = [

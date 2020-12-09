@@ -1,11 +1,11 @@
-0.48_08 2020-12-09
+0.48_09 2020-12-09
 
 - Allow user to set compression level
 - Add untested set_compression_* and set_text_compression_* functions
 - Support writing the lang and lang_key fields of text chunks
 - Remove undocumented language_tag and translated_key fields
 - Documentation rewrites
-- Work around for decrepit Linux systems
+- Skip some tests for pre-1.6 versions of libpng
 
 0.48 2020-11-22
 

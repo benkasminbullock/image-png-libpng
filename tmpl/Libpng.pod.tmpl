@@ -338,9 +338,9 @@ The transformations which can be applied are as follows:
 
 [% transform_list %]
 
-(NOTE: this list might be wrong, it is just copied from the linux lib
-pages & the linux lib pages have different transformations for the
-read and write png functions.)
+[% danger %] NOTE: this list is untested and might be wrong. It was
+just copied from the linux lib web pages, and the linux lib web pages
+have different transformations for the read and write png functions.
 
 [% cor(fn="write_png") %].
 
@@ -395,9 +395,7 @@ return value is a hash containing a key for each possible chunk.
     my $IHDR = $png->get_IHDR ();
 
 Read the IHDR information from the PNG file. The return value is a
-reference to a hash.
-
-The hash reference contains the following fields:
+hash reference containing the following key/value pairs:
 
 =over
 
@@ -423,9 +421,10 @@ So, for example, to get the width and height of an image,
     printf "Your image is %d x %d\n", $ihdr->{width}, $ihdr->{height};
 
 [% cor(fn="get_IHDR") %], with a single Perl hash reference used
-instead of the several pointers to integers used in libpng. It does
-not return the fields C<filter_method> and C<compression_method>,
-which are always 0. [% unused %]
+instead of the several pointers to integers used in libpng. 
+
+[% danger %] It does not return the fields C<filter_method> and
+C<compression_method>, which are always 0. [% unused %]
 
 =head2 set_IHDR
 
@@ -457,7 +456,9 @@ This can have the values [% field.retvalues.join (", ") %].
 Other fields in the hash are ignored.
 
 [% cor(fn="set_IHDR") %], with a single Perl hash reference
-used instead of the seven integers. The variables
+used instead of the seven integers. 
+
+[% danger %] The variables
 [% FOR field IN ihdr_fields -%]
 [%- IF field.defined('unused') -%]
 C<[%- field.name %]>, [% END -%]
@@ -736,10 +737,10 @@ The following fields can also be used in C<set_text>:
 
 The string length of international text in bytes.
 
-[% danger %] This is ignored by libpng for the purposes of writing
-text. If the text is marked as international text, libpng adds the
-length of the string in bytes in this field rather than in
-L</text_length>.
+[% danger %] This is ignored by libpng when writing text chunks. When
+reading text chunks, if the text is marked as international text,
+libpng adds the length of the string in bytes in this field rather
+than in L</text_length>.
 
 =item C<lang>
 
@@ -968,6 +969,9 @@ argument omitted. [% unused %]
 
     $png->set_user_limits ($width, $height);
 
+This enables a user to override libpng's restrictions to one million
+pixels in width and one million pixels in height for a PNG image.
+
 [% cor(fn="set_user_limits") %]
 
 [% FOR what IN ['width', 'height'] %]
@@ -976,7 +980,7 @@ argument omitted. [% unused %]
 
     $png->get_user_[% what %]_max ();
 
-Get the maximum [% what %] the user will allow, as set by
+Get the maximum [% what %] allowed. These values can be changed by
 L</set_user_limits>.
 
 [% cor(fn="get_user_" _ what _ "_max") %]
@@ -1838,13 +1842,12 @@ C<png_write_row>, or C<png_write_rows>.
 
 =item Fixed point functions
 
-There is no support for the PNG fixed point functions in this Perl module.
+There is no support for the PNG fixed point functions in this Perl
+module.
 
 =item Other unsupported functions
 
-All libpng deprecated functions are not supported.
-
-Other unsupported functions include
+Unsupported functions from the libpng API include the following:
 
 =over
 
@@ -1925,6 +1928,12 @@ See L</Error handling functions>.
 =item png_set_unknown_chunk_location
 
 =item png_set_write_status_fn
+
+=item png_get_eXIf
+
+=item png_set_eXIf
+
+The eXIf chunk is not supported yet.
 
 =back
 
@@ -2010,10 +2019,9 @@ behaviour may be modified in future versions.
 =head2 Beware of old libpngs
 
 [% danger %] Judging from CPAN testers results, some fairly up-to-date
-Linux systems still seem to have old and very buggy libpngs associated
-with them. There is not very much I can do about this except disable
-some of the functionality of this module when it is compiled on such
-systems.
+Linux systems have old, buggy libpngs associated with them. There is
+not very much I can do about this except disable some of the
+functionality of this module when it is compiled on such systems.
 
 =head1 STANDALONE SCRIPT
 

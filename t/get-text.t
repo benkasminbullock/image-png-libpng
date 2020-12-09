@@ -7,7 +7,7 @@ use Image::PNG::Const ':all';
 if (! libpng_supports ('iTXt') ||
     ! libpng_supports ('zTXt') ||
     ! libpng_supports ('tEXt')) {
-    plan skip_all => 'libpng has no iTXt/zTXt/tEXt',
+    plan skip_all => 'your libpng does not support iTXt/zTXt/tEXt',
 }
 
 use utf8;
