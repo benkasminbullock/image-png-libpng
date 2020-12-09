@@ -2007,6 +2007,14 @@ If some of your text chunks are incorrectly formatted, L</set_text>
 just silently refuses to add them rather than warning you. This
 behaviour may be modified in future versions.
 
+=head2 Beware of old libpngs
+
+[% danger %] Judging from CPAN testers results, some fairly up-to-date
+Linux systems still seem to have old and very buggy libpngs associated
+with them. There is not very much I can do about this except disable
+some of the functionality of this module when it is compiled on such
+systems.
+
 =head1 STANDALONE SCRIPT
 
 A standalone script, L<pnginspect>, is installed with the

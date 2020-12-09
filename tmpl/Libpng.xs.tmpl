@@ -1,4 +1,6 @@
 #line 2 "Libpng.xs.tmpl"
+
+
 #include "EXTERN.h"
 #include "perl.h"
 #include "XSUB.h"
@@ -11,6 +13,13 @@
 #define PNG_SKIP_SETJMP_CHECK
 #include <zlib.h>
 #include <png.h>
+
+#if PNG_LIBPNG_VER_MAJOR >= 1 && PNG_LIBPNG_VER_MINOR >= 6
+#define MODERN_LIBPNG
+#else
+#warning Dear Linux user, your libpng is old, older than the mountains, younger than the trees, blowing like a breeze. It's time for you to get a better computer operating system.
+#endif /* Test made necessary by outdated Linux ratbags. */
+
 #include <stdarg.h>
 #include <time.h>
 
@@ -506,6 +515,8 @@ perl_png_set_compression_window_bits  (Png,   window_bits);
 CODE:
 	png_set_compression_window_bits (Png->png, window_bits);
 
+#ifdef MODERN_LIBPNG
+
 void
 perl_png_set_text_compression_level (Png, level);
 	Image::PNG::Libpng Png;
@@ -534,6 +545,7 @@ perl_png_set_text_compression_window_bits  (Png,   window_bits);
 CODE:
 	png_set_compression_window_bits (Png->png, window_bits);
 
+#endif /* MODERN_LIBPNG */
 
 #if 0
 
