@@ -1,6 +1,6 @@
 0.50
 
-- set_text functions issue errors for bad text chunks
+- set_text functions now issue errors for bad text chunks
 
 0.49 2020-12-10
 
