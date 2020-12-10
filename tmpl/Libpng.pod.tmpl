@@ -109,7 +109,8 @@ testing this module itself.
 
 =head1 Simple input and output
 
-These are convenience functions which combine common operations.
+These convenience functions combine common operations. They are not
+part of the original libpng API.
 
 =head2 read_png_file
 
@@ -215,8 +216,9 @@ L<Image::Similar> for a looser comparison of images.
 
     my $timechunk = $png->get_chunk ('tIME');
 
-Get the specified chunk. Croaks if given C<IDAT> chunk, use
-L</get_rows> instead. Returns undef if given unknown chunk. 
+Get the specified chunk. This produces a fatal error if asked for the
+C<IDAT> (image data) chunk, use L</get_rows> instead. Returns undef if
+asked for an unknown chunk name.
 
 This is used by L<pnginspect> to get the valid chunks.
 
@@ -224,8 +226,9 @@ This is used by L<pnginspect> to get the valid chunks.
 
     $png->set_chunk ('tIME', $timechunk);
 
-Set the specified chunk. Croaks if given C<IDAT> chunk, use
-L</set_rows> instead. Croaks if given unknown chunk.
+Set the specified chunk. This produces a fatal error if given an
+C<IDAT> (image data) chunk, use L</set_rows> instead. Produces a fatal
+error if given an unknown chunk name.
 
 =head2 split_alpha
 
@@ -234,7 +237,8 @@ L</set_rows> instead. Croaks if given unknown chunk.
     my $colour = $split->{data};
 
 Split the alpha channel away from the other data. This only works for
-RGBA images or gray/alpha images.
+RGBA images or gray/alpha images. This is not part of the libpng API,
+it was added to this module to assist the author of L<PDF::Builder>.
 
 If your purpose of splitting out the Alpha channel is simply to
 discard it, you may get better performance by using
@@ -244,7 +248,7 @@ C<PNG_TRANSFORM_STRIP_ALPHA> in L</read_png> instead.
 
 There are two different "new"-like functions, depending on whether you
 want to read or write a PNG. (See L</copy_png> for a function to copy
-one to the other.)
+one to the other.) These are based on the libpng API.
 
 =head2 create_read_struct
 
@@ -271,7 +275,7 @@ Perl's error reporting.
 
 =head1 Input and output libpng style
 
-These functions mirror libpng's functions.
+These functions mirror libpng's API.
 
 =head2 init_io
 
@@ -352,8 +356,9 @@ have different transformations for the read and write png functions.
 
 =head1 The image header
 
-See [% spec("11IHDR") %] for information on the PNG standards for
-the image header.
+These functions handle the header part of PNG image data. See [%
+spec("11IHDR") %] for information on the PNG standards for the image
+header.
 
 =head2 sig_cmp
 
@@ -673,27 +678,25 @@ L</set_text> for details of the keys and values which may be returned.
 
 =head2 set_text
 
-    $png->set_text ($text_chunks);
+    $png->set_text ([\%chunk1, \%chunk2]);
 
-This sets the text chunks in an array reference C<$text_chunks>. The
-input value is an array reference containing hash references. Each
-hash reference must have the following keys:
+This sets the text chunks in a writeable image. The input value is an
+array reference containing one or more hash references. Each hash
+reference must have a C<key> value for the text. According to the PNG
+specification, this should be between one and 79 bytes in length. This
+module enforces that restriction, so if you supply a key longer than
+that, the chunk cannot be added. A hash reference may also have the
+following:
 
 =over
 
-=item C<key>
-
-The "key" value for the text. According to the PNG specification, this
-should be between one and 79 bytes in length, so if you supply a key
-longer than that the chunk cannot be added.
-
 =item C<text>
 
-The "text" value for the text.
+The value of "text" is added to the PNG as the text segment.
 
-=back
+=item C<compression>
 
-The optional key C<compression> controls the compression of the
+The value of C<compression> controls the compression of the
 text. If C<compression> is not supplied, a default value of
 PNG_TEXT_COMPRESSION_NONE is applied. The C<compression> field can
 take the following values, available from L<Image::PNG::Const>:
@@ -717,27 +720,6 @@ ITXT = International text, should be UTF-8.
 ITXT = International text, should be UTF-8.
 
 =back
-
-Whether or not the value of C<text> is an ITXT field is also decided
-by the compression value. People who want to fiddle with the text
-compression can do so via L</set_text_compression_level> and the other
-functions described below that.
-
-If it is called more than once, the chunks are not overwritten but
-appended to the existing ones. (This behaviour is copied from libpng
-itself.)
-
-[% cor(fn="set_text") %].
-
-=head3 Example
-
-[% example('set-text') %]
-
-=head3 Other fields
-
-The following fields can also be used in C<set_text>:
-
-=over
 
 =item C<itxt_length>
 
@@ -778,12 +760,40 @@ differently-named key.)
 
 The string length in bytes. The user may set this, but it is ignored
 when writing PNG text chunks, instead this module uses the string
-length obtained from Perl. This key is used to set the length of the
-string when reading text via L</get_text>. If the text is marked as
-international text, L</itxt_length> is used to return its length in
+length obtained from Perl. This key contains the length of the string
+when reading text chunks via L</get_text>, but if the text is marked
+as international text, L</itxt_length> is used to return its length in
 bytes, rather than this.
 
 =back
+
+Whether or not the value of C<text> is an ITXT field is decided by the
+value of C<compression>. 
+
+People who want to fiddle with the text compression applied can do so
+via L</set_text_compression_level> and the other functions described
+below that.
+
+If C<set_text> is called more than once, the chunks are not overwritten but
+appended to the existing ones. (This behaviour is from libpng itself.)
+
+Prior to version 0.50, C<set_text> would fail silently if the user
+added invalid chunks, for example hash references without a valid
+C<key>, or things which were not hash references at all. From version
+0.50, all invalid inputs cause fatal errors. However, unknown keys in
+the hash references do not cause fatal errors.
+
+[% cor(fn="set_text") %].
+
+=head3 Example
+
+[% example('set-text') %]
+
+=head3 Other fields
+
+The following fields can also be used in C<set_text> and L</get_text>:
+
+=over
 
 =head1 Private chunks
 
@@ -1639,12 +1649,6 @@ to RGB, grayscale images of bit-depth less than 8 are expanded to
 
 [% cor(fn="set_gray_to_rgb") %]
 
-=head2 set_rgb_to_gray_fixed
-
-    $png->set_gray_to_rgb ();
-
-[% cor(fn="set_gray_to_rgb_fixed") %]
-
 =head2 get_tRNS_palette
 
     $png->get_tRNS_palette ();
@@ -1748,12 +1752,14 @@ except for the freeing of the memory.
 
 =head1 EXPORTS
 
-Nothing is exported by default, but all the functions in this module
-can be exported on request. The export tag 'all' exports everything in
-the module:
+Nothing is exported by default, but all the functions in this module,
+including the object methods, can be exported on request. The export
+tag 'all' exports everything in the module:
 
     use Image::PNG::Libpng ':all';
-    # Now everything in the module has been imported
+
+This includes all the methods, which can then be used with the C<$png>
+argument as the first argument.
 
 =head1 Differences from libpng
 
@@ -1848,8 +1854,8 @@ C<png_write_row>, or C<png_write_rows>.
 
 =item Fixed point functions
 
-There is no support for the PNG fixed point functions in this Perl
-module.
+There is currently no support for the PNG fixed point functions in
+this Perl module, the functions with suffix C<_fixed>.
 
 =item Other unsupported functions
 

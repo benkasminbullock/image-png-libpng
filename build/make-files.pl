@@ -136,9 +136,9 @@ for my $file (@files) {
 # This is better but causes errors on SunOS/Solaris compilers:
 # http://www.cpantesters.org/cpan/report/f25ae7b0-94c3-11e3-ae04-8631d666d1b8
 
-#	    s/^(#line)$/sprintf "$1 %d \"tmpl\/%s\"", $. + 1, $template/e; 
+	    s/^(#line)$/sprintf "$1 %d \"tmpl\/%s\"", $. + 1, $template/e; 
 
-	    s/^(#line)$/sprintf "$1 %d \"%s\"", $. + 1, $template/e; 
+#	    s/^(#line)$/sprintf "$1 %d \"%s\"", $. + 1, $template/e; 
 	    $text .= $_;
 	}
 	my $outtext;

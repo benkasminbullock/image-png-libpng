@@ -167,6 +167,21 @@ perl_png_warning_fn (png_structp png_ptr, png_const_charp warning_msg)
                                                  
 
 
+/* The following is a debugging construction which is usually "off". */
+
+#if 0
+#define GABBLE_IN(x)			\
+    fprintf (stderr, "Get #%d of %s\n", \
+	     png->memory_gets, #x)
+
+#define GABBLE_OUT(x)				\
+    fprintf (stderr, "Free #%d of %s\n",	\
+	     png->memory_gets, #x)
+#else
+#define GABBLE_IN(x)
+#define GABBLE_OUT(x)
+#endif /* 0 */
+
 /* Get memory using the following in order to keep count of the number
    of objects in use at the end of execution, to ensure that there are
    no memory leaks. All allocation is done via Newxz ("calloc") rather
@@ -175,6 +190,7 @@ perl_png_warning_fn (png_structp png_ptr, png_const_charp warning_msg)
 #define GET_MEMORY(thing, number, type) {	\
         Newxz (thing, number, type);		\
         png->memory_gets++;                     \
+	GABBLE_IN(thing);			\
     }
 
 /* Free memory using the following in order to keep count of the
@@ -183,6 +199,7 @@ perl_png_warning_fn (png_structp png_ptr, png_const_charp warning_msg)
 #define PERL_PNG_FREE(thing) {   \
         png->memory_gets--;      \
         Safefree (thing);	 \
+	GABBLE_OUT(thing);	 \
     }
 
 static perl_libpng_t *
@@ -510,37 +527,48 @@ perl_png_get_text (perl_libpng_t * png)
 #endif
 }
 
-/* Set a PNG text from "chunk". The return value is true if
-   successful. */
+/* The macro which SvPV consists of fouls things up with the STRLEN
+   pointer if we try to use a function. */
 
-static int
+#define SOFT_HASH_FETCH_PV(chunk, key) {			\
+	SV ** sv_ptr;						\
+	sv_ptr = hv_fetch (chunk, #key, strlen (#key), 0);	\
+	if (sv_ptr) {						\
+	    key = SvPV(*sv_ptr, key ## _length);		\
+	} else {						\
+	    key = 0;						\
+	    key ## _length = 0;					\
+	}							\
+    }
+
+/* Set a PNG text "text_out" from "chunk". */
+
+static void
 perl_png_set_text_from_hash (perl_libpng_t * png,
-                             png_text * text_out, HV * chunk)
+                             png_text * png_texts, int i, HV * chunk)
 {
+    png_text * text_out;
     int compression;
     char * key;
     STRLEN key_length;
-#ifdef PNG_iTXt_SUPPORTED
-    char * lang;
-    STRLEN lang_length;
-    char * lang_key;
-    STRLEN lang_key_length;
-#endif /* PNG_iTXt_SUPPORTED */
-    int is_itxt = 0;
-    char * text;
+    char * text = 0;
     STRLEN text_length;
-    /* The return value of this function. */
-    int ok = 1;
-    SV ** compression_sv_ptr;
+    SV ** c_sv_ptr;
+#ifdef PNG_iTXt_SUPPORTED
+    char * lang = 0;
+    STRLEN lang_length;
+    char * lang_key = 0;
+    STRLEN lang_key_length;
+    int is_itxt = 0;
+#endif /* PNG_iTXt_SUPPORTED */
 
-    MESSAGE ("Putting it into something.");
+    text_out = & png_texts[i];
 
     /* Check the compression field of the chunk */
 
-    compression_sv_ptr =
-	hv_fetch (chunk, "compression", strlen ("compression"), 0);
-    if (compression_sv_ptr) {
-	compression = SvIV (* compression_sv_ptr);
+    c_sv_ptr = hv_fetch (chunk, "compression", strlen ("compression"), 0);
+    if (c_sv_ptr) {
+	compression = SvIV (* c_sv_ptr);
     }
     else {
 	MESSAGE ("Using default compression PNG_TEXT_COMPRESSION_NONE");
@@ -548,55 +576,51 @@ perl_png_set_text_from_hash (perl_libpng_t * png,
     }
     switch (compression) {
     case PNG_TEXT_COMPRESSION_NONE:
-        break;
     case PNG_TEXT_COMPRESSION_zTXt:
         break;
+#ifdef PNG_iTXt_SUPPORTED
     case PNG_ITXT_COMPRESSION_NONE:
-        is_itxt = 1;
-        break;
     case PNG_ITXT_COMPRESSION_zTXt: 
         is_itxt = 1;
         break;
+#endif /* PNG_iTXt_SUPPORTED */
     default:
-        ok = 0;
-        fprintf (stderr, "Unknown compression %d\n", 
-                 compression);
-        return 0;
-        break;
+	PERL_PNG_FREE(png_texts);
+	croak ("Unknown compression %d", compression);
     }
+    text_out->compression = compression;
 
     MESSAGE ("Getting key.");
-    HASH_FETCH_PV (chunk, key);
-    if (key_length < 1 || key_length > 79) {
-        /* Key is too long or empty */
-        MESSAGE ("Bad length of key.");
-
-        ok = 0;
-        return 0;
+    SOFT_HASH_FETCH_PV (chunk, key);
+    if (key == 0) {
+	PERL_PNG_FREE(png_texts);
+	croak ("Text chunk %d has no 'key' field", i);
     }
-    MESSAGE ("Getting text.");
-    HASH_FETCH_PV (chunk, text);
-    if (ok) {
-        MESSAGE ("Copying.");
-        text_out->compression = compression;
-        text_out->key = (char *) key;
-        text_out->text = (char *) text;
-        text_out->text_length = text_length;
+    if (key_length < 1) {
+	PERL_PNG_FREE(png_texts);
+	croak ("Text chunk %d key field is empty", i);
+    }
+    if (key_length > 79) {
+	PERL_PNG_FREE(png_texts);
+	croak ("Text chunk %d key field is too long %d > 79",
+	       i, (int) key_length);
+    }
+    text_out->key = (char *) key;
+    /* Libpng documentation says it is OK to send NULLs here. */
+    SOFT_HASH_FETCH_PV (chunk, text);
+    text_out->text = (char *) text;
+    text_out->text_length = text_length;
+    /* Set this in case it starts to be required by future versions of
+       libpng. */
+    text_out->itxt_length = text_length;
 #ifdef PNG_iTXt_SUPPORTED
-        if (is_itxt) {
-            HASH_FETCH_PV (chunk, lang);
-            HASH_FETCH_PV (chunk, lang_key);
-            text_out->lang = (char *) lang;
-            text_out->lang_key = (char *) lang_key;
-        }
-#endif
+    if (is_itxt) {
+	SOFT_HASH_FETCH_PV (chunk, lang);
+	text_out->lang = (char *) lang;
+	SOFT_HASH_FETCH_PV (chunk, lang_key);
+	text_out->lang_key = (char *) lang_key;
     }
-    else {
-            /* Compression method unknown. */
-        ;
-    }
-
-    return ok;
+#endif /* PNG_iTXt_SUPPORTED */
 }
 
 /* Set the text chunks in the PNG. This actually pushes text chunks
@@ -607,52 +631,43 @@ static void
 perl_png_set_text (perl_libpng_t * png, AV * text_chunks)
 {
     int num_text;
-    int num_ok = 0;
     int i;
     png_text * png_texts;
+
+#ifndef PNG_tEXt_SUPPORTED
+    UNSUPPORTED(tEXt);
+    return;
+#endif
 
     num_text = av_len (text_chunks) + 1;
     MESSAGE ("You have %d text chunks.\n", num_text);
     if (num_text <= 0) {
-        /* Complain to the user */
         return;
     }
+    /* This memory needs to be freed before we call "croak", hence we
+       cannot "croak" inside perl_png_set_text_from_hash but have to
+       use error return values, then free this, and then croak. */
     GET_MEMORY (png_texts, num_text, png_text);
     for (i = 0; i < num_text; i++) {
-        int ok = 0;
         SV ** chunk_pointer;
 
         MESSAGE ("Fetching chunk %d.\n", i);
         chunk_pointer = av_fetch (text_chunks, i, 0);
         if (! chunk_pointer) {
-            /* Complain */
-            MESSAGE ("Chunk pointer null.");
-            continue;
+	    PERL_PNG_FREE(png_texts);
+	    croak ("Null chunk pointer");
         }
         if (SvROK (* chunk_pointer) && 
             SvTYPE (SvRV (* chunk_pointer)) == SVt_PVHV) {
-            MESSAGE ("Looks like a hash.");
-            ok = perl_png_set_text_from_hash (png, & png_texts[num_ok],
-                                              (HV *) SvRV (* chunk_pointer));
-            if (ok) {
-                MESSAGE ("This chunk is OK.");
-                num_ok++;
-            }
-            else {
-                MESSAGE ("The chunk is not OK.");
-            }
+	    perl_png_set_text_from_hash (png, png_texts, i,
+					 (HV *) SvRV (* chunk_pointer));
         }
+	else {
+	    PERL_PNG_FREE(png_texts);
+	    croak ("Element %d of text_chunks is not a hash reference", i);
+	}
     }
-    if (num_ok > 0) {
-        MESSAGE ("Writing %d text chunks to your PNG.\n",
-                num_ok);
-        png_set_text (pngi, png_texts, num_ok);
-    }
-    else {
-        /* The user tried to set some text chunks in the image but
-           they were not allowed. */
-        warn ( "None of your text chunks was allowed");
-    }
+    png_set_text (pngi, png_texts, num_text);
     PERL_PNG_FREE (png_texts);
 }
 
@@ -726,44 +741,43 @@ perl_png_get_tIME (perl_libpng_t * png)
 static void
 perl_png_set_tIME (perl_libpng_t * png, SV * input_time)
 {
-    /* The PNG month and day fields shouldn't be equal to zero. 
-       See PNG specification "4.2.4.6. tIME Image last-modification time"
-    */
+    /* The PNG month and day fields shouldn't be equal to zero.
+       See PNG specification "4.2.4.6. tIME Image
+       last-modification time". */
     png_time mod_time = {0,1,1,0,0,0};
-    int time_ok = 0;
     if (input_time) {
 	SV * ref;
+	HV * time_hash;
         ref = SvRV(input_time);
-        if (ref && SvTYPE (ref) == SVt_PVHV) {
-            HV * time_hash = (HV *) SvRV (input_time);
-            MESSAGE ("Setting time from a hash.");
-#define SET_TIME(field) {                                               \
-                SV ** field_sv_ptr = hv_fetch (time_hash, #field,       \
-                                               strlen (#field), 0);     \
-                if (field_sv_ptr) {                                     \
-                    SV * field_sv = * field_sv_ptr;                     \
-                    MESSAGE ("OK for %s\n", #field);                    \
-                    mod_time.field = SvIV (field_sv);                   \
-                }                                                       \
-            }
-            SET_TIME(year);
-            SET_TIME(month);
-            SET_TIME(day);
-            SET_TIME(hour);
-            SET_TIME(minute);
-            SET_TIME(second);
-#undef SET_TIME    
-            time_ok = 1;
-        }
-    }
-    if (! time_ok) {
-        /* There is no valid time argument, so just set it to the time
-           now, according to the system clock. */
-        time_t now;
+        if (! ref || SvTYPE (ref) != SVt_PVHV) {
+	    croak ("Argument to set_tIME should be a hash reference");
+	}
+	time_hash = (HV *) ref;
 
-        MESSAGE ("The modification time doesn't look OK so I am going to set the modification time to the time now instead.");
-        now = time (0);
-        png_convert_from_time_t (& mod_time, now);
+	MESSAGE ("Setting time from a hash.");
+#define SET_TIME(field) {					\
+	    SV ** field_sv_ptr = hv_fetch (time_hash, #field,	\
+					   strlen (#field), 0);	\
+	    if (field_sv_ptr) {					\
+		SV * field_sv = * field_sv_ptr;			\
+		MESSAGE ("OK for %s\n", #field);		\
+		mod_time.field = SvIV (field_sv);		\
+	    }							\
+	}
+	SET_TIME(year);
+	SET_TIME(month);
+	SET_TIME(day);
+	SET_TIME(hour);
+	SET_TIME(minute);
+	SET_TIME(second);
+#undef SET_TIME    
+    }
+    else {
+	/* Use the current time. */
+	time_t now;
+	
+	now = time (0);
+	png_convert_from_time_t (& mod_time, now);
     }
     png_set_tIME (pngi, & mod_time);
 }
@@ -1053,6 +1067,8 @@ const char * perl_png_color_type_name (int color_type)
     return name;
 }
 
+#undef PERL_PNG_COLOR_TYPE
+
 #define PERL_PNG_TEXT_COMP(x,y)                  \
     case PNG_ ## x ## _COMPRESSION_ ## y:        \
     name = #x "_" #y;                            \
@@ -1064,18 +1080,21 @@ const char * perl_png_text_compression_name (int text_compression)
 {
     const char * name;
     switch (text_compression) {
+#ifdef PNG_tEXt_SUPPORTED
         PERL_PNG_TEXT_COMP(TEXT,NONE);
         PERL_PNG_TEXT_COMP(TEXT,zTXt);
+#ifdef PNG_iTXt_SUPPORTED
         PERL_PNG_TEXT_COMP(ITXT,NONE);
         PERL_PNG_TEXT_COMP(ITXT,zTXt);
+#endif /* iTXt */
+#endif /* PNG_tEXt_SUPPORTED */
     default:
-        /* Moan about not knowing this text compression type. */
+	warn ("Unknown compression type %d", text_compression);
         name = "";
     }
     return name;
 }
 
-#undef PERL_PNG_COLOR_TYPE
 
 /*  ____       _      _   _       
    |  _ \ __ _| | ___| |_| |_ ___ 
@@ -1247,7 +1266,7 @@ static void perl_png_set_bKGD (perl_libpng_t * png, HV * bKGD)
 }
 
 /* Get the pCAL (calibration of pixel values) chunk from a PNG
-   image. This currently does nothing. */
+   image. */
 
 static SV * perl_png_get_pCAL (perl_libpng_t * png)
 {
