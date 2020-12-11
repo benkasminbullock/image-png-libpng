@@ -1389,22 +1389,23 @@ L<http://www.libpng.org/pub/png/spec/1.1/pngext-1.1.0-pdg.html#C.pCAL>.
 
     my $pcal = $png->get_pCAL ();
 
-[% danger %] Implemented but not tested. Return value is a hash with
-the following keys:
+The return value is a hash reference with the following keys:
 
 =over
+
+=item params
+
+If this exists, its value is a reference to an array containing the
+parameter list of the pCAL chunk, which are floating point
+numbers. Within the PNG file chunk, these parameters are stored as
+strings representing floating point numbers, but you can pass in Perl
+floating point numbers rather than strings. The number of parameters
+you should set is fixed by the C<type> parameter. Refer to the PNG
+specification for full details.
 
 =item purpose
 
 The purpose string of the pCAL chunk.
-
-=item x0
-
-The zero value for the equation.
-
-=item x1
-
-The max value for the equation.
 
 =item type
 
@@ -1413,30 +1414,25 @@ for the meanings. Other numbers cause an error.
 
 =item units
 
-The units as a string. According to the PNG specification, "The units
-for the physical values are given by the unit name, which may contain
-any number of printable Latin-1 characters, with no limitation on the
-number and position of blanks. For example, "K", "population density",
-"MPa". A zero-length string can be used for dimensionless data."
+The units as a string. See the PNG specification for details.
 
-=item params
+=item x0
 
-If this exists, its value is a reference to an array containing the
-parameter list of the pCAL chunk.
+The zero value for the equation, an integer.
+
+=item x1
+
+The max value for the equation, an integer.
 
 =back
 
 [% cor(fn="get_pCAL") %]
 
-[% danger %] libpng does not actually seem to implement reading of the
-parameters of a pCAL chunk.
-
 =head3 set_pCAL
 
-    $png->set_pCAL ($values);
+    $png->set_pCAL (\%values);
 
-[% danger %] Implemented but not tested. The input is just the same as
-the output of L</get_pCAL>.
+See L</get_pCAL> for details of the parameters of C<%values>.
 
 [% cor(fn="set_pCAL") %]
 
