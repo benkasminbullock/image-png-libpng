@@ -11,6 +11,11 @@ binmode STDOUT, ":encoding(utf8)";
 binmode STDERR, ":encoding(utf8)";
 use Image::PNG::Libpng ':all';
 
+BEGIN: {
+    use lib "$Bin";
+    use IPNGLT;
+};
+
 if (! libpng_supports ('eXIf')) {
     plan skip_all => "This libpng doesn't support the eXIf chunk"
 }
@@ -29,20 +34,15 @@ $wpng->set_eXIf ($exif);
 
 # Now write the file out, then read it back in.
 
-my $file = "$Bin/exif.png";
-rmfile ();
-$wpng->write_png_file ($file);
-my $rpng = read_png_file ($file);
-rmfile ();
+my $file = 'exif.png';
+my $rpng = round_trip ($wpng, $file);
 
-# Check the exif chunk of the read-in file.
+# Check the exif chunk of the read-in file. 
+
+# This produces a warning "libpng warning: eXIf: duplicate" with
+# libpng 1.6.37 due to a bug in libpng.
 
 my $roundtrip = $rpng->get_eXIf ();
 is ($roundtrip, $exif, "Round trip of eXIf chunk");
 done_testing ();
 exit;
-
-sub rmfile
-{
-    unlink $file;
-}

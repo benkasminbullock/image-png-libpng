@@ -1,12 +1,21 @@
+# The functions in this module are helpers for testing
+# Image::PNG::Libpng. The name IPNGLT is just "Image PNG Libpng
+# Testing module". This module should not be indexed by CPAN. See
+# Makefile.PL.tmpl under "no_index/file".
+
 package IPNGLT;
 require Exporter;
 our @ISA = qw(Exporter);
-our @EXPORT = qw/skip_itxt skip_old/;
+# We just export everything by default, because this is not a user module.
+our @EXPORT = qw/skip_itxt skip_old round_trip fake_wpng/;
 use warnings;
 use strict;
 use utf8;
 use Test::More;
+use Image::PNG::Const ':all';
 use Image::PNG::Libpng ':all';
+
+# Skip testing if the libpng doesn't seem to support itxt.
 
 sub skip_itxt
 {
@@ -14,14 +23,18 @@ sub skip_itxt
 	! libpng_supports ('zTXt') ||
 	! libpng_supports ('tEXt')) {
 	plan skip_all => 'your libpng does not support iTXt/zTXt/tEXt',
+	return 1;
     }
+    return 0;
 }
 
 # The most recent faulty response is for libpng version 1.6.12.
 # http://www.cpantesters.org/cpan/report/f7295c1a-6bf5-1014-a07d-70c0b928df0
 
 # Skip testing of set-text.t and compress-level.t for versions older
-# than these.
+# than these, due to bugs or incompatibilities. Ideally the libpng
+# PNG_*_SUPPORTED variables would be used here, but those are not very
+# reliable.
 
 my $oldmajor = 0; # Reject 0.*
 my $oldminor = 5; # Reject 1.[0-5]
@@ -32,29 +45,64 @@ sub skip_old
     my $libpngver = Image::PNG::Libpng::get_libpng_ver ();
     if ($libpngver !~ /^([0-9]+)\.([0-9]+)\.([0-9]+)/) {
 	plan skip_all => "Incomprehensible libpng version $libpngver";
+	return 1;
     }
     my ($major, $minor, $patch) = ($1, $2, $3);
     if ($major > 1 || $minor > 6) {
 	# Get out of here, since the test for $minor or $patch will be
 	# tripped by 1.7.1 or 2.1.3 or something.
-	return;
+	return 0;
     }
     if ($major <= $oldmajor) {
 	plan skip_all =>
 	"Skipping: libpng major version $libpngver <= $oldmajor";
-	return;
+	return 1;
     }
     if ($minor <= $oldminor) {
 	plan skip_all =>
 	"Skipping: libpng minor version $libpngver <= $oldminor";
-	return;
+	return 1;
     }
 
     if ($patch <= $oldpatch) {
 	plan skip_all =>
 	"Skipping: libpng patch $libpngver <= $oldpatch";
-	return;
+	return 1;
     }
+    return 0;
+}
+
+# Write $png to $filename then read it back in again. 
+
+sub round_trip
+{
+    my ($png, $filename) = @_;
+    rmfile ($filename);
+    $png->write_png_file ($filename);
+    my $rpng = read_png_file ($filename);
+    rmfile ($filename);
+    return $rpng;
+}
+
+# Clean up for both before and after writing a file.
+
+sub rmfile
+{
+    my ($filename) = @_;
+    if (-f $filename) {
+	unlink $filename or warn "Failed to unlink '$filename': $!";
+    }
+}
+
+# Create a fake write PNG for testing adding chunks.
+
+sub fake_wpng
+{
+    my $longpng = create_write_struct ();
+    $longpng->set_IHDR ({width => 1, height => 1, bit_depth => 8,
+			 color_type => PNG_COLOR_TYPE_GRAY});
+    $longpng->set_rows (['X']);
+    return $longpng;
 }
 
 1;

@@ -1181,6 +1181,32 @@ The values of the hash are floating point numbers between 0 and 1.
 [% cor(fn="set_cHRM") %] with a hash function instead of the C<double>
 arguments.
 
+=head2 eXIf
+
+The C<eXIf> chunk is an extension to the PNG specification. See
+L<http://www.simplesystems.org/png-group/proposals/eXIf/>. Support for
+this chunk was added in version 0.50 of this module.
+
+=head3 get_eXIf
+
+    my $exif = $png->get_eXIf ();
+
+This retrieves the C<eXIf> chunk from C<$png> but does not process the
+internal information.
+
+=head3 set_eXIf
+
+    $png->set_eXIf ($exif);
+
+libpng checks whether the chunk's first two bytes are either C<II> for
+little-endian (from Intel) or C<MM> for big-endian (from Motorola)
+then adds the entire chunk, including the first two bytes, to the PNG.
+
+[% danger %] As of December 2020, there appears to be a bug in libpng
+in which the eXIf chunk is added twice, causing a warning of the form
+C<libpng warning: eXIf: duplicate> on reading a PNG file back in. See
+L<https://github.com/glennrp/libpng/pull/351>.
+
 =head2 gAMA
 
 See [% spec("11gAMA") %].
@@ -1339,17 +1365,23 @@ The colour profile.
 
 =back
 
+The C<compression_type> value is not returned. [% unused %]
+
 [% cor(fn="get_iCCP") %].
 
 =head3 set_iCCP
 
     $png->set_iCCP ({name => 'name', profile => 'profile'});
 
-[% cor(fn="set_iCCP") %].
+[% cor(fn="set_iCCP") %]. The C<compression_type> argument is not
+supported. [% unused %]
 
 =head2 pCAL
 
-pCAL is an extension of the PNG specification. See L<http://www.libpng.org/pub/png/spec/1.1/pngext-1.1.0-pdg.html#C.pCAL>.
+pCAL is an extension of the PNG specification which allows one to
+associate pixels in the PNG image with non-image data such as a heat
+map. See
+L<http://www.libpng.org/pub/png/spec/1.1/pngext-1.1.0-pdg.html#C.pCAL>.
 
 [% supports(desc="the pCAL extension",val="pCAL") %]
 
@@ -1376,11 +1408,16 @@ The max value for the equation.
 
 =item type
 
-The equation type as a number.
+The equation type as a number, from 0 to 3. See the PNG specification
+for the meanings. Other numbers cause an error.
 
 =item units
 
-The units as a string.
+The units as a string. According to the PNG specification, "The units
+for the physical values are given by the unit name, which may contain
+any number of printable Latin-1 characters, with no limitation on the
+number and position of blanks. For example, "K", "population density",
+"MPa". A zero-length string can be used for dimensionless data."
 
 =item params
 
@@ -1390,6 +1427,9 @@ parameter list of the pCAL chunk.
 =back
 
 [% cor(fn="get_pCAL") %]
+
+[% danger %] libpng does not actually seem to implement reading of the
+parameters of a pCAL chunk.
 
 =head3 set_pCAL
 

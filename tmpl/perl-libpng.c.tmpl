@@ -610,11 +610,11 @@ perl_png_set_text_from_hash (perl_libpng_t * png,
     SOFT_HASH_FETCH_PV (chunk, text);
     text_out->text = (char *) text;
     text_out->text_length = text_length;
-    /* Set this in case it starts to be required by future versions of
-       libpng. */
-    text_out->itxt_length = text_length;
 #ifdef PNG_iTXt_SUPPORTED
     if (is_itxt) {
+    /* Set this in case it starts to be required by future versions of
+       libpng. */
+	text_out->itxt_length = text_length;
 	SOFT_HASH_FETCH_PV (chunk, lang);
 	text_out->lang = (char *) lang;
 	SOFT_HASH_FETCH_PV (chunk, lang_key);
@@ -1270,18 +1270,19 @@ static void perl_png_set_bKGD (perl_libpng_t * png, HV * bKGD)
 
 static SV * perl_png_get_pCAL (perl_libpng_t * png)
 {
+    SV * pcal = & PL_sv_undef;
 #ifdef PNG_pCAL_SUPPORTED
     HV * ice;
     char * purpose;
-    int x0;
-    int x1;
+    png_int_32 x0;
+    png_int_32 x1;
     int type;
     int n_params;
     char * units;
     char ** png_params;
 
     if (! VALID (pCAL)) {
-	return & PL_sv_undef;
+	return pcal;
     }
     png_get_pCAL (pngi, & purpose, & x0, & x1, & type,
 		  & n_params, & units, & png_params);
@@ -1295,18 +1296,16 @@ static SV * perl_png_get_pCAL (perl_libpng_t * png)
 	AV * params;
 	int i;
 	params = newAV ();
-	/* Looks like a memory leak here. */
-	GET_MEMORY (png_params, n_params, char *);
 	for (i = 0; i < n_params; i++) {
 	    ARRAY_STORE_PV (params, png_params[i]);
 	}
 	HASH_STORE_AV (ice, params);
     }
-    return newRV_noinc ((SV *) ice);
+    pcal = newRV_noinc ((SV *) ice);
 #else
     UNSUPPORTED(pCAL);
-    return & PL_sv_undef;
 #endif
+    return pcal;
 }
 
 /* Set the pCAL (calibration of pixel values) chunk of a PNG
@@ -1345,6 +1344,9 @@ static void perl_png_set_pCAL (perl_libpng_t * png, HV * pCAL)
 	}
     }
     png_set_pCAL (pngi, purpose, x0, x1, type, n_params, units, png_params);
+    if (png_params) {
+	PERL_PNG_FREE (png_params);
+    }
 #else
     UNSUPPORTED(pCAL);
 #endif
@@ -1384,27 +1386,29 @@ static void perl_png_set_gAMA (perl_libpng_t * png, double gamma)
 
 static SV * perl_png_get_iCCP (perl_libpng_t * png)
 {
+    SV * iccp = & PL_sv_undef;
 #ifdef PNG_iCCP_SUPPORTED
-    if (VALID (iCCP)) {
-	char * name;
-	unsigned char * profile;
-	int compression_method;
-	unsigned int proflen;
-        HV * ice;
-	SV * profile_sv;
-	png_get_iCCP (pngi, & name, & compression_method, & profile,
-		      & proflen);
-        ice = newHV ();
-	HASH_STORE_PV (ice, name);
-	profile_sv = newSVpv ((char *) profile, proflen);
-	(void) hv_store (ice, "profile", strlen ("profile"), profile_sv, 0);
-        return newRV_noinc ((SV *) ice);
+    png_charp name;
+    png_bytep profile;
+    int compression_type = UNUSED_ZERO_ARG;
+    png_uint_32 proflen;
+    HV * ice;
+    SV * profile_sv;
+
+    if (! VALID (iCCP)) {
+	return iccp;
     }
-    return & PL_sv_undef;
+    png_get_iCCP (pngi, & name, & compression_type, & profile,
+		  & proflen);
+    ice = newHV ();
+    HASH_STORE_PV (ice, name);
+    profile_sv = newSVpv ((char *) profile, proflen);
+    (void) hv_store (ice, "profile", strlen ("profile"), profile_sv, 0);
+    iccp = newRV_noinc ((SV *) ice);
 #else /* PNG_iCCP_SUPPORTED */
     UNSUPPORTED(iCCP);
-    return & PL_sv_undef;
 #endif /* PNG_iCCP_SUPPORTED */
+    return iccp;
 }
 
 static void perl_png_set_iCCP (perl_libpng_t * png, HV * iCCP)
@@ -1414,15 +1418,12 @@ static void perl_png_set_iCCP (perl_libpng_t * png, HV * iCCP)
     STRLEN name_length;
     char * profile;
     STRLEN profile_length;
-    int compression_method;
-
-    compression_method = PNG_COMPRESSION_TYPE_BASE;
 
     HASH_FETCH_PV (iCCP, profile);
     HASH_FETCH_PV (iCCP, name);
 
-    png_set_iCCP (pngi, name, compression_method,
-		  (unsigned char *) profile, profile_length);
+    png_set_iCCP (pngi, name, UNUSED_ZERO_ARG,
+		  (png_bytep) profile, (png_uint_32) profile_length);
 #else /* PNG_iCCP_SUPPORTED */
     UNSUPPORTED(iCCP);
 #endif /* PNG_iCCP_SUPPORTED */

@@ -133,12 +133,13 @@ for my $file (@files) {
 	    or die $!;
 	while (<$in>) {
 
-# This is better but causes errors on SunOS/Solaris compilers:
+# This is better for my purposes, but it causes errors on
+# SunOS/Solaris compilers:
 # http://www.cpantesters.org/cpan/report/f25ae7b0-94c3-11e3-ae04-8631d666d1b8
 
-	    s/^(#line)$/sprintf "$1 %d \"tmpl\/%s\"", $. + 1, $template/e; 
+#	    s/^(#line)$/sprintf "$1 %d \"tmpl\/%s\"", $. + 1, $template/e; 
 
-#	    s/^(#line)$/sprintf "$1 %d \"%s\"", $. + 1, $template/e; 
+	    s/^(#line)$/sprintf "$1 %d \"%s\"", $. + 1, $template/e; 
 	    $text .= $_;
 	}
 	my $outtext;
@@ -165,21 +166,6 @@ for my $file (@files) {
     }
     chmod 0444, $output;
 }
-
-# These PNGs are used in the tests. Many of them are from
-# http://libpng.org/pub/png/pngsuite.html.
-
-my @test_pngs = qw!
-t/test.png
-t/with-text.png
-t/with-time.png
-t/tantei-san.png
-t/bgyn6a16.png
-t/xlfn0g04.png
-t/ccwn2c08.png
-t/cdun2c08.png
-t/saru-fs8.png
-!;
 
 # Other files which aren't made from templates.
 
@@ -212,7 +198,6 @@ README
 my @mani;
 push @mani, map {"tmpl/$_.tmpl"} @files;
 push @mani, @outputs;
-push @mani, @test_pngs;
 push @mani, @extras;
 push @mani, 'makeitfile';
 
