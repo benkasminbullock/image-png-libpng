@@ -1,6 +1,9 @@
-0.50
+0.49_01 2020-12-11
 
-- set_text functions now issue errors for bad text chunks
+- set_text issues errors for bad text chunks
+- Unify testing of libpng version
+- Test setting and getting of tIME chunk
+- Documentation work
 
 0.49 2020-12-10
 

@@ -6,7 +6,14 @@ use Test::More;
 use FindBin '$Bin';
 use Image::PNG::Const ':all';
 use Image::PNG::Libpng ':all';
-plan skip_all => "tEXt is not supported" unless libpng_supports ('tEXt');
+BEGIN: {
+    use lib "$Bin";
+    use IPNGLT;
+};
+
+skip_itxt ();
+skip_old ();
+
 my $file = "$Bin/set-text.png";
 if (-f $file) {
     unlink $file;
