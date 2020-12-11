@@ -469,6 +469,11 @@ our @chunks = (
     name => 'hIST',
     auto_type => 'av',
 },
+{
+    name => 'eXIf',
+    auto_type => 'sv',
+},
+
 
 );
 

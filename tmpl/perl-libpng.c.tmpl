@@ -2348,7 +2348,10 @@ int perl_png_libpng_supports (const char * what)
 [%- FOR type IN ['iTXt','UNKNOWN_CHUNKS', 'zTXt', 'tEXt', 'pCAL', 'iCCP',
 		 'sPLT', 'USER_LIMITS', 'tIME', 'TEXT', 'HANDLE_AS_UNKNOWN',
 		 'USER_CHUNKS', 'CONVERT_tIME', 'bKGD', 'cHRM', 'gAMA',
-		 'hIST', 'oFFs', 'pHYs', 'sBIT', 'sRGB', 'tRNS', 'WRITE_CUSTOMIZE_ZTXT_COMPRESSION', 'WRITE_CUSTOMIZE_COMPRESSION',
+		 'hIST', 'oFFs', 'pHYs', 'sBIT', 'sRGB', 'tRNS',
+		 'WRITE_CUSTOMIZE_ZTXT_COMPRESSION',
+		 'WRITE_CUSTOMIZE_COMPRESSION',
+		 'eXIf', 'gIFg', 'gIFx', 'sTER',
 		 ] %]
     if (strcmp (what, "[% type %]") == 0) {
 #ifdef PNG_[% type %]_SUPPORTED
@@ -2593,6 +2596,41 @@ perl_png_get_user_[% what %]_max (perl_libpng_t * png)
 #endif
 }
 [% END # what %]
+
+static SV *
+perl_png_get_eXIf (perl_libpng_t * png)
+{
+    SV * exif = & PL_sv_undef;
+#ifdef PNG_eXIf_SUPPORTED
+    if (VALID (eXIf)) {
+	png_uint_32 num_exif;
+	png_bytep exif_buf;
+	
+	png_get_eXIf_1 (png->png, png->info, & num_exif, & exif_buf);
+	exif = newSVpvn ((const char *) exif_buf, (STRLEN) num_exif);
+    }
+#else /*  PNG_eXIf_SUPPORTED */
+    UNSUPPORTED (eXIf);
+#endif /*  PNG_eXIf_SUPPORTED */
+    return exif;
+}
+
+static void
+perl_png_set_eXIf (perl_libpng_t * png, SV * exif)
+{
+#ifdef PNG_eXIf_SUPPORTED
+    png_uint_32 num_exif;
+    png_bytep exif_buf;
+    STRLEN exif_len;
+    
+    exif_buf = (png_bytep) SvPV (exif, exif_len);
+    num_exif = (png_uint_32) exif_len;
+
+    png_set_eXIf_1 (png->png, png->info, num_exif, exif_buf);
+#else /*  PNG_eXIf_SUPPORTED */
+    UNSUPPORTED (eXIf);
+#endif /*  PNG_eXIf_SUPPORTED */
+}
 
 static SV *
 perl_png_split_alpha (perl_libpng_t * png)
