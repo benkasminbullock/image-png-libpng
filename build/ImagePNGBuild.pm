@@ -8,6 +8,7 @@ use autodie;
 use Carp;
 use FindBin '$Bin';
 use File::Slurper 'read_text';
+use List::Util 'uniq';
 
 my $base = "$Bin/..";
 my $tmpl_dir = "$base/tmpl";
@@ -62,6 +63,7 @@ sub get_functions
 	    push @functions, $1;
 	}
     }
+    @functions = uniq (@functions);
     return \@functions;
 }
 

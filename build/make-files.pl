@@ -74,7 +74,8 @@ for my $chunk (@chunks) {
         push @$functions, ("get_$name", "set_$name");
     }
 }
-$vars{functions} = $functions;
+my @functions = sort (@$functions);
+$vars{functions} = \@functions;
 $vars{self} = $0;
 $vars{date} = scalar gmtime ();
 $vars{libpng_diagnostics} = \@libpng_diagnostics;

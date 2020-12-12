@@ -63,7 +63,13 @@ Image::PNG::Libpng - Perl interface to the C library "libpng".
 
 =head1 SYNOPSIS
 
+Libpng-like interface:
+
 [% example('synopsis') %]
+
+Simple interface:
+
+[% example('synopsis-easy') %]
 
 =head1 VERSION
 
@@ -1984,10 +1990,10 @@ There is no Z value allowed in L</set_cHRM> at present.
 
 =item png_set_compression_method
 
-[% useless %] This is function in libpng corresponds to the useless C<method>
-parameter of zlib functions like C<deflateInit2>. See L</zlib
-documentation>. The libpng function just produces a warning if the
-user sets the value to anything but 8, the value of the macro
+[% useless %] This function in libpng corresponds to the unused
+C<method> parameter of zlib functions like C<deflateInit2>. See
+L</zlib documentation>. The libpng function just produces a warning if
+the user sets the value to anything but 8, the value of the macro
 C<Z_DEFLATED>, and then lets zlib produce an error.
 
 =item png_set_interlace_handling

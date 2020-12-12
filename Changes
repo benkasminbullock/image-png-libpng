@@ -1,19 +1,18 @@
-0.49_04 2020-12-12
+0.50 2020-12-12
 
 - "set_text" issues errors for bad text chunks
 - Unify testing of libpng version
 - Better tests of setting and getting of tIME chunk
 - Round-trip tests for previously-untested pCAL, oFFs, hIST chunks
 - get_pCAL now works (was faulty)
-- Doc of get_cHRM return value corrected to say hash reference
-- Doc of libpng_supports now lists all the possible call values
-- Invalid parameters removed from docs of oFFs, pHYs
+- Doc corrections for get_cHRM, oFFs, pHYs chunks
+- libpng_supports expanded to cover all macros in libpng 1.6.37
 - DIAGNOSTICS section removed from documentation
-- In doc, functions, chunk names, etc. in alphabetical order
-- Doc "PNG Timestamps" section moved to "tIME" chunk subsection
+- Functions, chunk names, etc. in alphabetical order in doc
+- Doc "PNG Timestamps" to "tIME", "Palette" to "PLTE"
 - get_sBIT no longer writes zeros to empty fields
 - Unimplemented but documented "get_color_type" function implemented
-- Undocumented set_PLTE_pointer method removed
+- set_PLTE_pointer method removed
 - Add read_struct function
 
 0.49 2020-12-10
