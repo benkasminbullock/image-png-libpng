@@ -375,7 +375,6 @@ our @chunks = (
     name => 'PLTE',
     in_valid => 1,
     auto_type => 'av',
-    redirect => 'Palettes',
 },
 
 {
@@ -412,7 +411,6 @@ our @chunks = (
     in_valid => 1,
     auto_type => 'sv',
     default => "0",
-    redirect => 'PNG timestamps',
 },
 
 {
