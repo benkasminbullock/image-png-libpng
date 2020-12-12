@@ -376,11 +376,11 @@ Get the bit depth, the number of bits for one channel of one pixel.
 
     my $channels = $png->get_channels ();
 
-Get the number of channels, from one to four. This means the number of
-components of one pixel. The return value is 1 for color type
-PNG_COLOR_TYPE_GRAY and PNG_COLOR_TYPE_PALETTE, 2 for
-PNG_COLOR_TYPE_GRAY_ALPHA, 3 for PNG_COLOR_TYPE_RGB and 4 for
-PNG_COLOR_TYPE_RGB_ALPHA or PNG_COLOR_TYPE_RGB with a filler
+Get the number of channels, from one to four. Channels here basically
+means the number of components of one pixel. The return value is 1 for
+color type C<PNG_COLOR_TYPE_GRAY> and C<PNG_COLOR_TYPE_PALETTE>, 2 for
+C<PNG_COLOR_TYPE_GRAY_ALPHA>, 3 for C<PNG_COLOR_TYPE_RGB> and 4 for
+C<PNG_COLOR_TYPE_RGB_ALPHA> or C<PNG_COLOR_TYPE_RGB> with a filler
 byte. This doesn't necessarily correspond to the number of bytes,
 since the bit depth can also be 1, 2, 4, 8, or 16.
 
@@ -388,8 +388,7 @@ since the bit depth can also be 1, 2, 4, 8, or 16.
 
 =head2 get_color_type
 
-    my $color_type;
-    $png->get_color_type (\$color_type);
+    my $color_type = $png->get_color_type ();
 
 This returns an integer value. If you want to get a name for the
 color type, use L</color_type_name>.
@@ -486,8 +485,8 @@ intended for use with the object only.
 
 =head2 set_IHDR
 
-    my $ihdr = { width => 10, height => 10, bit_depth => 8,
-                 color_type => PNG_COLOR_TYPE_RGB };
+    my $ihdr = {width => 10, height => 10, bit_depth => 8,
+                color_type => PNG_COLOR_TYPE_RGB};
     $png->set_IHDR ($ihdr);
 
 Set the IHDR chunk (the image header) of the PNG image. 
@@ -741,6 +740,38 @@ the hash references do not cause fatal errors.
 
 [% example('set-text') %]
 
+=head2 text_compression_name
+
+    my $name = Image::PNG::Libpng::text_compression_name ($text->{compression});
+
+Given a numerical text compression type, return the equivalent
+name. The name is in upper case. The possible return values are
+
+=over
+
+=item TEXT_NONE
+
+=item TEXT_zTXt
+
+=item ITXT_NONE
+
+=item ITXT_zTXt
+
+=item an empty string
+
+if the compression method is unknown.
+
+=back
+
+The compression field is also used to store the information about
+whether the text is "international text" in UTF-8 or not.
+
+This function does not correspond to anything in libpng. The names of
+the text compression types are based on those in C<png.h>, but without
+the word "COMPRESSION", so for example the libpng constant
+C<PNG_ITXT_COMPRESSION_zTXt> corresponds to a return value of
+C<ITXT_zTXt>.
+
 =head1 Private chunks
 
 See [% spec("12Use-of-private-chunks") %] for information on the PNG
@@ -832,19 +863,6 @@ C<png_structp> argument of the C function. [% unused %]
 Returns the value of the compression buffer size, which may be altered
 with L</set_compression_buffer_size>.
 
-[% FOR what IN ['width', 'height'] %]
-
-=head2 get_user_[% what %]_max
-
-    $png->get_user_[% what %]_max ();
-
-Get the maximum [% what %] allowed for a PNG file. The default is 1
-million pixels. These values can be changed by L</set_user_limits>.
-
-[% cor(fn="get_user_" _ what _ "_max") %]
-
-[% END # what %]
-
 =head2 set_compression_buffer_size
 
     $png->set_compression_buffer_size (100);
@@ -933,47 +951,6 @@ As L</set_compression_window_bits> but for compressed text.
 
 As L</set_compression_strategy> but for compressed text.
 
-=head2 set_user_limits
-
-    $png->set_user_limits ($width, $height);
-
-This enables a user to override libpng's restrictions to one million
-pixels in width and one million pixels in height for a PNG image.
-
-[% cor(fn="set_user_limits") %]
-
-=head2 text_compression_name
-
-    my $name = Image::PNG::Libpng::text_compression_name ($text->{compression});
-
-Given a numerical text compression type, return the equivalent
-name. The name is in upper case. The possible return values are
-
-=over
-
-=item TEXT_NONE
-
-=item TEXT_zTXt
-
-=item ITXT_NONE
-
-=item ITXT_zTXt
-
-=item an empty string
-
-if the compression method is unknown.
-
-=back
-
-The compression field is also used to store the information about
-whether the text is "international text" in UTF-8 or not.
-
-This function does not correspond to anything in libpng. The names of
-the text compression types are based on those in C<png.h>, but without
-the word "COMPRESSION", so for example the libpng constant
-C<PNG_ITXT_COMPRESSION_zTXt> corresponds to a return value of
-C<ITXT_zTXt>.
-
 =head1 Other chunks
 
 These routines deal with the other possible chunks of PNGs.
@@ -1049,13 +1026,7 @@ point".
 
 Get the cHRM chunk as a hash reference.
 
-The keys of the hash are
-
-=over
-[% FOR key IN chunk_hash.cHRM.fields %]
-=item [% key %]
-[% END %]
-=back
+The keys of the hash are [% chunk_hash.cHRM.fields.join(", ") %].
 
 The values of the hash are floating point numbers between 0 and 1.
 
@@ -1069,15 +1040,8 @@ arguments in libpng.
 
 Set the cHRM chunk from a hash reference.
 
-The keys of the hash are
-
-=over
-[% FOR key IN chunk_hash.cHRM.fields %]
-=item [% key %]
-[% END %]
-=back
-
-The values of the hash are floating point numbers between 0 and 1.
+The keys of the hash are as for L</get_cHRM>. The values are floating
+point numbers between 0 and 1.
 
 [% cor(fn="set_cHRM") %] with a hash reference instead of the C<double>
 arguments.
@@ -1137,8 +1101,9 @@ See [% spec("11hIST") %].
 
     my $hist = $png->get_hIST ();
 
-Return value is array reference. The number of entries in the array
-reference is the same as in the palette.
+If the PNG file contains a histogram, the return value is array
+reference, otherwise it is the undefined value. The number of entries
+in the array reference is the same as in the palette.
 
 [% cor(fn="get_hIST") %]
 
@@ -1146,7 +1111,10 @@ reference is the same as in the palette.
 
     $png->set_hIST (\@hist);
 
-Set the histogram.
+Set the histogram. The entries of the histogram are 16 bit unsigned
+integers, so the maximum value that can be entered will be 2^16 -
+1. Larger numbers and floating point numbers will just be silently
+truncated.
 
 [% cor(fn="set_hIST") %]
 
@@ -1172,7 +1140,8 @@ The color profile.
 
 =back
 
-The C<compression_type> value is not returned. [% unused %]
+The C<compression_type> value, which is always 0, is not returned. [%
+unused %]
 
 [% cor(fn="get_iCCP") %].
 
@@ -1180,8 +1149,8 @@ The C<compression_type> value is not returned. [% unused %]
 
     $png->set_iCCP ({name => 'name', profile => 'profile'});
 
-[% cor(fn="set_iCCP") %]. The C<compression_type> argument is not
-supported. [% unused %]
+[% cor(fn="set_iCCP") %]. A C<compression_type> argument, which must
+always be 0 anyway, is ignored. [% unused %]
 
 =head2 oFFs
 
@@ -1260,7 +1229,7 @@ The max value for the equation, an integer.
 
     $png->set_pCAL (\%values);
 
-See L</get_pCAL> for details of the parameters of C<%values>.
+See L</get_pCAL> for the parameters of C<%values>.
 
 [% cor(fn="set_pCAL") %]
 
@@ -1401,7 +1370,6 @@ The height, as a string.
 
 =back
 
-
 [% cor(fn="get_sCAL_s") %]. Note that this uses the sCAL_s function
 rather than the get_sCAL and the returned values are the strings
 themselves rather than parsed numbers.
@@ -1496,19 +1464,7 @@ following:
 
     $png->set_sRGB ($srgb);
 
-C<$srgb> is one of the following (integer numbers).
-
-=over
-
-=item PNG_sRGB_INTENT_SATURATION
-
-=item PNG_sRGB_INTENT_PERCEPTUAL
-
-=item PNG_sRGB_INTENT_ABSOLUTE
-
-=item PNG_sRGB_INTENT_RELATIVE
-
-=back
+C<$srgb> is one of the values described in L</get_sRGB>.
 
 [% cor(fn="set_sRGB") %]
 
@@ -1525,9 +1481,9 @@ time stamp information.
     }
 
 The return value is either the undefined value, if no C<tIME> chunk
-exists in the PNG, or a hash reference containing fields "year",
-"month", "day", "hour", "minute" and "second". "Month" and "day" start
-from 1 rather than 0.
+exists in the PNG, or a hash reference containing fields C<year>,
+C<month>, C<day>, C<hour>, C<minute> and C<second>. C<month> and
+C<day> start from 1 rather than 0.
 
 The "modification time value" of the PNG image is a chunk written into
 the PNG file itself, and may not have the same value as the operating
@@ -1587,6 +1543,19 @@ reference containing values for the keys red, green, blue and gray.
 
 =head1 OTHER LIBPNG FUNCTIONS
 
+[% FOR what IN ['width', 'height'] %]
+
+=head2 get_user_[% what %]_max
+
+    $png->get_user_[% what %]_max ();
+
+Get the maximum [% what %] allowed for a PNG file. The default is 1
+million pixels. These values can be changed by L</set_user_limits>.
+
+[% cor(fn="get_user_" _ what _ "_max") %]
+
+[% END # what %]
+
 =head2 set_expand
 
     $png->set_expand ();
@@ -1601,7 +1570,7 @@ to RGB, grayscale images of bit-depth less than 8 are expanded to
 
     $png->set_filler ($filler, $flags);
 
-Set transformations in $png such that a filler byte C<$filler> is
+Set transformations in C<$png> such that a filler byte C<$filler> is
 added when an 8-bit grayscale image or 24-bit RGB image is read, and a
 filler byte is deleted when an 8-bit grayscale image or 24-bit RGB
 image is written. C<$flags> may be C<PNG_FLAG_FILLER_AFTER> or zero.
@@ -1611,6 +1580,8 @@ image is written. C<$flags> may be C<PNG_FLAG_FILLER_AFTER> or zero.
 =head2 set_gray_to_rgb
 
     $png->set_gray_to_rgb ();
+
+Convert a grayscale PNG file to RGB format on reading.
 
 [% cor(fn="set_gray_to_rgb") %]
 
@@ -1633,6 +1604,15 @@ Strip the pixels of a PNG stream with 16 bits per channel to 8 bits
 per channel.
 
 [% cor(fn="set_strip_16") %]
+
+=head2 set_user_limits
+
+    $png->set_user_limits ($width, $height);
+
+This enables a user to override libpng's restrictions to one million
+pixels in width and one million pixels in height for a PNG image.
+
+[% cor(fn="set_user_limits") %]
 
 =head1 OTHER FUNCTIONS
 

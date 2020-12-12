@@ -2336,6 +2336,13 @@ static void perl_png_set_unknown_chunks (perl_libpng_t * png, AV * chunk_list)
 
 int perl_png_libpng_supports (const char * what)
 {
+    if (strcmp (what, "sCAL") == 0) {
+#ifdef PERL_PNG_sCAL_s_SUPPORTED
+        return 1;
+#else
+        return 0;
+#endif /* PERL_PNG_sCAL_s_SUPPORTED */
+    }
 #oline
 [%- FOR type IN supports_list %]
     if (strcmp (what, "[% type.c %]") == 0) {

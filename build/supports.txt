@@ -82,6 +82,8 @@ c: pHYs
 
 c: sBIT
 
+
+# sCAL is handled separately in the template
 c: sCAL
 %%d:
 Does the libpng support the L</sCAL> extension?  This actually tests

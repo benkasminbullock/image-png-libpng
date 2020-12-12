@@ -1,3 +1,8 @@
+0.51 2020-12-13
+
+- Bug fix related to sCAL chunk test
+- Documentation tidied up
+
 0.50 2020-12-12
 
 - "set_text" issues errors for bad text chunks
