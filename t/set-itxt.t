@@ -21,7 +21,8 @@ BEGIN: {
     use IPNGLT;
 };
 
-skip_itxt () || skip_old ();
+skip_itxt ();
+skip_old ();
 
 my $file = "$Bin/set-text.png";
 my $text = [
