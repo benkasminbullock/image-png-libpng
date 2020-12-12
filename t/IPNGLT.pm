@@ -7,7 +7,13 @@ package IPNGLT;
 require Exporter;
 our @ISA = qw(Exporter);
 # We just export everything by default, because this is not a user module.
-our @EXPORT = qw/skip_itxt skip_old round_trip fake_wpng/;
+our @EXPORT = qw/
+		    fake_wpng
+		    rmfile
+		    round_trip
+		    skip_itxt
+		    skip_old
+		/;
 use warnings;
 use strict;
 use utf8;

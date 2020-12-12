@@ -7,6 +7,7 @@ use strict;
 use autodie;
 use Carp;
 use FindBin '$Bin';
+use File::Slurper 'read_text';
 
 my $base = "$Bin/..";
 my $tmpl_dir = "$base/tmpl";
@@ -52,17 +53,15 @@ sub get_functions
     if (! $config_ref) {
         croak "No configuration supplied";
     }
-    open my $input, "<", "$config_ref->{tmpl_dir}/Libpng.xs.tmpl";
+    my $file = "$config_ref->{tmpl_dir}/Libpng.xs.tmpl";
+    my $text = read_text ($file);
     my @functions;
-    while (<$input>) {
-        if (/^\S+.*?perl_png_(\w+)\s*\(/) {
-	    my $f = $1;
-	    if ($f !~ /DESTROY/) {
-		push @functions, $1;
-	    }
-        }
+    while ($text =~ /^\S+.*?perl_png_(\w+)\s*\(/gsm) {
+	my $f = $1;
+	if ($f !~ /DESTROY/) {
+	    push @functions, $1;
+	}
     }
-    close $input;
     return \@functions;
 }
 

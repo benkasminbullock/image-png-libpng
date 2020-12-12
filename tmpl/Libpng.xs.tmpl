@@ -38,13 +38,15 @@ CODE:
 OUTPUT:
         RETVAL
 
-void perl_png_destroy_read_struct (Png)
+void
+perl_png_destroy_read_struct (Png)
         Image::PNG::Libpng  Png
 CODE:
         perl_png_destroy_read_struct (Png);
 
 
-void perl_png_destroy_write_struct (Png)
+void
+perl_png_destroy_write_struct (Png)
         Image::PNG::Libpng  Png
 CODE:
         perl_png_destroy_write_struct (Png);
@@ -145,13 +147,15 @@ CODE:
 OUTPUT:
         RETVAL
 
-const char *perl_png_get_libpng_ver ()
+const char *
+perl_png_get_libpng_ver ()
 CODE:
         RETVAL = png_get_libpng_ver (UNUSED_ZERO_ARG);
 OUTPUT:
         RETVAL
 
-int perl_png_access_version_number ()
+int
+perl_png_access_version_number ()
 CODE:
         RETVAL = png_access_version_number ();
 OUTPUT:
@@ -602,5 +606,14 @@ perl_png_split_alpha (Png)
 	Image::PNG::Libpng Png;
 CODE:
 	RETVAL = perl_png_split_alpha (Png);
+OUTPUT:
+	RETVAL
+
+
+int
+perl_png_read_struct (Png)
+	Image::PNG::Libpng Png;
+CODE:
+	RETVAL = (Png->type == perl_png_read_obj);
 OUTPUT:
 	RETVAL

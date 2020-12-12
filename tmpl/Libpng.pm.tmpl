@@ -68,6 +68,22 @@ sub read_png_file
 sub write_png_file
 {
     my ($png, $file_name) = @_;
+    if ($png->read_struct ()) {
+
+	# The following is more convenient but might not work in some
+	# cases, depending on how libpng handles different
+	# transformations and so on, so I don't really want to risk
+	# it.
+
+	# my $copy = $png->copy_png ();
+	# write_png_file ($copy, $file_name);
+	# return;
+
+	croak "The png is a read structure, use copy_png to copy it to a write structure";
+    }
+    if (! $file_name) {
+	croak "Supply a file name";
+    }
     open my $in, ">:raw", $file_name
         or croak "Cannot open '$file_name' for writing: $!";
     $png->init_io ($in);

@@ -916,6 +916,9 @@ perl_png_write_to_scalar (perl_libpng_t * png, int transforms)
 {
     scalar_as_image_t * si;
     SV * image_data;
+    if (png->type != perl_png_write_obj) {
+	croak ("This is a read object, use copy_png to copy it");
+    }
 
     GET_TRANSFORMS;
 
