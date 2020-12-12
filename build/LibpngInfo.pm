@@ -4,6 +4,7 @@ require Exporter;
 @EXPORT_OK = qw/template_vars @chunks/;
 use warnings;
 use strict;
+use Table::Readable 'read_table';
 
 my @ihdr_fields = (
 {
@@ -26,7 +27,7 @@ EOF
     name => 'bit_depth',
     c => 'int',
     text => <<EOF,
-The bit depth of the image (the number of bits used for each colour in
+The bit depth of the image (the number of bits used for each color in
 a pixel).
 EOF
     set => 'This cannot be omitted.',
@@ -36,7 +37,7 @@ EOF
     name => 'color_type',
         c => 'int',
             text => <<EOF,
-The colour type.
+The color type.
 EOF
     set => 'This cannot be omitted.',
     retvalues => [qw/
@@ -491,10 +492,24 @@ for my $color (qw/white red green blue/) {
     }
 }
 
-# List of colours which are in png_color_8 or png_color_16.
+# List of colors which are in png_color_8 or png_color_16.
 
 my @colors = qw/red green blue gray alpha/;
 my @noalpha = qw/red green blue gray/;
+
+my $supports_file = __FILE__;
+$supports_file =~ s!LibpngInfo\.pm!supports.txt!;
+my @supports_list = read_table ($supports_file);
+@supports_list = sort {uc($a->{c}) cmp uc($b->{c})} @supports_list;
+for (@supports_list) {
+    if (! defined ($_->{d})) {
+	my $d = '';
+	if (length ($_->{c}) == 4) {
+	    $d = "Does the libpng support the L</$_->{c}> chunk?";
+	}
+	$_->{d} = $d;
+    }
+}
 
 sub template_vars
 {
@@ -511,6 +526,7 @@ sub template_vars
 #        print "$name.\n";
 #    }
     $vars_ref->{unknown_chunk_fields} = \@unknown_chunk_fields;
+    $vars_ref->{supports_list} = \@supports_list;
 }
 
 1;

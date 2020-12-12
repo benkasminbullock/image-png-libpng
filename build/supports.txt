@@ -1,0 +1,333 @@
+c: CONVERT_tIME
+%%d:
+
+This is related to two deprecated functions,
+L</png_convert_from_time_t> and L</png_convert_from_struct_tm>.
+
+%%
+
+c: HANDLE_AS_UNKNOWN
+
+c: TEXT
+%%d:
+Does the libpng support text?
+%%
+
+c: UNKNOWN_CHUNKS
+%%d:
+Does the libpng support unknown chunks (see L<Private chunks>)?
+%%
+
+c: USER_CHUNKS
+
+c: USER_LIMITS
+%%d:
+
+Does the libpng support L</set_user_limits> and the related functions
+L</get_user_width_max>, and L</get_user_height_max>?
+
+%%
+
+c: WRITE_CUSTOMIZE_COMPRESSION
+%%d:
+
+Does the libpng support L</set_compression_level> and similar functions?
+
+[% danger %] It's not very clear that this returns a useful value,
+since L</set_compression_level> seems to be in libpngs from at least
+as far back as C<1.5.1>, and yet this macro was only added to libpng
+in version C<1.6.13>.
+
+%%
+
+
+c: WRITE_CUSTOMIZE_ZTXT_COMPRESSION
+%%d:
+
+Does the libpng support L</set_text_compression_level> and similar functions?
+
+%%
+
+c: bKGD
+
+c: cHRM
+
+c: eXIf
+
+c: gAMA
+
+# c: gIFg
+# x: Not in 1.6.37
+
+# c: gIFx
+# x: Not in 1.6.37
+
+c: hIST
+
+c: iCCP
+
+c: iTXt
+%%d:
+Does the libpng support international text?
+%%
+
+c: oFFs
+
+c: pCAL
+%%d:
+Does the libpng support the L</pCAL> extension?
+%%
+
+c: pHYs
+
+c: sBIT
+
+c: sCAL
+%%d:
+Does the libpng support the L</sCAL> extension?  This actually tests
+for the presence of the C<get_sCAL_s>/C<set_sCAL_s> functions, so its
+behaviour is dependent on other factors for versions 1.2 and 1.4 of
+libpng.
+%%
+
+
+c: sPLT
+%%d:
+Does the libpng support L</sPLT> chunks?
+%%
+
+c: sRGB
+
+# Not in 1.6.37.
+#c: sTER
+
+c: tEXt
+%%d:
+
+Does the libpng support tEXt chunks?
+
+%%
+
+c: tIME
+
+c: tRNS
+
+c: zTXt
+%%d:
+Does the libpng support C<zTXt> chunks?
+%%
+
+c: 16BIT
+
+c: ALIGNED_MEMORY
+
+c: ARM_NEON_API
+
+c: BENIGN_ERRORS
+
+c: BENIGN_READ_ERRORS
+
+c: BENIGN_WRITE_ERRORS
+
+c: BUILD_GRAYSCALE_PALETTE
+
+c: BUILTIN_BSWAP16
+
+c: CHECK_FOR_INVALID_INDEX
+
+c: COLORSPACE
+
+c: CONSOLE_IO
+
+c: CONVERT_tIME
+
+c: EASY_ACCESS
+
+c: ERROR_NUMBERS
+
+c: ERROR_TEXT
+
+c: FIXED_POINT
+
+c: FIXED_POINT_MACRO
+
+c: FLOATING_ARITHMETIC
+
+c: FLOATING_POINT
+
+c: FORMAT_AFIRST
+
+c: FORMAT_BGR
+
+c: GAMMA
+
+c: GET_PALETTE_MAX
+
+c: HANDLE_AS_UNKNOWN
+
+c: INCH_CONVERSIONS
+
+c: INFO_IMAGE
+
+c: IO_STATE
+
+c: MIPS_MSA_API
+
+c: MNG_FEATURES
+
+c: PEDANTIC_WARNINGS
+
+c: POINTER_INDEXING
+
+c: POWERPC_VSX_API
+
+c: PROGRESSIVE_READ
+
+c: READ
+d: Can libpng read PNGs?
+
+
+c: READ_16_TO_8
+
+c: READ_ALPHA_MODE
+
+c: READ_BACKGROUND
+
+c: READ_BGR
+
+c: READ_COMPOSITE_NODIV
+
+c: READ_COMPRESSED_TEXT
+
+c: READ_EXPAND
+
+c: READ_EXPAND_16
+
+c: READ_FILLER
+
+c: READ_GRAY_TO_RGB
+
+c: READ_INTERLACING
+
+c: READ_INT_FUNCTIONS
+
+c: READ_INVERT
+
+c: READ_INVERT_ALPHA
+
+c: READ_OPT_PLTE
+
+c: READ_PACK
+
+c: READ_PACKSWAP
+
+c: READ_QUANTIZE
+
+c: READ_RGB_TO_GRAY
+
+c: READ_SCALE_16_TO_8
+
+c: READ_SHIFT
+
+c: READ_STRIP_16_TO_8
+
+c: READ_STRIP_ALPHA
+
+c: READ_SWAP
+
+c: READ_SWAP_ALPHA
+
+c: READ_TRANSFORMS
+
+c: READ_USER_TRANSFORM
+
+c: READ_tEXt
+
+c: READ_zTXt
+
+c: SAVE_INT_32
+
+c: SAVE_UNKNOWN_CHUNKS
+
+c: SEQUENTIAL_READ
+
+c: SETJMP
+
+c: SET_OPTION
+
+c: SET_UNKNOWN_CHUNKS
+
+c: SET_USER_LIMITS
+
+c: SIMPLIFIED_READ
+
+c: SIMPLIFIED_READ_AFIRST
+
+c: SIMPLIFIED_WRITE
+
+c: SIMPLIFIED_WRITE_AFIRST
+
+c: SIMPLIFIED_WRITE_BGR
+
+c: SIMPLIFIED_WRITE_STDIO
+
+c: STDIO
+
+c: STORE_UNKNOWN_CHUNKS
+
+c: TIME_RFC1123
+
+c: USER_LIMITS
+
+c: USER_MEM
+
+c: USER_TRANSFORM_INFO
+
+c: USER_TRANSFORM_PTR
+
+c: WARNINGS
+
+c: WRITE
+d: Can libpng write pngs?
+
+c: WRITE_BGR
+
+c: WRITE_COMPRESSED_TEXT
+
+c: WRITE_FILLER
+
+c: WRITE_FILTER
+
+c: WRITE_FLUSH
+
+c: WRITE_FLUSH_AFTER_IEND
+
+c: WRITE_INTERLACING
+
+c: WRITE_INT_FUNCTIONS
+
+c: WRITE_INVERT
+
+c: WRITE_INVERT_ALPHA
+
+c: WRITE_OPTIMIZE_CMF
+
+c: WRITE_PACK
+
+c: WRITE_PACKSWAP
+
+c: WRITE_SHIFT
+
+c: WRITE_SWAP
+
+c: WRITE_SWAP_ALPHA
+
+c: WRITE_TRANSFORMS
+
+c: WRITE_USER_TRANSFORM
+
+c: WRITE_WEIGHTED_FILTER
+
+# Local variables:
+# mode: table-readable
+# End:

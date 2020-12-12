@@ -137,7 +137,6 @@ typedef perl_libpng_t * Image__PNG__Libpng;
 static void
 perl_png_error_fn (png_structp png_ptr, png_const_charp error_msg)
 {
-    perl_libpng_t * png = png_get_error_ptr (png_ptr);
     /* An error from libpng sent via Perl's warning handler. */
     croak ("libpng error: %s\n", error_msg);
 }
@@ -147,7 +146,6 @@ perl_png_error_fn (png_structp png_ptr, png_const_charp error_msg)
 static void
 perl_png_warning_fn (png_structp png_ptr, png_const_charp warning_msg)
 {
-    perl_libpng_t * png = png_get_error_ptr (png_ptr);
     /* A warning from libpng sent via Perl's warning handler. */
     warn ( "libpng warning: %s\n", warning_msg);
 }
@@ -1190,13 +1188,6 @@ perl_png_set_PLTE (perl_libpng_t * png, AV * perl_colors)
     PERL_PNG_FREE (colors);
 }
 
-/* Set the palette directly, using a pointer. */
-
-static void
-perl_png_set_PLTE_pointer (perl_libpng_t * png, png_colorp colors, int n_colors){
-    png_set_PLTE (pngi, colors, n_colors);
-}
-
 /* Create a hash containing the colour values of a pointer to a
    png_color_16 structure. */
 
@@ -1489,7 +1480,6 @@ static void perl_png_set_tRNS (perl_libpng_t * png, SV * tRNS)
     png_byte color_type;
     png_byte trans[256] = {0};
     int num_trans;
-    png_uint_32 status;
     png_color_16 trans_values = {0};
     color_type = png_get_color_type (pngi);
     if (color_type & PNG_COLOR_MASK_PALETTE) {
@@ -1773,65 +1763,74 @@ static SV * perl_png_get_hIST (perl_libpng_t * png)
 
 static SV * perl_png_get_sBIT (perl_libpng_t * png)
 {
+    SV * sbit = & PL_sv_undef;
 #ifdef PNG_sBIT_SUPPORTED
     if (VALID (sBIT)) {
         HV * sig_bit;
         png_color_8p colors;
 	png_uint_32 status;
+	int color_type;
+
+	color_type = png_get_color_type (pngi);
         sig_bit = newHV ();
 	status = png_get_sBIT (pngi, & colors);
 	if (status != PNG_INFO_sBIT) {
-	    /* error */
+	    return sbit;
 	}
-#oline
-        [% FOR color IN colors %]
-	HASH_STORE_IV_MEMBER (sig_bit, [% color %], colors);
-	[% END %]
-#line
-        return newRV_noinc ((SV *) sig_bit);
+	if ((color_type & PNG_COLOR_MASK_COLOR) != 0) {
+	    [% FOR color IN ['red', 'green', 'blue'] %]
+	    HASH_STORE_IV_MEMBER (sig_bit, [% color %], colors);
+	    [% END %]
+	}
+	else {
+	    HASH_STORE_IV_MEMBER (sig_bit, gray, colors);
+	}
+	if ((color_type & PNG_COLOR_MASK_ALPHA) != 0) {
+	    HASH_STORE_IV_MEMBER (sig_bit, alpha, colors);
+	}
+        sbit = newRV_noinc ((SV *) sig_bit);
     }
-    return & PL_sv_undef;
 #else
     /* libpng was compiled without this option. */
     UNSUPPORTED(sBIT);
-    return & PL_sv_undef;
 #endif
+    return sbit;
 }
 
 static void perl_png_set_sBIT (perl_libpng_t * png, HV * sBIT)
 {
 #ifdef PNG_sBIT_SUPPORTED
     png_color_8 colors;
-    [% FOR color IN colors %] HASH_FETCH_IV_MEMBER (sBIT,[% color %],(&colors));[% END %]
+    [% FOR color IN colors %]
+    HASH_FETCH_IV_MEMBER (sBIT, [% color %], (& colors));
+    [% END %]
     png_set_sBIT (pngi, & colors);
 #else
-    /* libpng was compiled without this option. */
     UNSUPPORTED(sBIT);
 #endif
 }
 
 static SV * perl_png_get_oFFs (perl_libpng_t * png)
 {
+    SV * offs = & PL_sv_undef;
 #ifdef PNG_oFFs_SUPPORTED
     if (VALID (oFFs)) {
         HV * offset;
-        
-        png_int_32 x_offset;
+	png_int_32 x_offset;
         png_int_32 y_offset;
         int unit_type;
+
         offset = newHV ();
         png_get_oFFs (pngi, & x_offset, & y_offset, & unit_type);
         HASH_STORE_IV (offset, x_offset);
         HASH_STORE_IV (offset, y_offset);
         HASH_STORE_IV (offset, unit_type);
-        return newRV_noinc ((SV *) offset);
+        offs = newRV_noinc ((SV *) offset);
     }
-    return & PL_sv_undef;
 #else
-    /* libpng was compiled without this option. */
     UNSUPPORTED(oFFs);
-    return & PL_sv_undef;
 #endif
+    return offs;
 }
 
 /* set oFFs of PNG image. */
@@ -1847,13 +1846,13 @@ static void perl_png_set_oFFs (perl_libpng_t * png, HV * oFFs)
     HASH_FETCH_IV (oFFs, unit_type);
     png_set_oFFs (pngi, x_offset, y_offset, unit_type);
 #else
-    /* libpng was compiled without this option. */
     UNSUPPORTED(oFFs);
 #endif
 }
 
 static SV * perl_png_get_pHYs (perl_libpng_t * png)
 {
+    SV * physsv = & PL_sv_undef;
 #ifdef PNG_pHYs_SUPPORTED
     if (VALID (pHYs)) {
         png_uint_32 res_x;
@@ -1865,14 +1864,13 @@ static SV * perl_png_get_pHYs (perl_libpng_t * png)
         HASH_STORE_IV (phys, res_x);
         HASH_STORE_IV (phys, res_y);
         HASH_STORE_IV (phys, unit_type);
-        return newRV_noinc ((SV *) phys);
+        physsv = newRV_noinc ((SV *) phys);
     }
-    return & PL_sv_undef;
 #else
     /* libpng was compiled without this option. */
     UNSUPPORTED(pHYs);
-    return & PL_sv_undef;
 #endif
+    return physsv;
 }
 
 static void perl_png_set_pHYs (perl_libpng_t * png, HV * pHYs)
@@ -1991,7 +1989,6 @@ perl_png_get_rows (perl_libpng_t * png)
     png_bytepp rows;
     int rowbytes;
     int height;
-    SV ** row_svs;
     int r;
     AV * perl_rows;
 
@@ -2069,8 +2066,6 @@ perl_png_read_image (perl_libpng_t * png)
         png->row_pointers[i] = png->image_data + rowbytes * i;
     }
     png_read_image (png->png, png->row_pointers);
-    /* Set the row_pointers pointers to point into the allocated
-       memory. */
 }
 
 /* Get the row pointers directly. */
@@ -2165,6 +2160,7 @@ static void perl_png_set_rows (perl_libpng_t * png, AV * rows)
 	r += rbytes;
     }
     if (r != ar + arbytes) {
+	/* Final check after writing row data. */
 	croak ("%s:%d: Mismatch %p != %p", __FILE__, __LINE__,
 	       r, ar + arbytes);
     }
@@ -2346,20 +2342,13 @@ static void perl_png_set_unknown_chunks (perl_libpng_t * png, AV * chunk_list)
 int perl_png_libpng_supports (const char * what)
 {
 #oline
-[%- FOR type IN ['iTXt','UNKNOWN_CHUNKS', 'zTXt', 'tEXt', 'pCAL', 'iCCP',
-		 'sPLT', 'USER_LIMITS', 'tIME', 'TEXT', 'HANDLE_AS_UNKNOWN',
-		 'USER_CHUNKS', 'CONVERT_tIME', 'bKGD', 'cHRM', 'gAMA',
-		 'hIST', 'oFFs', 'pHYs', 'sBIT', 'sRGB', 'tRNS',
-		 'WRITE_CUSTOMIZE_ZTXT_COMPRESSION',
-		 'WRITE_CUSTOMIZE_COMPRESSION',
-		 'eXIf', 'gIFg', 'gIFx', 'sTER',
-		 ] %]
-    if (strcmp (what, "[% type %]") == 0) {
-#ifdef PNG_[% type %]_SUPPORTED
+[%- FOR type IN supports_list %]
+    if (strcmp (what, "[% type.c %]") == 0) {
+#ifdef PNG_[% type.c %]_SUPPORTED
         return 1;
 #else
         return 0;
-#endif /* [% type %] */
+#endif /* [% type.c %] */
     }
 [%- END %]
 #line
@@ -2373,9 +2362,20 @@ int perl_png_libpng_supports (const char * what)
         return 0;
 #endif /* sCAL */
     }
+    /* These were in the module prior to 0.50, even though there is no
+       such macro in libpng. */
+[%- FOR type IN ['zTXt', 'tEXt'] %]
+    if (strcmp (what, "[% type %]") == 0) {
+#if defined(PNG_READ_[% type %]_SUPPORTED) && defined(PNG_WRITE_[% type %]_SUPPORTED)
+	return 1;
+#else
+	return 0;
+#endif
+    }
+[%- END %]
     /* The user asked whether something was supported, but we don't
        know what that thing is. */
-    warn ( "Unknown whether '%s' is supported", what);
+    warn ("Unknown whether '%s' is supported", what);
     return 0;
 }
 
@@ -2439,32 +2439,9 @@ perl_png_set_keep_unknown_chunks (perl_libpng_t * png, int keep,
 #endif
 }
 
-static void
-perl_png_set_expand (perl_libpng_t * png)
-{
-    png_set_expand (png->png);
-}
-
-static void
-perl_png_set_gray_to_rgb (perl_libpng_t * png)
-{
-    png_set_gray_to_rgb(png->png);
-}
-
-static void
-perl_png_set_filler (perl_libpng_t * png, int filler, int flags)
-{
-    png_set_filler (png->png, filler, flags);
-}
-
-static void
-perl_png_set_strip_16 (perl_libpng_t * png)
-{
-    png_set_strip_16 (png->png);
-}
-
 static SV * perl_png_get_cHRM (perl_libpng_t * png)
 {
+    SV * chrm = & PL_sv_undef; 
 #ifdef PNG_cHRM_SUPPORTED
     if (VALID (cHRM)) {
         HV * ice;
@@ -2482,14 +2459,13 @@ static SV * perl_png_get_cHRM (perl_libpng_t * png)
                          newSVnv ([% key %]), 0);
 [% END -%]
 #line
-        return newRV_noinc ((SV *) ice);
+        chrm = newRV_noinc ((SV *) ice);
     }
-    return & PL_sv_undef;
 #else
     /* libpng was compiled without this option. */
     UNSUPPORTED(cHRM);
-    return & PL_sv_undef;
 #endif
+    return chrm;
 }
 
 static void perl_png_set_cHRM (perl_libpng_t * png, HV * cHRM)

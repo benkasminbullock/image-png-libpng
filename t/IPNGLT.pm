@@ -21,7 +21,8 @@ sub skip_itxt
 {
     if (! libpng_supports ('iTXt') ||
 	! libpng_supports ('zTXt') ||
-	! libpng_supports ('tEXt')) {
+	! libpng_supports ('tEXt') ||
+	! libpng_supports ('TEXT')) {
 	plan skip_all => 'your libpng does not support iTXt/zTXt/tEXt',
 	return 1;
     }
@@ -96,11 +97,26 @@ sub rmfile
 
 # Create a fake write PNG for testing adding chunks.
 
+my %default = (
+    width => 1,
+    height => 1,
+    bit_depth => 8,
+    color_type => PNG_COLOR_TYPE_GRAY,
+);
+
 sub fake_wpng
 {
+    my ($ihdr) = @_;
+    if (! defined $ihdr) {
+	$ihdr = \%default;
+    }
+    for my $k (keys %default) {
+	if (! defined $ihdr->{$k}) {
+	    $ihdr->{$k} = $default{$k};
+	}
+    }
     my $longpng = create_write_struct ();
-    $longpng->set_IHDR ({width => 1, height => 1, bit_depth => 8,
-			 color_type => PNG_COLOR_TYPE_GRAY});
+    $longpng->set_IHDR ($ihdr);
     $longpng->set_rows (['X']);
     return $longpng;
 }
