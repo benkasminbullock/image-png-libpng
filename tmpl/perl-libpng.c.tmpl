@@ -60,14 +60,6 @@ typedef struct perl_libpng
     /* If the following variable is set to a true value, the module
        prints messages about what it is doing. */
     int verbosity : 1;
-    /* If the following variable is set to a true value, the module
-       raises an error (die) if there is an error other than something
-       being undefined. */
-    int raise_errors : 1;
-    /* Print error messages. */
-    int print_errors : 1;
-    /* Print a message on STDERR if something is undefined. */
-    int print_undefined : 1;
     /* Has input/output been initiated? */
     int init_io_done : 1;
 }
