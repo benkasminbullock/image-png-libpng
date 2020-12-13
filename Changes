@@ -1,10 +1,6 @@
-0.51_01 2020-12-13
+0.52 2020-12-13
 
-- Bug fix for iTXt chunk test
-
-0.51 2020-12-13
-
-- Bug fix related to sCAL chunk test
+- Bug fixes for iTXt, sCAL chunk tests
 - Documentation tidied up
 
 0.50 2020-12-12
