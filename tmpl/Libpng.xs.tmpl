@@ -725,4 +725,13 @@ CODE:
 	png_set_shift (Png->png)
 [% END %]
 
+void
+perl_png_set_add_alpha(Png, filler, filler_loc)
+	Image::PNG::Libpng Png;
+	unsigned int filler;
+	int filler_loc;
+CODE:
+	png_set_add_alpha (Png->png, filler, filler_loc);
+
+
 

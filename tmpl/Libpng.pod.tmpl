@@ -1040,7 +1040,7 @@ arguments in libpng.
 
     my $cHRM = $png->get_cHRM_XYZ ();
 
-[% danger %] Untested. Get the cHRM chunk as a hash reference.
+Get the cHRM chunk as a hash reference for the XYZ color space.
 
 The keys of the hash are [% chunk_hash.cHRM_XYZ.fields.join(", ") %].
 
@@ -1066,10 +1066,13 @@ arguments.
 
     $png->set_cHRM_XYZ (\%cHRM);
 
-[% danger %] Untested. Set the cHRM chunk from a hash reference.
+Set the cHRM chunk from a hash reference for the XYZ color space.
 
 The keys of the hash are as for L</get_cHRM_XYZ>. The values are
-floating point numbers between 0 and 1.
+floating point numbers between 0 and 1. The C<Y> values C<red_y>,
+C<green_y>, and C<blue_y> should sum to 1. If you supply values
+outside allowed range, libpng seems to correct them silently on
+writing rather than producing an error.
 
 [% cor(fn="set_cHRM_XYZ") %] with a hash reference instead of the C<double>
 arguments.
@@ -1605,6 +1608,14 @@ manual %]
 
 [% cor(fn="permit_mng_features") %]
 
+=head2 set_add_alpha
+
+    $png->set_add_alpha ($filler, $filler_loc);
+
+[% danger %] Untested. [% manual %]
+
+[% cor(fn="set_add_alpha") %]
+
 =head2 set_alpha_mode
 
     $png->set_alpha_mode ($mode, $screen_gamma);
@@ -2014,9 +2025,12 @@ C<png_write_row>, or C<png_write_rows>.
 There is currently no support for the PNG fixed point functions in
 this Perl module, the functions with suffix C<_fixed>.
 
-=item Other unsupported functions
+=back
 
-The following function from the libpng API are unsupported by this module.
+=head2 List of unsupported functions
+
+The following functions from the libpng API are unsupported by this
+module.
 
 =over
 
@@ -2051,8 +2065,6 @@ See L</Memory management functions>.
 This is an exhaustive list of unsupported libpng API functions,
 extracted from the libpng source code using F<util/api.pl> in this
 module's repository.
-
-=back
 
 =head1 BUGS
 
