@@ -17,7 +17,7 @@ use LibpngUtil ':all';
 my $dir = libpngdir ();
 my @files = <$dir/*.[ch]>;
 my @api;
-my $api_re = qr!PNGAPI\s*\n(\w+)(\s*)\(.*?\)!sm;
+my $api_re = qr!PNGF?API\s*\n(\w+)(\s*)\(.*?\)!sm;
 my $example = <<EOF;
 void PNGAPI
 png_set_chunk_cache_max (png_structrp png_ptr, png_uint_32 user_chunk_cache_max)

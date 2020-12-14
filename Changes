@@ -1,3 +1,7 @@
+0.52_01 2020-12-14
+- Support get/set cHRM_XYZ
+- Add most of the simpler functions from the public API
+
 0.52 2020-12-13
 
 - Bug fixes for iTXt, sCAL chunk tests

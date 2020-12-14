@@ -13,6 +13,8 @@ TOUT= \
 TIN= \
 	build/LibpngInfo.pm \
 	build/make-files.pl \
+	build/supports.txt \
+	build/unsupported-table.txt \
 	tmpl/Const.t.tmpl \
 	tmpl/Libpng.pm.tmpl \
 	tmpl/Libpng.pod.tmpl \

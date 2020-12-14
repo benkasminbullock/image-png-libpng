@@ -271,6 +271,11 @@ void perl_png_set_expand (Png)
 CODE:
         png_set_expand (Png->png);
 
+void perl_png_set_expand_16 (Png)
+        Image::PNG::Libpng Png
+CODE:
+        png_set_expand_16 (Png->png);
+
 void perl_png_set_gray_to_rgb (Png)
         Image::PNG::Libpng Png
 CODE:
@@ -309,6 +314,11 @@ void perl_png_set_strip_16 (Png)
         Image::PNG::Libpng Png
 CODE:
         png_set_strip_16 (Png->png);
+
+void perl_png_set_strip_alpha (Png)
+        Image::PNG::Libpng Png
+CODE:
+        png_set_strip_alpha (Png->png);
 
 void perl_png_DESTROY (Png)
         Image::PNG::Libpng Png
@@ -634,3 +644,85 @@ CODE:
 	RETVAL = (Png->type == perl_png_read_obj);
 OUTPUT:
 	RETVAL
+
+void
+perl_png_set_gamma (Png, gamma, override_gamma)
+	Image::PNG::Libpng Png;
+	double gamma;
+	double override_gamma;
+CODE:
+	png_set_gamma (Png->png, gamma, override_gamma);
+	
+
+void
+perl_png_set_alpha_mode (Png, mode, screen_gamma)
+	Image::PNG::Libpng Png;
+	int mode;
+	double screen_gamma;
+CODE:
+	png_set_alpha_mode (Png->png, mode, screen_gamma);
+
+void
+perl_png_set_scale_16(Png)
+	Image::PNG::Libpng Png;
+CODE:
+	png_set_scale_16 (Png->png);
+
+void
+perl_png_set_invert_mono(Png)
+	Image::PNG::Libpng Png;
+CODE:
+	png_set_invert_mono (Png->png);
+
+void
+perl_png_set_invert_alpha(Png)
+	Image::PNG::Libpng Png;
+CODE:
+	png_set_invert_alpha (Png->png);
+
+void
+perl_png_set_bgr(Png)
+	Image::PNG::Libpng Png;
+CODE:
+	png_set_bgr (Png->png);
+
+void
+perl_png_set_palette_to_rgb(Png)
+	Image::PNG::Libpng Png;
+CODE:
+	png_set_palette_to_rgb (Png->png);
+
+void
+perl_png_set_packswap(Png)
+	Image::PNG::Libpng Png;
+CODE:
+	png_set_packswap (Png->png);
+
+void
+perl_png_set_swap(Png)
+	Image::PNG::Libpng Png;
+CODE:
+	png_set_swap (Png->png);
+
+void
+perl_png_set_swap_alpha(Png)
+	Image::PNG::Libpng Png;
+CODE:
+	png_set_swap_alpha (Png->png);
+
+void
+perl_png_permit_mng_features(Png, mask)
+	Image::PNG::Libpng Png;
+	int mask;
+CODE:
+	png_permit_mng_features(Png->png, mask);
+
+[% IF 0 %]
+void
+perl_png_shift(Png)
+	Image::PNG::Libpng Png;
+CODE:
+	png_set_shift (Png->png)
+[% END %]
+
+

@@ -2494,6 +2494,59 @@ static void perl_png_set_cHRM (perl_libpng_t * png, HV * cHRM)
 #endif
 }
 
+static SV * perl_png_get_cHRM_XYZ (perl_libpng_t * png)
+{
+    SV * chrm = & PL_sv_undef; 
+#ifdef PNG_cHRM_SUPPORTED
+    if (VALID (cHRM)) {
+        HV * ice;
+#oline
+[% FOR key IN chunk_hash.cHRM_XYZ.fields -%]
+        double [% key %];
+[% END -%]
+#line
+        png_get_cHRM_XYZ (pngi 
+[%- FOR key IN chunk_hash.cHRM_XYZ.fields -%], & [% key %][% END -%]);
+        ice = newHV ();
+#oline
+[% FOR key IN chunk_hash.cHRM_XYZ.fields -%]
+        (void) hv_store (ice, "[% key %]", strlen ("[% key %]"),
+                         newSVnv ([% key %]), 0);
+[% END -%]
+#line
+        chrm = newRV_noinc ((SV *) ice);
+    }
+#else
+    /* libpng was compiled without this option. */
+    UNSUPPORTED(cHRM);
+#endif
+    return chrm;
+}
+
+static void perl_png_set_cHRM_XYZ (perl_libpng_t * png, HV * cHRM_XYZ)
+{
+#ifdef PNG_cHRM_SUPPORTED
+    SV ** key_sv_ptr;
+#oline
+[% FOR key IN chunk_hash.cHRM_XYZ.fields -%]
+    double [% key %] = 0.0;
+[% END -%]
+[% FOR key IN chunk_hash.cHRM_XYZ.fields -%]
+    key_sv_ptr = hv_fetch (cHRM_XYZ, "[% key %]", strlen ("[% key %]"), 0);
+    if (key_sv_ptr) {
+        [% key %] = SvNV (* key_sv_ptr);
+    }
+[% END -%]
+#line
+    png_set_cHRM_XYZ (pngi
+[%- FOR key IN chunk_hash.cHRM_XYZ.fields -%], [% key %][%- END -%]);
+#line
+#else
+    /* libpng was compiled without this option. */
+    UNSUPPORTED(cHRM);
+#endif
+}
+
 static void perl_png_set_transforms (perl_libpng_t * png, int transforms)
 {
     png->transforms = transforms;

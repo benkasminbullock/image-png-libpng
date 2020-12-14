@@ -372,6 +372,13 @@ our @chunks = (
 },
 
 {
+    name => 'cHRM_XYZ',
+    in_valid => 0,
+    auto_type => 'hv',
+    fields => [],
+},
+
+{
     name => 'PLTE',
     in_valid => 1,
     auto_type => 'av',
@@ -484,9 +491,22 @@ for my $chunk (@chunks) {
     $chunks{$chunk->{name}} = $chunk;
 }
 
+# The order of these is important since the libpng function doesn't
+# use a struct but a long list of arguments.
+
 for my $color (qw/white red green blue/) {
     for my $coord (qw/x y/) {
         push @{$chunks{cHRM}{fields}}, "${color}_$coord"
+    }
+}
+
+# The order of these is important since the libpng function doesn't
+# use a struct but a long list of arguments. There is no "white" in
+# the xyz case.
+
+for my $color (qw/red green blue/) {
+    for my $coord (qw/x y z/) {
+        push @{$chunks{cHRM_XYZ}{fields}}, "${color}_$coord"
     }
 }
 
@@ -528,6 +548,10 @@ for (@unsupported) {
 
 @unsupported = sort {$a->{item} cmp $b->{item}} @unsupported;
 
+# Valid chunks, removing cHRM_XYZ
+
+my @vchunks = grep {$_->{name} !~ /_XYZ/} @chunks;
+
 sub template_vars
 {
     my ($vars_ref) = @_;
@@ -536,6 +560,7 @@ sub template_vars
     $vars_ref->{filters} = \@filters;
     $vars_ref->{transforms} = \@transforms;
     $vars_ref->{chunks} = \@chunks;
+    $vars_ref->{vchunks} = \@vchunks;
     $vars_ref->{chunk_hash} = \%chunks;
     $vars_ref->{colors} = \@colors;
     $vars_ref->{noalpha} = \@noalpha;

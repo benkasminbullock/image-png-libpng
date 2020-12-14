@@ -6,7 +6,6 @@ cat: error
 
 item: png_build_grayscale_palette
 %%desc:
-Undocumented function, but it is part of the public API.
 %%
 cat: undocumented
 
@@ -65,8 +64,11 @@ cat: notforperl
 item: png_get_filter_type
 %%desc:
 
+This function returns the value of the unused field C<filter_type> in
+the PNG header, which is always 0. [% unused %]
+
 %%
-cat: unimplemented
+cat: useless
 
 item: png_get_header_version
 %%desc:
@@ -122,15 +124,11 @@ Duplicates L</get_oFFs>.
 %%
 cat: unimplemented
 
-item: png_set_bgr
-%%desc:
-Flips RGB to BGR.
-%%
-cat: unimplemented
-
 item: png_set_background
 %%desc:
-Sets the background when an alpha channel is removed.
+Sets the background when an alpha channel is removed. This is not yet
+supported due to requiring some thought about how to implement the
+background color structure.
 %%
 cat: unimplemented
 
@@ -139,12 +137,6 @@ item: png_set_benign_errors
 
 %%
 cat: error
-
-item: png_set_cHRM_XYZ
-%%desc:
-There is no Z value allowed in L</set_cHRM> at present.
-%%
-cat: unimplemented
 
 item: png_set_check_for_invalid_index
 %%desc:
@@ -197,11 +189,6 @@ item: png_set_gamma
 %%
 cat: unimplemented
 
-item: png_set_packswap
-%%desc:
-
-%%
-
 item: png_set_quantize
 %%desc:
 This is fairly difficult to implement since it requires interfacing
@@ -209,21 +196,10 @@ various different things.
 %%
 cat: unimplemented
 
-item: png_set_scale_16
-%%desc:
-
-%%
-
 item: png_set_sig_bytes
 %%desc:
-This doesn't seem useful for Perl programmers.
 %%
 cat: notforperl
-
-item: png_set_strip_alpha
-%%desc:
-
-%%
 
 item: png_set_swap
 %%desc:
@@ -255,27 +231,17 @@ cat: error
 item: png_data_freer
 %%desc:
 %%
-cat: unimplemented
-
-item: png_destroy_info_struct
-%%desc:
-%%
-cat: unimplemented
+cat: memfunc
 
 item: png_free
 %%desc:
 %%
-cat: unimplemented
+cat: memfunc
 
 item: png_free_data
 %%desc:
 %%
-cat: unimplemented
-
-item: png_get_cHRM_XYZ
-%%desc:
-%%
-cat: unimplemented
+cat: memfunc
 
 item: png_get_cHRM_XYZ_fixed
 %%desc:
@@ -290,7 +256,7 @@ cat: unimplemented
 item: png_get_chunk_malloc_max
 %%desc:
 %%
-cat: unimplemented
+cat: memfunc
 
 item: png_get_current_pass_number
 %%desc:
@@ -305,14 +271,9 @@ cat: unimplemented
 item: png_get_error_ptr
 %%desc:
 %%
-cat: unimplemented
+cat: error
 
 item: png_get_gAMA_fixed
-%%desc:
-%%
-cat: unimplemented
-
-item: png_get_image_width
 %%desc:
 %%
 cat: unimplemented
@@ -371,8 +332,12 @@ cat: unimplemented
 
 item: png_get_uint_31
 %%desc:
+
+This produces an error if the unsigned integer argument is too big for
+a 31 bit number.
+
 %%
-cat: unimplemented
+cat: notforperl
 
 item: png_get_user_chunk_ptr
 %%desc:
@@ -385,11 +350,6 @@ item: png_get_user_height_max
 cat: unimplemented
 
 item: png_get_user_transform_ptr
-%%desc:
-%%
-cat: unimplemented
-
-item: png_get_user_width_max
 %%desc:
 %%
 cat: unimplemented
@@ -436,6 +396,7 @@ cat: unimplemented
 
 item: png_handle_as_unknown
 %%desc:
+
 %%
 cat: unimplemented
 
@@ -447,17 +408,17 @@ cat: unimplemented
 item: png_image_begin_read_from_stdio
 %%desc:
 %%
-cat: unimplemented
+cat: rwfunc
 
 item: png_image_finish_read
 %%desc:
 %%
-cat: unimplemented
+cat: rwfunc
 
 item: png_image_free
 %%desc:
 %%
-cat: unimplemented
+cat: memfunc
 
 item: png_image_write_to_file
 %%desc:
@@ -467,17 +428,12 @@ cat: unimplemented
 item: png_image_write_to_memory
 %%desc:
 %%
-cat: unimplemented
+cat: memfunc
 
 item: png_image_write_to_stdio
 %%desc:
 %%
-cat: unimplemented
-
-item: png_permit_mng_features
-%%desc:
-%%
-cat: unimplemented
+cat: rwfunc
 
 item: png_process_data
 %%desc:
@@ -516,24 +472,30 @@ cat: rwfunc
 
 item: png_reset_zstream
 %%desc:
-[% danger %] The libpng source code notes this is untested.
+Resets the zstream of the zlib instance used for the image data.
 %%
-cat: unimplemented
+cat: deprecated
 
 item: png_save_int_32
 %%desc:
+Writes a 32 bit signed number into an octet buffer. Perl programmers
+will probably use C<pack> for this.
 %%
-cat: unimplemented
+cat: notforperl
 
 item: png_save_uint_16
 %%desc:
+Writes a 16 bit number into an octet buffer. Perl programmers
+will probably use C<pack> for this.
 %%
-cat: unimplemented
+cat: notforperl
 
 item: png_save_uint_32
 %%desc:
+Writes a 32 bit unsigned number into an octet buffer. Perl programmers
+will probably use C<pack> for this.
 %%
-cat: unimplemented
+cat: notforperl
 
 item: png_set_add_alpha
 %%desc:
@@ -548,17 +510,12 @@ cat: unimplemented
 item: png_set_chunk_malloc_max
 %%desc:
 %%
-cat: unimplemented
+cat: memfunc
 
 item: png_set_error_fn
 %%desc:
 %%
 cat: error
-
-item: png_set_expand_16
-%%desc:
-%%
-cat: unimplemented
 
 item: png_set_expand_gray_1_2_4_to_8
 %%desc:
@@ -573,39 +530,24 @@ cat: unimplemented
 item: png_set_flush
 %%desc:
 %%
-cat: unimplemented
+cat: rwfunc
 
 item: png_set_invalid
 %%desc:
 %%
-cat: unimplemented
-
-item: png_set_invert_alpha
-%%desc:
-%%
-cat: unimplemented
-
-item: png_set_invert_mono
-%%desc:
-%%
-cat: unimplemented
+cat: memfunc
 
 item: png_set_longjmp_fn
 %%desc:
 %%
-cat: unimplemented
+cat: undocumented
 
 item: png_set_mem_fn
 %%desc:
 %%
-cat: unimplemented
+cat: memfunc
 
 item: png_set_option
-%%desc:
-%%
-cat: unimplemented
-
-item: png_set_palette_to_rgb
 %%desc:
 %%
 cat: unimplemented
@@ -647,8 +589,10 @@ cat: unimplemented
 
 item: png_set_strip_error_numbers
 %%desc:
+According to the libpng manual, "we never got around to actually
+numbering the error messages", so I assume this is not very useful.
 %%
-cat: unimplemented
+cat: useless
 
 item: png_set_swap_alpha
 %%desc:
@@ -726,6 +670,36 @@ item: png_write_rows
 cat: unimplemented
 
 item: png_write_sig
+%%desc:
+%%
+cat: unimplemented
+
+item: png_set_alpha_mode_fixed
+%%desc:
+%%
+cat: unimplemented
+
+item: png_set_background_fixed
+%%desc:
+%%
+cat: unimplemented
+
+item: png_set_cHRM_XYZ_fixed
+%%desc:
+%%
+cat: unimplemented
+
+item: png_set_cHRM_fixed
+%%desc:
+%%
+cat: unimplemented
+
+item: png_set_gAMA_fixed
+%%desc:
+%%
+cat: unimplemented
+
+item: png_set_gamma_fixed
 %%desc:
 %%
 cat: unimplemented

@@ -1,6 +1,8 @@
 [% start_year=2011 %]
 [% danger="⛐🤪⚠" %]
-[% useless="🙃🤡" %]
+[% useless="🙃🤡 See L</Useless functions omitted>. " %]
+[% manual="See the libpng manual for details. " %]
+[% undocumented="Undocumented function, but it is part of the public API." %]
 [%- noinfo = "No info structure" -%]
 [%- xnoinfo = BLOCK -%]
 L</[% noinfo %]>
@@ -428,8 +430,8 @@ So, for example, to get the width and height of an image,
 [% cor(fn="get_IHDR") %], with a single Perl hash reference used
 instead of the several pointers to integers used in libpng. 
 
-It does not return the fields C<filter_method> and
-C<compression_method>, since these are always 0. [% unused %]
+It does not return the fields C<filter_type> and
+C<compression_type>, since these are always 0. [% unused %]
 
 =head2 get_image_height
 
@@ -465,7 +467,7 @@ PNG_INTERLACE_ADAM7.
 
 This function returns a hash with a key for each possible chunk which
 may or may not be valid. The chunks which you can test for are 
-[% FOR chunk IN chunks %]L<[% IF chunk.defined('redirect') %][% chunk.name %]|/[% chunk.redirect %][% ELSE %]/[% chunk.name %][% END %]>[% IF loop.count < loop.size - 1 %], [% ELSIF loop.count == loop.size - 1 %], and [% END %][% END %].
+[% FOR chunk IN vchunks %]L<[% IF chunk.defined('redirect') %][% chunk.name %]|/[% chunk.redirect %][% ELSE %]/[% chunk.name %][% END %]>[% IF loop.count < loop.size - 1 %], [% ELSIF loop.count == loop.size - 1 %], and [% END %][% END %].
 
 Whereas L</libpng_supports> tells you whether the installed libpng on
 your system supports various chunks, this tells you whether the chunks
@@ -1034,6 +1036,20 @@ The values of the hash are floating point numbers between 0 and 1.
 arguments. The hash's keys correspond to the names of the C<double>
 arguments in libpng.
 
+=head3 get_cHRM_XYZ
+
+    my $cHRM = $png->get_cHRM_XYZ ();
+
+[% danger %] Untested. Get the cHRM chunk as a hash reference.
+
+The keys of the hash are [% chunk_hash.cHRM_XYZ.fields.join(", ") %].
+
+The values of the hash are floating point numbers between 0 and 1.
+
+[% cor(fn="get_cHRM_XYZ") %] with a hash reference supplying the
+arguments. The hash's keys correspond to the names of the C<double>
+arguments in libpng.
+
 =head3 set_cHRM
 
     $png->set_cHRM (\%cHRM);
@@ -1044,6 +1060,18 @@ The keys of the hash are as for L</get_cHRM>. The values are floating
 point numbers between 0 and 1.
 
 [% cor(fn="set_cHRM") %] with a hash reference instead of the C<double>
+arguments.
+
+=head3 set_cHRM_XYZ
+
+    $png->set_cHRM_XYZ (\%cHRM);
+
+[% danger %] Untested. Set the cHRM chunk from a hash reference.
+
+The keys of the hash are as for L</get_cHRM_XYZ>. The values are
+floating point numbers between 0 and 1.
+
+[% cor(fn="set_cHRM_XYZ") %] with a hash reference instead of the C<double>
 arguments.
 
 =head2 eXIf
@@ -1568,6 +1596,33 @@ million pixels. These values can be changed by L</set_user_limits>.
 
 [% END # what %]
 
+=head2 permit_mng_features
+
+    $png->permit_mng_features ($mask);
+
+[% danger %] Untested. C<$mask> is an integer containing flags. [%
+manual %]
+
+[% cor(fn="permit_mng_features") %]
+
+=head2 set_alpha_mode
+
+    $png->set_alpha_mode ($mode, $screen_gamma);
+
+[% danger %] Untested. C<$mode> is an integer, one of the
+C<PNG_ALPHA_*> constants. C<$screen_gamma> is a floating point
+number. [% manual %]
+
+[% cor(fn="set_alpha_mode") %]
+
+=head2 set_bgr
+
+    $png->set_bgr ();
+
+[% danger %] Untested. Flips RGB to BGR. [% manual %]
+
+[% cor(fn="set_bgr") %]
+
 =head2 set_expand
 
     $png->set_expand ();
@@ -1577,6 +1632,14 @@ to RGB, grayscale images of bit-depth less than 8 are expanded to
 8-bit images, and tRNS chunks are expanded to alpha channels.
 
 [% cor(fn="set_expand") %]
+
+=head2 set_expand_16
+
+    $png->set_expand_16 ();
+
+[% danger %] Untested.
+
+[% cor(fn="set_expand_16") %]
 
 =head2 set_filler
 
@@ -1589,6 +1652,15 @@ image is written. C<$flags> may be C<PNG_FLAG_FILLER_AFTER> or zero.
 
 [% cor(fn="set_filler") %]
 
+=head2 set_gamma
+
+    $png->set_gamma ($screen_gamma, $output_gamma);
+
+[% danger %] Untested. C<$screen_gamma> and C<$output_gamma> should
+contain floating-point arguments.  [% manual %]
+
+[% cor(fn="set_gamma") %]
+
 =head2 set_gray_to_rgb
 
     $png->set_gray_to_rgb ();
@@ -1596,6 +1668,22 @@ image is written. C<$flags> may be C<PNG_FLAG_FILLER_AFTER> or zero.
 Convert a grayscale PNG file to RGB format on reading.
 
 [% cor(fn="set_gray_to_rgb") %]
+
+=head2 set_invert_alpha
+
+    $png->set_invert_alpha ();
+
+[% danger %] Untested. [% manual %]
+
+[% cor(fn="set_invert_alpha") %]
+
+=head2 set_invert_mono
+
+    $png->set_invert_mono ();
+
+[% danger %] Untested. [% manual %]
+
+[% cor(fn="set_invert_mono") %]
 
 =head2 set_packing
 
@@ -1608,6 +1696,31 @@ possible, for example, 8 pixels per byte for 1-bit files
 
 [% cor(fn="set_packing") %]
 
+=head2 set_packswap
+
+    $png->set_packswap ();
+
+[% danger %] Untested. Swaps around the bits of 1, 2, or 4 bits/pixel
+images. [% manual %]
+
+[% cor(fn="set_packswap") %]
+
+=head2 set_palette_to_rgb
+
+    $png->set_palette_to_rgb ();
+
+[% danger %] Untested. [% manual %]
+
+[% cor(fn="set_palette_to_rgb") %]
+
+=head2 set_scale_16
+
+    $png->set_scale_16 ()
+
+[% danger %] Untested. 
+
+[% cor(fn="set_scale_16") %]
+
 =head2 set_strip_16
 
     $png->set_strip_16 ();
@@ -1616,6 +1729,23 @@ Strip the pixels of a PNG stream with 16 bits per channel to 8 bits
 per channel.
 
 [% cor(fn="set_strip_16") %]
+
+=head2 set_swap
+
+    $png->set_swap ();
+
+[% danger %] Untested. Swaps around the bytes of 16 bits/pixel
+images. [% manual %]
+
+[% cor(fn="set_swap") %]
+
+=head2 set_swap_alpha
+
+    $png->set_swap_alpha ();
+
+[% danger %] Untested.  [% manual %]
+
+[% cor(fn="set_swap_alpha") %]
 
 =head2 set_user_limits
 
@@ -1807,6 +1937,11 @@ If you are interested in exactly which libpng arguments are omitted,
 you can find each instance [% perl_libpng_c %] in the macro
 C<UNUSED_ZERO_ARG>.
 
+=head2 Useless functions omitted
+
+Functions from libpng which don't do anything have been
+omitted from this module.
+
 =head2 Function return values are used to return values
 
 libpng is very inconsistent in its calling conventions. Some functions
@@ -1845,7 +1980,9 @@ freeing is now handled by Perl automatically.
 
 =item Memory management functions
 
-This module does not offer an interface to C<png_malloc> and C<png_free>.
+For hopefully obvious reasons, this module does not offer an interface
+to C<png_malloc> and C<png_free> or other libpng memory handling
+functions.
 
 =item Error handling functions
 
@@ -1888,16 +2025,25 @@ The following function from the libpng API are unsupported by this module.
 
 [% IF func.cat == "useless" %][% useless %] [% END -%]
 [% IF func.cat == "deprecated" %]👎 Deprecated in libpng. [% END -%]
+[% IF func.cat == "notforperl" %]
+👎🐪 This function was deliberately omitted from this module because it doesn't seem useful for Perl programmers.
+[% END -%]
+[% IF func.cat == "duplicate" %]
+This function was omitted from this module because it merely
+duplicates another function.
+[% END -%]
 [% func.desc | eval %]
 [% IF func.cat == "error" %]
 See L</Error handling functions>.
 [% END -%]
-[% IF func.cat == "notforperl" %]
-This doesn't seem useful for Perl programmers.
-[% END -%]
 [% IF func.cat == "fixed" %]
 See L</Fixed point functions>.
 [% END -%]
+[% IF func.cat == "memfunc" %]
+See L</Memory management functions>.
+[% END -%]
+[% IF func.cat == "undocumented" %]
+[% danger | eval %] [% undocumented %] [% END %]
 [% END # unsupported %]
 
 =back
