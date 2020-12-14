@@ -181,7 +181,32 @@ for (@filter_macros) {
     push @filters, {macro => $_};
 }
 
-# Swiped from http://refspecs.freestandards.org/LSB_3.1.0/LSB-Desktop-generic/LSB-Desktop-generic/libpng12.png.read.png.1.html
+
+my @rtransforms = read_table (dirfile ("transforms.txt"));
+
+for (@rtransforms) {
+    $_->{read} = 0;
+    $_->{write} = 0;
+    if ($_->{type} =~ /r/) {
+	$_->{read} = 1;
+    }
+    if ($_->{type} =~ /w/) {
+	$_->{write} = 1;
+    }
+    if ($_->{equiv}) {
+	$_->{equiv_ok} = 1;
+    }
+    if (! $_->{equiv}) {
+	$_->{equiv} = lc $_->{trans};
+	$_->{equiv} =~ s/^png_transform_/set_/;
+	$_->{equiv_ok} = 1;
+    }
+    if ($_->{trans} =~ /identity|strip_(alpha|filler)|shift/i) {
+	$_->{equiv_ok} = 0;
+    }
+}
+
+@rtransforms = sort {$a->{trans} cmp $b->{trans}} @rtransforms;
 
 my @transforms = (
 {
@@ -245,108 +270,6 @@ my @transforms = (
 },
 );
 
-
-my $png_functions =<<EOF;
-png_access_version_number -- return version of the run-time library
-png_create_info_struct -- allocate and initialize a png_info structure
-png_create_read_struct -- allocate and initialize a png_struct structure for reading PNG file
-png_create_write_struct -- allocate and initialize a png_struct structure for writing PNG file
-png_destroy_read_struct -- free the memory associated with read png_struct
-png_destroy_write_struct -- free the memory associated with write png_struct
-png_error -- default function to handle fatal errors
-png_free -- free a pointer allocated by png_malloc()
-png_get_IHDR -- get PNG_IHDR chunk information from png_info structure
-png_get_PLTE -- get image palette information from png_info structure
-png_get_bKGD -- get background color for given image
-png_get_bit_depth -- return image bit_depth
-png_get_cHRM -- get CIE chromacities and referenced white point for given image
-png_get_channels -- get number of color channels in image
-png_get_color_type -- return image color type
-png_get_error_ptr -- return error_ptr for user-defined functions
-png_get_gAMA -- get the gamma value for given image
-png_get_hIST -- get the histogram for given image
-png_get_iCCP -- get the embedded ICC profile data for given image
-png_get_image_height -- return image height
-png_get_image_width -- return image width
-png_get_interlace_type -- returns interlace method
-png_get_io_ptr -- return pointer for user-defined I/O
-png_get_libpng_ver -- get the library version string
-png_get_oFFs -- get screen offsets for the given image
-png_get_pHYs -- get the physical resolution for given image
-png_get_progressive_ptr -- return pointer to user-defined push read functions
-png_get_rowbytes -- Return number of bytes for a row
-png_get_rows -- retrieve image data from png_info structure
-png_get_sBIT -- get number of significant bits for each color channel
-png_get_sRGB -- get the rendering intent for given image
-png_get_tIME -- get last modification time for the image
-png_get_tRNS -- get transparency data for images
-png_get_text -- get comments information from png_info structure
-png_get_valid -- determine if given chunk data is valid
-png_get_x_offset_pixels -- return x offset in pixels from oFFs chunk
-png_get_x_pixels_per_meter -- return horizontal pixel density per meter
-png_get_y_offset_pixels -- return y offset in pixels from oFFs chunk
-png_get_y_pixels_per_meter -- return vertical pixel density per meter
-png_init_io -- initialize input/output for the PNG file
-png_malloc -- allocate memory
-png_process_data -- read PNG file progressively
-png_progressive_combine_row -- combines current row data with processed row
-png_read_end -- read the end of PNG file
-png_read_image -- read the entire image into memory
-png_read_info -- read the PNG image information
-png_read_png -- read the entire PNG file
-png_read_row -- read a row of image data
-png_read_rows -- read multiple rows of image data
-png_read_update_info -- update png_info structure
-png_set_IHDR -- set the PNG_IHDR chunk information
-png_set_PLTE -- set color values for the palette
-png_set_bKGD -- set the background color for given image
-png_set_background -- set the background for given image
-png_set_bgr -- set pixel order to blue, green, red
-png_set_cHRM -- set CIE chromacities and referenced white point for given image
-png_set_compression_level -- set image compression level
-png_set_dither -- turn on dithering to 8-bit
-png_set_error_fn -- set user defined functions for error handling
-png_set_expand -- set expansion transformation
-png_set_filler -- add a filler byte to given image
-png_set_filter -- set filtering method
-png_set_gAMA -- set the gamma value for given image
-png_set_gamma -- transform the image from file gamma to screen gamma
-png_set_gray_to_rgb -- expand the grayscale image to 24-bit RGB
-png_set_hIST -- set the histogram of color palette
-png_set_iCCP -- set ICC component
-png_set_interlace_handling -- get the number of passes for image interlacing
-png_set_invert_mono -- reverse values for monochromicity
-png_set_oFFs -- set screen offsets for given image
-png_set_pHYs -- set physical resolution
-png_set_packing -- expand image to 1 pixel per byte for bit-depths 1,2 and 4
-png_set_packswap -- swap the order of pixels for packed-pixel image
-png_set_progressive_read_fn -- set progressive read callback functions
-png_set_read_fn -- set user-defined function for reading a PNG stream
-png_set_rgb_to_gray -- reduce 24-bit RGB to grayscale image
-png_set_rows -- put image data in png_info structure
-png_set_sBIT -- set number of significant bits for each channel
-png_set_sRGB -- set the rendering intent for given image
-png_set_shift --  pixel values to valid bit-depth
-png_set_sig_bytes -- number of bytes read from PNG file
-png_set_strip_16 -- strip 16 bit PNG file to 8 bit depth
-png_set_strip_alpha -- remove alpha channel on the given image
-png_set_swap -- swap byte-order for 16 bit depth files
-png_set_swap_alpha -- swap image data from RGBA to ARGB format
-png_set_tIME -- set last modification time for the image
-png_set_tRNS -- set transparency values for images
-png_set_text -- stores information for image comments
-png_set_write_fn -- set user-defined function for writing a PNG stream
-png_sig_cmp -- match the PNG signature
-png_warning -- default function to handle non-fatal errors
-png_write_chunk -- write a PNG chunk
-png_write_end -- write the end of a PNG file
-png_write_flush -- flush the current output buffers
-png_write_image -- write the given image data
-png_write_info -- write PNG information to file
-png_write_png -- write the entire PNG file
-png_write_row -- write a row of image data
-png_write_rows -- write multiple rows of image data
-EOF
 
 # Known chunks. Here "in_valid" means the chunk is one of the ones
 # which is returned by the libpng routine "png_get_valid".
@@ -515,8 +438,7 @@ for my $color (qw/red green blue/) {
 my @colors = qw/red green blue gray alpha/;
 my @noalpha = qw/red green blue gray/;
 
-my $supports_file = __FILE__;
-$supports_file =~ s!LibpngInfo\.pm!supports.txt!;
+my $supports_file = dirfile ('supports.txt');
 my @supports_list = read_table ($supports_file);
 @supports_list = sort {uc($a->{c}) cmp uc($b->{c})} @supports_list;
 for (@supports_list) {
@@ -529,8 +451,7 @@ for (@supports_list) {
     }
 }
 
-my $uns_file = __FILE__;
-$uns_file =~ s!LibpngInfo\.pm!unsupported-table.txt!;
+my $uns_file = dirfile ('unsupported-table.txt');
 my @unsupported = read_table ($uns_file);
 for (@unsupported) {
     # Template toolkit STRICT mode cannot deal with undefined values
@@ -559,6 +480,7 @@ sub template_vars
     $vars_ref->{macros} = \@macros;
     $vars_ref->{filters} = \@filters;
     $vars_ref->{transforms} = \@transforms;
+    $vars_ref->{rtransforms} = \@rtransforms;
     $vars_ref->{chunks} = \@chunks;
     $vars_ref->{vchunks} = \@vchunks;
     $vars_ref->{chunk_hash} = \%chunks;
@@ -571,5 +493,14 @@ sub template_vars
     $vars_ref->{supports_list} = \@supports_list;
     $vars_ref->{unsupported} = \@unsupported;
 }
+
+sub dirfile
+{
+    my ($file) = @_;
+    my $dfile = __FILE__;
+    $dfile =~ s!LibpngInfo\.pm!$file!;
+    return $dfile;
+}
+
 
 1;

@@ -7,6 +7,6 @@ my $dir = "$Bin/../../t/libpng";
 my @files = <$dir/*.png>;
 @files = grep {!m!/x!} @files;
 my $out = `./gpm @files`;
-$out =~ s!$dir!!g;
+$out =~ s!$dir/!!g;
 print $out;
 

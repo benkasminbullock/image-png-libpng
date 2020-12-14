@@ -10,15 +10,6 @@ L</[% noinfo %]>
 [%-  noinfoxref = BLOCK -%]
 It does not take a second "info" argument. See [% xnoinfo -%].
 [%- END -%]
-[% transform_list = BLOCK %]
-=over
-[% FOR transform IN transforms %]
-=item [% transform.name %]
-
-[% transform.text %]
-[% END %]
-=back
-[% END %]
 [% libpngdoc = "The libpng documentation" %]
 [% pngspec = "The PNG specification" %]
 [% MACRO spec(subsection) BLOCK -%]
@@ -104,13 +95,13 @@ from libpng> explains the differences with libpng.
 
 The functions in the module are gathered into the following
 categories: L</Simple input and output>, which describes some
-convenience functions, L</Input and output libpng style>, which
+convenience functions, L</Libpng-style input and output>, which
 describes functions which closely mirror libpng, L</The image header>,
 which describes functions for reading and writing the meta-information
 about PNG images, L</Image data>, which describes functions for
 accessing the image data itself, L</Text chunks>, L</Private chunks>,
-L</Library version functions>, L</Compression
-and filtering>, and L</Other chunks>. 
+L</Library version functions>, L</Compression and filtering>, and
+L</Other chunks>.
 
 =head1 Simple input and output
 
@@ -130,30 +121,6 @@ from a read structure to a write structure.
 The following example demonstrates copying a PNG.
 
 [% example('copy-png') %]
-
-=head2 get_chunk
-
-    my $timechunk = $png->get_chunk ('tIME');
-
-Get the specified chunk. This produces a fatal error if asked for the
-C<IDAT> (image data) chunk, use L</get_rows> instead. Returns C<undef>
-if asked for an unknown chunk name.
-
-This is used by L<pnginspect> to get the valid chunks. See also
-L</set_chunk>.
-
-=head2 png_compare
-
-    if (png_compare ('a.png', 'b.png') == 0) {
-	print "The PNGs are the same.\n";
-    }
-
-This compares the image data in two PNGs and returns 0 if they contain
-exactly the same image data, or 1 if they contain different image
-data. For a more detailed comparison, see L</image_data_diff>. This
-does not compare to see if the PNG files "look like" each other, but
-whether each pixel contains exactly the same values. Please see
-L<Image::Similar> for a looser comparison of images.
 
 =head2 read_from_scalar
 
@@ -186,14 +153,6 @@ optional C<transforms> argument:
     my $png = read_png_file ('file.png', transforms => PNG_TRANSFORM_EXPAND);
 
 L<Carp/croak> is used to signal errors opening or closing the file.
-
-=head2 set_chunk
-
-    $png->set_chunk ('tIME', $timechunk);
-
-Set the specified chunk. This produces a fatal error if given an
-C<IDAT> (image data) chunk, use L</set_rows> instead. Produces a fatal
-error if given an unknown chunk name.
 
 =head2 set_transforms
 
@@ -236,11 +195,12 @@ See also L</Input/output manipulation functions>.
 The optional argument to L</write_png> can be specified using
 L</set_transforms>.
 
-=head1 New-like functions
+=head1 Libpng-style input and output
 
 There are two different "new"-like functions, depending on whether you
-want to read or write a PNG. (See L</copy_png> for a function to copy
-one to the other.) These are based on the libpng API.
+want to read or write a PNG, L</create_read_struct> and
+L</create_write_struct>. These are based on the libpng API. Input uses
+C<open> plus L</init_io> followed by L</read_png> or L</write_png>.
 
 =head2 create_read_struct
 
@@ -264,10 +224,6 @@ with the other functions as methods.
 [% cor(fn="create_write_struct") %] plus C<create_info_struct> (see [%
 xnoinfo %])  with the error and warning handler variables set up to use
 Perl's error reporting.
-
-=head1 Input and output libpng style
-
-These functions mirror libpng's API.
 
 =head2 init_io
 
@@ -310,7 +266,15 @@ If the argument is omitted, the default value of
 C<PNG_TRANSFORM_IDENTITY> (the "do nothing" value) is applied. The
 possible transformations which can be applied are
 
-[%- transform_list -%]
+=over
+[% FOR transform IN rtransforms %]
+[% IF transform.read %]
+=item [% transform.trans %]
+
+[% transform.desc %]. [% IF transform.equiv_ok %]See also L</[% transform.equiv %]>.[% END %]
+[% END # if transform.read %]
+[% END %]
+=back
 
 [% cor(fn="read_png") %] with a default value for the third
 argument. The fourth, unused, argument to C<png_read_png> does not
@@ -338,11 +302,15 @@ image before writing it:
 
 The transformations which can be applied are as follows:
 
-[% transform_list %]
+=over
+[% FOR transform IN rtransforms %]
+[% IF transform.write %]
+=item [% transform.trans %]
 
-[% danger %] NOTE: this list is untested and might be wrong. It was
-just copied from the linux lib web pages, and the linux lib web pages
-have different transformations for the read and write png functions.
+[% transform.desc %]. [% IF transform.equiv_ok %]See also L</[% transform.equiv %]>. [% END %]
+[% END # if transform.write %]
+[% END %]
+=back
 
 [% cor(fn="write_png") %].
 
@@ -1584,47 +1552,7 @@ the same size as the palette. It must not contain more than 256
 values. If the image is not a palette type, C<$trns> is a hash
 reference containing values for the keys red, green, blue and gray.
 
-=head1 OTHER LIBPNG FUNCTIONS
-
-[% FOR what IN ['width', 'height'] %]
-
-=head2 get_user_[% what %]_max
-
-    $png->get_user_[% what %]_max ();
-
-Get the maximum [% what %] allowed for a PNG file. The default is 1
-million pixels. These values can be changed by L</set_user_limits>.
-
-[% cor(fn="get_user_" _ what _ "_max") %]
-
-[% END # what %]
-
-=head2 permit_mng_features
-
-    $png->permit_mng_features ($mask);
-
-[% danger %] Untested. C<$mask> is an integer containing flags. [%
-manual %]
-
-[% cor(fn="permit_mng_features") %]
-
-=head2 set_add_alpha
-
-    $png->set_add_alpha ($filler, $filler_loc);
-
-[% danger %] Untested. [% manual %]
-
-[% cor(fn="set_add_alpha") %]
-
-=head2 set_alpha_mode
-
-    $png->set_alpha_mode ($mode, $screen_gamma);
-
-[% danger %] Untested. C<$mode> is an integer, one of the
-C<PNG_ALPHA_*> constants. C<$screen_gamma> is a floating point
-number. [% manual %]
-
-[% cor(fn="set_alpha_mode") %]
+=head1 Libpng transformations
 
 =head2 set_bgr
 
@@ -1652,25 +1580,13 @@ to RGB, grayscale images of bit-depth less than 8 are expanded to
 
 [% cor(fn="set_expand_16") %]
 
-=head2 set_filler
+=head2 set_expand_gray_1_2_4_to_8
 
-    $png->set_filler ($filler, $flags);
+    $png->set_expand_gray_1_2_4_to_8 ();
 
-Set transformations in C<$png> such that a filler byte C<$filler> is
-added when an 8-bit grayscale image or 24-bit RGB image is read, and a
-filler byte is deleted when an 8-bit grayscale image or 24-bit RGB
-image is written. C<$flags> may be C<PNG_FLAG_FILLER_AFTER> or zero.
+[% danger %] Untested.
 
-[% cor(fn="set_filler") %]
-
-=head2 set_gamma
-
-    $png->set_gamma ($screen_gamma, $output_gamma);
-
-[% danger %] Untested. C<$screen_gamma> and C<$output_gamma> should
-contain floating-point arguments.  [% manual %]
-
-[% cor(fn="set_gamma") %]
+[% cor(fn="set_expand_gray_1_2_4_to_8") %]
 
 =head2 set_gray_to_rgb
 
@@ -1758,6 +1674,94 @@ images. [% manual %]
 
 [% cor(fn="set_swap_alpha") %]
 
+=head2 set_tRNS_to_alpha
+
+    $png->set_tRNS_to_alpha
+
+[% danger %] Untested. [% manual %]
+
+[% cor(fn="set_tRNS_to_alpha") %]
+
+=head1 OTHER LIBPNG FUNCTIONS
+
+=head2 get_chunk_cache_max
+
+    my $max = $png->get_chunk_cache_max ();
+
+[% danger %] Untested. Get the maximum number of ancilliary chunks
+allowed.
+
+[% cor(fn="png_get_chunk_cache_max") %]
+
+[% FOR what IN ['width', 'height'] %]
+
+=head2 get_user_[% what %]_max
+
+    $png->get_user_[% what %]_max ();
+
+Get the maximum [% what %] allowed for a PNG file. The default is 1
+million pixels. These values can be changed by L</set_user_limits>.
+
+[% cor(fn="get_user_" _ what _ "_max") %]
+
+[% END # what %]
+
+=head2 permit_mng_features
+
+    $png->permit_mng_features ($mask);
+
+[% danger %] Untested. C<$mask> is an integer containing flags. [%
+manual %]
+
+[% cor(fn="permit_mng_features") %]
+
+=head2 set_add_alpha
+
+    $png->set_add_alpha ($filler, $filler_loc);
+
+[% danger %] Untested. [% manual %]
+
+[% cor(fn="set_add_alpha") %]
+
+=head2 set_alpha_mode
+
+    $png->set_alpha_mode ($mode, $screen_gamma);
+
+[% danger %] Untested. C<$mode> is an integer, one of the
+C<PNG_ALPHA_*> constants. C<$screen_gamma> is a floating point
+number. [% manual %]
+
+[% cor(fn="set_alpha_mode") %]
+
+=head2 set_chunk_cache_max
+
+    $png->set_chunk_cache_max (42);
+
+[% danger %] Untested. Set the maximum number of ancilliary chunks
+allowed. The default is 1000.
+
+[% cor(fn="png_set_chunk_cache_max") %]
+
+=head2 set_filler
+
+    $png->set_filler ($filler, $flags);
+
+Set transformations in C<$png> such that a filler byte C<$filler> is
+added when an 8-bit grayscale image or 24-bit RGB image is read, and a
+filler byte is deleted when an 8-bit grayscale image or 24-bit RGB
+image is written. C<$flags> may be C<PNG_FLAG_FILLER_AFTER> or zero.
+
+[% cor(fn="set_filler") %]
+
+=head2 set_gamma
+
+    $png->set_gamma ($screen_gamma, $output_gamma);
+
+[% danger %] Untested. C<$screen_gamma> and C<$output_gamma> should
+contain floating-point arguments.  [% manual %]
+
+[% cor(fn="set_gamma") %]
+
 =head2 set_user_limits
 
     $png->set_user_limits ($width, $height);
@@ -1795,6 +1799,17 @@ It's extracted from the Perl scalar using
 where row_pointers is the C<SV *> corresponding to C<$row_pointers> in
 the Perl script. See also L</set_row_pointers> which does the same
 thing but takes ownership of the memory.
+
+=head2 get_chunk
+
+    my $timechunk = $png->get_chunk ('tIME');
+
+Get the specified chunk. This produces a fatal error if asked for the
+C<IDAT> (image data) chunk, use L</get_rows> instead. Returns C<undef>
+if asked for an unknown chunk name.
+
+This is used by L<pnginspect> to get the valid chunks. See also
+L</set_chunk>.
 
 =head2 get_internals
 
@@ -1863,6 +1878,19 @@ The possible arguments to C<libpng_supports> are:
 
 =back
 
+=head2 png_compare
+
+    if (png_compare ('a.png', 'b.png') == 0) {
+	print "The PNGs are the same.\n";
+    }
+
+This compares the image data in two PNGs and returns 0 if they contain
+exactly the same image data, or 1 if they contain different image
+data. For a more detailed comparison, see L</image_data_diff>. This
+does not compare to see if the PNG files "look like" each other, but
+whether each pixel contains exactly the same values. Please see
+L<Image::Similar> for a looser comparison of images.
+
 =head2 read_struct
 
     if ($png->read_struct ()) {
@@ -1873,6 +1901,14 @@ This returns a true value if C<$png> was created with
 L</create_read_struct> or allied functions like L</read_from_scalar>,
 and a false value if C<$png> was created with L</create_write_struct>
 or allied functions like L</copy_png>.
+
+=head2 set_chunk
+
+    $png->set_chunk ('tIME', $timechunk);
+
+Set the specified chunk. This produces a fatal error if given an
+C<IDAT> (image data) chunk, use L</set_rows> instead. Produces a fatal
+error if given an unknown chunk name.
 
 =head2 set_image_data
 

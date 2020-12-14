@@ -654,6 +654,8 @@ CODE:
 	png_set_gamma (Png->png, gamma, override_gamma);
 	
 
+#ifdef PNG_READ_ALPHA_MODE_SUPPORTED
+
 void
 perl_png_set_alpha_mode (Png, mode, screen_gamma)
 	Image::PNG::Libpng Png;
@@ -661,6 +663,8 @@ perl_png_set_alpha_mode (Png, mode, screen_gamma)
 	double screen_gamma;
 CODE:
 	png_set_alpha_mode (Png->png, mode, screen_gamma);
+
+#endif /* def PNG_READ_ALPHA_MODE_SUPPORTED */
 
 void
 perl_png_set_scale_16(Png)
@@ -733,5 +737,32 @@ perl_png_set_add_alpha(Png, filler, filler_loc)
 CODE:
 	png_set_add_alpha (Png->png, filler, filler_loc);
 
+
+void
+perl_png_set_expand_gray_1_2_4_to_8(Png)
+	Image::PNG::Libpng Png;
+CODE:
+	png_set_expand_gray_1_2_4_to_8 (Png->png);
+
+void
+perl_png_set_chunk_cache_max(Png, max)
+	Image::PNG::Libpng Png;
+	int max;
+CODE:
+	png_set_chunk_cache_max(Png->png, max);
+
+int
+perl_png_get_chunk_cache_max(Png)
+	Image::PNG::Libpng Png;
+CODE:
+	RETVAL = png_get_chunk_cache_max(Png->png);
+OUTPUT:
+	RETVAL
+
+void
+perl_png_set_tRNS_to_alpha(Png)
+	Image::PNG::Libpng Png;
+CODE:
+	png_set_tRNS_to_alpha(Png->png);
 
 

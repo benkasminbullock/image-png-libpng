@@ -42,12 +42,6 @@ already in Perl.
 %%
 cat: notforperl
 
-item: png_get_chunk_cache_max
-%%desc:
-
-%%
-cat: unimplemented
-
 item: png_get_compression_type
 %%desc:
 Useless function which returns 0 since there is only one type of
@@ -143,12 +137,6 @@ item: png_set_check_for_invalid_index
 
 %%
 
-item: png_set_chunk_cache_max
-%%desc:
-
-%%
-cat: unimplemented
-
 item: png_set_compression_method
 %%desc:
 This function in libpng corresponds to the unused
@@ -182,12 +170,7 @@ item: png_set_filter_heuristics
 %%desc:
 
 %%
-
-item: png_set_gamma
-%%desc:
-
-%%
-cat: unimplemented
+cat: deprecated
 
 item: png_set_quantize
 %%desc:
@@ -200,11 +183,6 @@ item: png_set_sig_bytes
 %%desc:
 %%
 cat: notforperl
-
-item: png_set_swap
-%%desc:
-
-%%
 
 item: png_set_tRNS_to_alpha
 %%desc:
@@ -497,16 +475,6 @@ will probably use C<pack> for this.
 %%
 cat: notforperl
 
-item: png_set_add_alpha
-%%desc:
-%%
-cat: unimplemented
-
-item: png_set_alpha_mode
-%%desc:
-%%
-cat: unimplemented
-
 item: png_set_chunk_malloc_max
 %%desc:
 %%
@@ -516,11 +484,6 @@ item: png_set_error_fn
 %%desc:
 %%
 cat: error
-
-item: png_set_expand_gray_1_2_4_to_8
-%%desc:
-%%
-cat: unimplemented
 
 item: png_set_filter_heuristics_fixed
 %%desc:
@@ -593,11 +556,6 @@ According to the libpng manual, "we never got around to actually
 numbering the error messages", so I assume this is not very useful.
 %%
 cat: useless
-
-item: png_set_swap_alpha
-%%desc:
-%%
-cat: unimplemented
 
 item: png_set_user_transform_info
 %%desc:
