@@ -12,10 +12,13 @@ for my $file (@files) {
 	next;
     }
     my $png = read_png_file ($file);
-
     my $valid = $png->get_valid ();
+    my $copy = copy_png ($png);
+    my $copyfile = "$Bin/guff.png";
+    $copy->write_png_file ($copyfile);
+    unlink ($copyfile);
     if ($valid->{PLTE}) {
-	print $tfile, " ", $png->get_palette_max (), " ";
+	print $tfile, " ", $png->get_palette_max ()," ", $copy->get_palette_max (), " ";
 	my $plte = $png->get_PLTE ();
 	print scalar (@$plte), "\n";
     }
