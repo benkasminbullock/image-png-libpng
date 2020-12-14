@@ -1,0 +1,737 @@
+item: png_benign_error
+%%desc:
+
+%%
+cat: error
+
+item: png_build_grayscale_palette
+%%desc:
+Undocumented function, but it is part of the public API.
+%%
+cat: undocumented
+
+item: png_chunk_benign_error
+%%desc:
+
+%%
+cat: error
+
+item: png_convert_from_struct_tm
+%%desc:
+This function related to the C<tIME> chunk is deprecated in libpng
+1.7.
+%%
+cat: deprecated
+
+item: png_convert_from_time_t
+%%desc:
+This function related to the C<tIME> chunk is deprecated in libpng 1.7.
+%%
+cat: deprecated
+
+item: png_convert_to_rfc1123
+%%desc:
+This function related to the C<tIME> chunk is deprecated in libpng 1.7.
+%%
+cat: deprecated
+
+item: png_convert_to_rfc1123_buffer
+%%desc:
+This function is related to the C<tIME> chunk; it seems fairly
+superfluous with the many other ways to manipulate time strings
+already in Perl.
+%%
+cat: notforperl
+
+item: png_get_chunk_cache_max
+%%desc:
+
+%%
+cat: unimplemented
+
+item: png_get_compression_type
+%%desc:
+Useless function which returns 0 since there is only one type of
+compression.
+%%
+cat: useless
+
+item: png_get_copyright
+%%desc:
+This function gives you the copyright string for libpng.
+%%
+cat: notforperl
+
+item: png_get_filter_type
+%%desc:
+
+%%
+cat: unimplemented
+
+item: png_get_header_version
+%%desc:
+Identical to L</get_libpng_ver>.
+%%
+cat: duplicate
+
+item: png_get_header_ver
+%%desc:
+Identical to L</get_libpng_ver>.
+%%
+cat: duplicate
+
+item: png_get_io_ptr
+%%desc:
+
+%%
+cat: unimplemented
+
+item: png_get_progressive_ptr
+%%desc:
+Incremental reading of PNGs is not handled yet.
+%%
+cat: unimplemented
+
+item: png_get_signature
+%%desc:
+Returns the PNG signature of a PNG you read in.
+%%
+cat: notforperl
+
+item: png_get_x_offset_pixels
+%%desc:
+Duplicates L</get_oFFs>.
+%%
+cat: unimplemented
+
+item: png_get_x_pixels_per_meter
+%%desc:
+Duplicates L</get_oFFs>.
+%%
+cat: unimplemented
+
+item: png_get_y_offset_pixels
+%%desc:
+Duplicates L</get_oFFs>.
+%%
+cat: unimplemented
+
+item: png_get_y_pixels_per_meter
+%%desc:
+Duplicates L</get_oFFs>.
+%%
+cat: unimplemented
+
+item: png_set_bgr
+%%desc:
+Flips RGB to BGR.
+%%
+cat: unimplemented
+
+item: png_set_background
+%%desc:
+Sets the background when an alpha channel is removed.
+%%
+cat: unimplemented
+
+item: png_set_benign_errors
+%%desc:
+
+%%
+cat: error
+
+item: png_set_cHRM_XYZ
+%%desc:
+There is no Z value allowed in L</set_cHRM> at present.
+%%
+cat: unimplemented
+
+item: png_set_check_for_invalid_index
+%%desc:
+
+%%
+
+item: png_set_chunk_cache_max
+%%desc:
+
+%%
+cat: unimplemented
+
+item: png_set_compression_method
+%%desc:
+This function in libpng corresponds to the unused
+C<method> parameter of zlib functions like C<deflateInit2>. See
+L</zlib documentation>. The libpng function just produces a warning if
+the user sets the value to anything but 8, the value of the macro
+C<Z_DEFLATED>, and then lets zlib produce an error.
+%%
+cat: useless
+
+item: png_set_interlace_handling
+%%desc:
+Incremental writing is not handled.
+%%
+cat: unimplemented
+
+item: png_set_text_compression_method
+%%desc:
+Unsupported for the same reasons as
+L</png_set_compression_method>.
+%%
+cat: useless
+
+item: png_set_crc_action
+%%desc:
+
+%%
+cat: error
+
+item: png_set_filter_heuristics
+%%desc:
+
+%%
+
+item: png_set_gamma
+%%desc:
+
+%%
+cat: unimplemented
+
+item: png_set_packswap
+%%desc:
+
+%%
+
+item: png_set_quantize
+%%desc:
+This is fairly difficult to implement since it requires interfacing
+various different things.
+%%
+cat: unimplemented
+
+item: png_set_scale_16
+%%desc:
+
+%%
+
+item: png_set_sig_bytes
+%%desc:
+This doesn't seem useful for Perl programmers.
+%%
+cat: notforperl
+
+item: png_set_strip_alpha
+%%desc:
+
+%%
+
+item: png_set_swap
+%%desc:
+
+%%
+
+item: png_set_tRNS_to_alpha
+%%desc:
+
+%%
+
+item: png_set_unknown_chunk_location
+%%desc:
+This is related to some kind of bug in version 1.5 and previous of
+libpng.
+%%
+
+item: png_set_write_status_fn
+%%desc:
+
+%%
+cat: error
+
+item: png_chunk_warning
+%%desc:
+%%
+cat: error
+
+item: png_data_freer
+%%desc:
+%%
+cat: unimplemented
+
+item: png_destroy_info_struct
+%%desc:
+%%
+cat: unimplemented
+
+item: png_free
+%%desc:
+%%
+cat: unimplemented
+
+item: png_free_data
+%%desc:
+%%
+cat: unimplemented
+
+item: png_get_cHRM_XYZ
+%%desc:
+%%
+cat: unimplemented
+
+item: png_get_cHRM_XYZ_fixed
+%%desc:
+%%
+cat: unimplemented
+
+item: png_get_cHRM_fixed
+%%desc:
+%%
+cat: unimplemented
+
+item: png_get_chunk_malloc_max
+%%desc:
+%%
+cat: unimplemented
+
+item: png_get_current_pass_number
+%%desc:
+%%
+cat: unimplemented
+
+item: png_get_current_row_number
+%%desc:
+%%
+cat: unimplemented
+
+item: png_get_error_ptr
+%%desc:
+%%
+cat: unimplemented
+
+item: png_get_gAMA_fixed
+%%desc:
+%%
+cat: unimplemented
+
+item: png_get_image_width
+%%desc:
+%%
+cat: unimplemented
+
+item: png_get_io_chunk_type
+%%desc:
+%%
+cat: unimplemented
+
+item: png_get_io_state
+%%desc:
+%%
+cat: unimplemented
+
+item: png_get_mem_ptr
+%%desc:
+%%
+cat: unimplemented
+
+item: png_get_pHYs_dpi
+%%desc:
+%%
+cat: unimplemented
+
+# Implemented, but not clear what it does.
+
+# item: png_get_palette_max
+# %%desc:
+# %%
+# cat: unimplemented
+
+item: png_get_pixel_aspect_ratio
+%%desc:
+%%
+cat: unimplemented
+
+item: png_get_pixel_aspect_ratio_fixed
+%%desc:
+%%
+cat: unimplemented
+
+item: png_get_pixels_per_inch
+%%desc:
+%%
+cat: unimplemented
+
+item: png_get_pixels_per_meter
+%%desc:
+%%
+cat: unimplemented
+
+item: png_get_sCAL_fixed
+%%desc:
+%%
+cat: unimplemented
+
+item: png_get_uint_31
+%%desc:
+%%
+cat: unimplemented
+
+item: png_get_user_chunk_ptr
+%%desc:
+%%
+cat: unimplemented
+
+item: png_get_user_height_max
+%%desc:
+%%
+cat: unimplemented
+
+item: png_get_user_transform_ptr
+%%desc:
+%%
+cat: unimplemented
+
+item: png_get_user_width_max
+%%desc:
+%%
+cat: unimplemented
+
+item: png_get_x_offset_inches
+%%desc:
+%%
+cat: unimplemented
+
+item: png_get_x_offset_inches_fixed
+%%desc:
+%%
+cat: unimplemented
+
+item: png_get_x_offset_microns
+%%desc:
+%%
+cat: unimplemented
+
+item: png_get_x_pixels_per_inch
+%%desc:
+%%
+cat: unimplemented
+
+item: png_get_y_offset_inches
+%%desc:
+%%
+cat: unimplemented
+
+item: png_get_y_offset_inches_fixed
+%%desc:
+%%
+cat: unimplemented
+
+item: png_get_y_offset_microns
+%%desc:
+%%
+cat: unimplemented
+
+item: png_get_y_pixels_per_inch
+%%desc:
+%%
+cat: unimplemented
+
+item: png_handle_as_unknown
+%%desc:
+%%
+cat: unimplemented
+
+item: png_image_begin_read_from_file
+%%desc:
+%%
+cat: unimplemented
+
+item: png_image_begin_read_from_stdio
+%%desc:
+%%
+cat: unimplemented
+
+item: png_image_finish_read
+%%desc:
+%%
+cat: unimplemented
+
+item: png_image_free
+%%desc:
+%%
+cat: unimplemented
+
+item: png_image_write_to_file
+%%desc:
+%%
+cat: unimplemented
+
+item: png_image_write_to_memory
+%%desc:
+%%
+cat: unimplemented
+
+item: png_image_write_to_stdio
+%%desc:
+%%
+cat: unimplemented
+
+item: png_permit_mng_features
+%%desc:
+%%
+cat: unimplemented
+
+item: png_process_data
+%%desc:
+%%
+cat: rwfunc
+
+item: png_process_data_pause
+%%desc:
+%%
+cat: rwfunc
+
+item: png_process_data_skip
+%%desc:
+%%
+cat: rwfunc
+
+item: png_progressive_combine_row
+%%desc:
+%%
+cat: rwfunc
+
+item: png_read_end
+%%desc:
+%%
+cat: rwfunc
+
+item: png_read_row
+%%desc:
+%%
+cat: rwfunc
+
+item: png_read_rows
+%%desc:
+%%
+cat: rwfunc
+
+item: png_reset_zstream
+%%desc:
+[% danger %] The libpng source code notes this is untested.
+%%
+cat: unimplemented
+
+item: png_save_int_32
+%%desc:
+%%
+cat: unimplemented
+
+item: png_save_uint_16
+%%desc:
+%%
+cat: unimplemented
+
+item: png_save_uint_32
+%%desc:
+%%
+cat: unimplemented
+
+item: png_set_add_alpha
+%%desc:
+%%
+cat: unimplemented
+
+item: png_set_alpha_mode
+%%desc:
+%%
+cat: unimplemented
+
+item: png_set_chunk_malloc_max
+%%desc:
+%%
+cat: unimplemented
+
+item: png_set_error_fn
+%%desc:
+%%
+cat: error
+
+item: png_set_expand_16
+%%desc:
+%%
+cat: unimplemented
+
+item: png_set_expand_gray_1_2_4_to_8
+%%desc:
+%%
+cat: unimplemented
+
+item: png_set_filter_heuristics_fixed
+%%desc:
+%%
+cat: unimplemented
+
+item: png_set_flush
+%%desc:
+%%
+cat: unimplemented
+
+item: png_set_invalid
+%%desc:
+%%
+cat: unimplemented
+
+item: png_set_invert_alpha
+%%desc:
+%%
+cat: unimplemented
+
+item: png_set_invert_mono
+%%desc:
+%%
+cat: unimplemented
+
+item: png_set_longjmp_fn
+%%desc:
+%%
+cat: unimplemented
+
+item: png_set_mem_fn
+%%desc:
+%%
+cat: unimplemented
+
+item: png_set_option
+%%desc:
+%%
+cat: unimplemented
+
+item: png_set_palette_to_rgb
+%%desc:
+%%
+cat: unimplemented
+
+item: png_set_progressive_read_fn
+%%desc:
+%%
+cat: rwfunc
+
+item: png_set_read_status_fn
+%%desc:
+%%
+cat: unimplemented
+
+item: png_set_read_user_chunk_fn
+%%desc:
+%%
+cat: unimplemented
+
+item: png_set_read_user_transform_fn
+%%desc:
+%%
+cat: unimplemented
+
+item: png_set_sCAL_fixed
+%%desc:
+%%
+cat: unimplemented
+
+item: png_set_sRGB_gAMA_and_cHRM
+%%desc:
+%%
+cat: unimplemented
+
+item: png_set_shift
+%%desc:
+%%
+cat: unimplemented
+
+item: png_set_strip_error_numbers
+%%desc:
+%%
+cat: unimplemented
+
+item: png_set_swap_alpha
+%%desc:
+%%
+cat: unimplemented
+
+item: png_set_user_transform_info
+%%desc:
+%%
+cat: unimplemented
+
+item: png_set_write_user_transform_fn
+%%desc:
+%%
+cat: unimplemented
+
+item: png_start_read_image
+%%desc:
+%%
+cat: unimplemented
+
+item: png_write_chunk
+%%desc:
+%%
+cat: unimplemented
+
+item: png_write_chunk_data
+%%desc:
+%%
+cat: unimplemented
+
+item: png_write_chunk_end
+%%desc:
+%%
+cat: unimplemented
+
+item: png_write_chunk_start
+%%desc:
+%%
+cat: unimplemented
+
+item: png_write_end
+%%desc:
+%%
+cat: unimplemented
+
+item: png_write_flush
+%%desc:
+%%
+cat: unimplemented
+
+item: png_write_image
+%%desc:
+%%
+cat: unimplemented
+
+item: png_write_info
+%%desc:
+%%
+cat: unimplemented
+
+item: png_write_info_before_PLTE
+%%desc:
+%%
+cat: unimplemented
+
+item: png_write_row
+%%desc:
+%%
+cat: unimplemented
+
+item: png_write_rows
+%%desc:
+%%
+cat: unimplemented
+
+item: png_write_sig
+%%desc:
+%%
+cat: unimplemented
+
+
+
+# Local variables:
+# mode: table-readable
+# End:

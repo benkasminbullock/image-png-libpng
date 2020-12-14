@@ -1,0 +1,148 @@
+=item png_benign_error
+
+=item png_build_grayscale_palette
+
+Undocumented function, but it is part of the public API.
+
+=item png_chunk_benign_error
+
+=item png_convert_from_struct_tm
+
+This function related to the C<tIME> chunk is deprecated in libpng
+1.7.
+
+=item png_convert_from_time_t
+
+This function related to the C<tIME> chunk is deprecated in libpng 1.7.
+
+=item png_convert_to_rfc1123
+
+This function related to the C<tIME> chunk is deprecated in libpng 1.7.
+
+=item png_convert_to_rfc1123_buffer
+
+This function is related to the C<tIME> chunk; it seems fairly
+superfluous with the many other ways to manipulate time strings
+already in Perl.
+
+=item png_get_chunk_cache_max
+
+=item png_get_compression_type
+
+[% useless %] Useless function which returns 0 since there is only one type of
+compression.
+
+=item png_get_copyright
+
+[% useless %] This function gives you the copyright string for libpng.
+
+=item png_get_filter_type
+
+=item png_get_header_version
+
+Identical to L</get_libpng_ver>.
+
+=item png_get_header_ver
+
+Identical to L</get_libpng_ver>.
+
+=item png_get_io_ptr
+
+=item png_get_progressive_ptr
+
+Incremental reading of PNGs is not handled yet.
+
+=item png_get_signature
+
+Returns the PNG signature of a PNG you read in.
+
+=item png_get_x_offset_pixels
+
+Duplicates L</get_oFFs>.
+
+=item png_get_x_pixels_per_meter
+
+Duplicates L</get_oFFs>.
+
+=item png_get_y_offset_pixels
+
+Duplicates L</get_oFFs>.
+
+=item png_get_y_pixels_per_meter
+
+Duplicates L</get_oFFs>.
+
+=item png_set_bgr
+
+Flips RGB to BGR.
+
+=item png_set_background
+
+Sets the background when an alpha channel is removed.
+
+=item png_set_benign_errors
+
+See L</Error handling functions>.
+
+=item png_set_cHRM_XYZ
+
+There is no Z value allowed in L</set_cHRM> at present.
+
+=item png_set_check_for_invalid_index
+
+=item png_set_chunk_cache_max
+
+=item png_set_compression_method
+
+[% useless %] This function in libpng corresponds to the unused
+C<method> parameter of zlib functions like C<deflateInit2>. See
+L</zlib documentation>. The libpng function just produces a warning if
+the user sets the value to anything but 8, the value of the macro
+C<Z_DEFLATED>, and then lets zlib produce an error.
+
+=item png_set_interlace_handling
+
+Incremental writing is not handled.
+
+=item png_set_text_compression_method
+
+[% useless %] Unsupported for the same reasons as
+L</png_set_compression_method>.
+
+=item png_set_crc_action
+
+See L</Error handling functions>.
+
+=item png_set_filter_heuristics
+
+=item png_set_gamma
+
+=item png_set_packswap
+
+=item png_set_quantize
+
+This is fairly difficult to implement since it requires interfacing
+various different things.
+
+=item png_set_rgb_to_gray
+
+=item png_set_scale_16
+
+=item png_set_sig_bytes
+
+This doesn't seem useful for Perl programmers.
+
+=item png_set_strip_alpha
+
+=item png_set_swap
+
+=item png_set_tRNS_to_alpha
+
+=item png_set_unknown_chunk_location
+
+This is related to some kind of bug in version 1.5 and previous of
+libpng.
+
+=item png_set_write_status_fn
+
+See L</Error handling functions>.

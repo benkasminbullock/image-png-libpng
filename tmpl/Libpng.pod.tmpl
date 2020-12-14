@@ -1268,6 +1268,18 @@ Is either 0 or 1.
 See [% spec("11PLTE") %] for information on the PNG standards for
 the palette chunk.
 
+=head3 get_palette_max
+
+    my $pmax = $png->get_palette_max ();
+
+If your libpng supports it, this will return the maximum palette index
+found in the image, or "-1" if the palette was not checked, or "0" if
+no palette was found.
+
+[% danger %] This function is implemented but so far it is not very
+clear to me what it does, since it seems to return zero for an image
+with a 256-color palette.
+
 =head3 get_PLTE
 
      my $colors = $png->get_PLTE ();
@@ -1693,11 +1705,8 @@ This function is used in testing this module. See also L</png_compare>.
 
 This function returns true or false depending on whether the version
 of libpng which this was compiled with supports or does not support a
-particular facility. Libpng actually has a lot of macros of the form
-WRITE_bKGd and READ_tEXt which control the reading and writing of
-individual chunks, but I have assumed that it is rare for someone in a
-Perl programming environment to have a libpng with these kinds of
-things switched off, and do not currently support those arguments.
+particular facility. For the most part, these are taken directly from
+the C macros of libpng.
 
 The possible arguments to C<libpng_supports> are:
 
@@ -1870,165 +1879,34 @@ this Perl module, the functions with suffix C<_fixed>.
 
 =item Other unsupported functions
 
-Unsupported functions from the libpng API include the following:
+The following function from the libpng API are unsupported by this module.
 
 =over
 
-=item png_benign_error
+[% FOR func IN unsupported %]
+=item [% func.item %]
 
-=item png_build_grayscale_palette
-
-Undocumented function, but it is part of the public API.
-
-=item png_chunk_benign_error
-
-=item png_convert_from_struct_tm
-
-This function related to the C<tIME> chunk is deprecated in libpng
-1.7.
-
-=item png_convert_from_time_t
-
-This function related to the C<tIME> chunk is deprecated in libpng 1.7.
-
-=item png_convert_to_rfc1123
-
-This function related to the C<tIME> chunk is deprecated in libpng 1.7.
-
-=item png_convert_to_rfc1123_buffer
-
-This function is related to the C<tIME> chunk; it seems fairly
-superfluous with the many other ways to manipulate time strings
-already in Perl.
-
-=item png_get_chunk_cache_max
-
-=item png_get_compression_type
-
-[% useless %] Useless function which returns 0 since there is only one type of
-compression.
-
-=item png_get_copyright
-
-[% useless %] This function gives you the copyright string for libpng.
-
-=item png_get_filter_type
-
-=item png_get_header_version
-
-Identical to L</get_libpng_ver>.
-
-=item png_get_header_ver
-
-Identical to L</get_libpng_ver>.
-
-=item png_get_io_ptr
-
-=item png_get_progressive_ptr
-
-Incremental reading of PNGs is not handled yet.
-
-=item png_get_signature
-
-Returns the PNG signature of a PNG you read in.
-
-=item png_get_x_offset_pixels
-
-Duplicates L</get_oFFs>.
-
-=item png_get_x_pixels_per_meter
-
-Duplicates L</get_oFFs>.
-
-=item png_get_y_offset_pixels
-
-Duplicates L</get_oFFs>.
-
-=item png_get_y_pixels_per_meter
-
-Duplicates L</get_oFFs>.
-
-=item png_set_bgr
-
-Flips RGB to BGR.
-
-=item png_set_background
-
-Sets the background when an alpha channel is removed.
-
-=item png_set_benign_errors
-
+[% IF func.cat == "useless" %][% useless %] [% END -%]
+[% IF func.cat == "deprecated" %]👎 Deprecated in libpng. [% END -%]
+[% func.desc | eval %]
+[% IF func.cat == "error" %]
 See L</Error handling functions>.
-
-=item png_set_cHRM_XYZ
-
-There is no Z value allowed in L</set_cHRM> at present.
-
-=item png_set_check_for_invalid_index
-
-=item png_set_chunk_cache_max
-
-=item png_set_compression_method
-
-[% useless %] This function in libpng corresponds to the unused
-C<method> parameter of zlib functions like C<deflateInit2>. See
-L</zlib documentation>. The libpng function just produces a warning if
-the user sets the value to anything but 8, the value of the macro
-C<Z_DEFLATED>, and then lets zlib produce an error.
-
-=item png_set_interlace_handling
-
-Incremental writing is not handled.
-
-=item png_set_text_compression_method
-
-[% useless %] Unsupported for the same reasons as
-L</png_set_compression_method>.
-
-=item png_set_crc_action
-
-See L</Error handling functions>.
-
-=item png_set_filter_heuristics
-
-=item png_set_gamma
-
-=item png_set_packswap
-
-=item png_set_quantize
-
-This is fairly difficult to implement since it requires interfacing
-various different things.
-
-=item png_set_rgb_to_gray
-
-=item png_set_scale_16
-
-=item png_set_sig_bytes
-
+[% END -%]
+[% IF func.cat == "notforperl" %]
 This doesn't seem useful for Perl programmers.
-
-=item png_set_strip_alpha
-
-=item png_set_swap
-
-=item png_set_tRNS_to_alpha
-
-=item png_set_unknown_chunk_location
-
-This is related to some kind of bug in version 1.5 and previous of
-libpng.
-
-=item png_set_write_status_fn
-
-See L</Error handling functions>.
+[% END -%]
+[% IF func.cat == "fixed" %]
+See L</Fixed point functions>.
+[% END -%]
+[% END # unsupported %]
 
 =back
 
-[% danger %] This is not an exhaustive list of libpng functions.
+This is an exhaustive list of unsupported libpng API functions,
+extracted from the libpng source code using F<util/api.pl> in this
+module's repository.
 
 =back
-
 
 =head1 BUGS
 
@@ -2080,16 +1958,25 @@ constants from the other files in a future version.
 old versions of libpng. The following are known issues with older
 libpng versions:
 
-=head3 Text chunk handling
-
-[% danger %] Versions of libpng up to 1.6.3 produce erratic results
-with C<iTXt> (international text) chunks.
-
 =head3 Compression level
 
 [% danger %] Versions of libpng up to 1.5 behave erratically when
 L</set_compression_level> or other C<set_compression_*> functions are
-used to alter the compression of the image data.
+used to alter the compression of the image data. Testing of
+compression-related functions is disabled by this Perl module for
+pre-1.6.13 versions of libpng.
+
+=head3 sCAL chunk
+
+[% danger %] Support for the sCAL chunk is disabled within this module
+for pre-1.6 versions of libpng.
+
+=head3 Text chunk handling
+
+[% danger %] Versions of libpng up to 1.6.3 produce erratic results
+with C<iTXt> (international text) chunks. Testing of text-related
+chunks is disabled by this Perl module for pre-1.6.13 versions of
+libpng.
 
 =head1 STANDALONE SCRIPT
 
@@ -2113,12 +2000,12 @@ The starting point is the plain text libpng manual at
 L<http://libpng.org/pub/png/libpng-manual.txt> and the manual page
 libpng.3, which you can read using "man 3 libpng".
 
-[% danger %] The documentation which comes with libpng is rather sketchy. See
-L</Differences from libpng>. It doesn't contain full specifications
-(prototypes, return values) for all of the functions in the
-library. For programming in C using libpng, look at the header file
-F<png.h>.  In some cases, you need to look at the source code of the
-library.
+[% danger %] The documentation which comes with libpng is rather
+sketchy. See L</Differences from libpng>. It doesn't contain full
+specifications (prototypes, return values) for all of the functions in
+the library. For programming in C using libpng, look at the header
+file F<png.h>.  In some cases, you need to look at the source code of
+the library.
 
 =item Other documentation
 

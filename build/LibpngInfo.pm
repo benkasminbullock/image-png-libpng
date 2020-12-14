@@ -509,6 +509,25 @@ for (@supports_list) {
     }
 }
 
+my $uns_file = __FILE__;
+$uns_file =~ s!LibpngInfo\.pm!unsupported-table.txt!;
+my @unsupported = read_table ($uns_file);
+for (@unsupported) {
+    # Template toolkit STRICT mode cannot deal with undefined values
+    # very well so set them here.
+    if (! $_->{desc}) {
+	$_->{desc} = '';
+    }
+    if (! $_->{cat}) {
+	$_->{cat} = 'unknown';
+    }
+    if ($_->{cat} eq 'unimplemented' && $_->{item} =~ /_fixed$/) {
+	$_->{cat} = 'fixed';
+    }
+}
+
+@unsupported = sort {$a->{item} cmp $b->{item}} @unsupported;
+
 sub template_vars
 {
     my ($vars_ref) = @_;
@@ -525,6 +544,7 @@ sub template_vars
 #    }
     $vars_ref->{unknown_chunk_fields} = \@unknown_chunk_fields;
     $vars_ref->{supports_list} = \@supports_list;
+    $vars_ref->{unsupported} = \@unsupported;
 }
 
 1;

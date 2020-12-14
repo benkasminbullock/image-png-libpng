@@ -164,6 +164,11 @@ c: FORMAT_BGR
 c: GAMMA
 
 c: GET_PALETTE_MAX
+%%d:
+
+Does your libpng support L</get_palette_max>?
+
+%%
 
 c: HANDLE_AS_UNKNOWN
 

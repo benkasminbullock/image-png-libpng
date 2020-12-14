@@ -384,6 +384,23 @@ OUTPUT:
 	RETVAL
 [% END %]
 
+int
+perl_png_get_palette_max(Png)
+	Image::PNG::Libpng Png;
+CODE:
+#ifdef PNG_CHECK_FOR_INVALID_INDEX_SUPPORTED
+#  ifdef PNG_GET_PALETTE_MAX_SUPPORTED
+	RETVAL = png_get_palette_max (Png->png, Png->info);
+#  else
+	UNSUPPORTED('GET_PALETTE_MAX');
+#  endif
+#else
+        UNSUPPORTED('CHECK_FOR_INVALID_INDEX');
+#endif
+OUTPUT:
+	RETVAL
+
+
 [% IF 0 %]
 void
 perl_png_set_rgb_to_gray (Png)
