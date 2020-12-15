@@ -292,6 +292,7 @@ our @chunks = (
     in_valid => 1,
     auto_type => 'hv',
     fields => [],
+    pro => 'PNG_cHRM_SUPPORTED',
 },
 
 {
@@ -299,6 +300,8 @@ our @chunks = (
     in_valid => 0,
     auto_type => 'hv',
     fields => [],
+    # http://www.cpantesters.org/cpan/report/0722432c-3f18-11eb-9d08-9e4a1f24ea8f
+    pro => 'PNG_cHRM_SUPPORTED',
 },
 
 {

@@ -1,3 +1,8 @@
+0.52_05 2020-12-16
+- Yet more incompatibilities at cpantesters
+- cHRM_XYZ
+- set/get_chunk_cache_max
+
 0.52_04 2020-12-15
 - Support get/set cHRM_XYZ
 - Support for transforms png_set_(.*) where possible

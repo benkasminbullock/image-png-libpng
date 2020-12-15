@@ -6,7 +6,7 @@ use FindBin '$Bin';
 use Image::PNG::Libpng ':all';
 use Image::PNG::Const ':all';
 my $outfile = "$Bin/mono.png";
-my ($height, $width, $rows) = pixelate (__FILE__);
+my ($height, $width, $rows) = pixelate (__FILE__, 5);
 my $png = create_write_struct ();
 open my $out, ">:raw", $outfile or die $!;
 $png->init_io ($out);
@@ -24,7 +24,7 @@ exit;
 
 sub pixelate
 {
-    my ($file) = @_;
+    my ($file, $box) = @_;
     open my $in, "<", $file or die "Can't open '$file': $!";
     my $width = 0;
     my @lines;
@@ -37,20 +37,25 @@ sub pixelate
         }
     }
     close $in or die $!;
-    my $height = scalar (@lines);
+    $width *= $box;
+    my $height = scalar (@lines) * $box;
     my $zero = pack "C", 0;
     my $bwidth = int(($width+7)/8);
     my @rows = ($zero x $bwidth) x $height;
-    for my $y (0..$height-1) {
+    for my $r (0..$height-1) {
+	my $y = int ($r/$box);
         my $line = $lines[$y];
         for my $x (0..length ($line) - 1) {
             if (substr ($line, $x, 1) ne ' ') {
-                my $byte = int ($x / 8);
-                my $bit = $x % 8;
-                my $octet = ord (substr ($rows[$y], $byte, 1));
-                substr ($rows[$y], $byte, 1) = chr ($octet | 1<<$bit);
-            }
-        }
+		for my $c (0..$box - 1) {
+		    my $offset = $x*$box + $c;
+		    my $byte = int ($offset / 8);
+		    my $bit = $offset % 8;
+		    my $octet = ord (substr ($rows[$r], $byte, 1));
+		    substr ($rows[$r], $byte, 1) = chr ($octet | 1<<$bit);
+		}
+	    }
+	}
     }
     return ($height, $width, \@rows);
 }

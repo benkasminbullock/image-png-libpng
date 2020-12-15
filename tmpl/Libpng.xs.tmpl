@@ -323,6 +323,9 @@ void perl_png_DESTROY (Png)
 	}
 
 [%- FOR chunk IN chunks %]
+[%- IF chunk.defined('pro') %]
+#ifdef [% chunk.pro %]
+[% END # pro %]
 [%- IF chunk.defined('auto_type') %]
 SV * perl_png_get_[% chunk.name %] (Png)
         Image::PNG::Libpng Png
@@ -345,7 +348,9 @@ void perl_png_set_[% chunk.name %] (Png, [% chunk.name %]
 CODE:
         perl_png_set_[% chunk.name %] (Png, [% chunk.name %]);
 
-
+[%- IF chunk.defined('pro') %]
+#endif /* [% chunk.pro %] */
+[%- END # pro %]
 [% END %]
 [%- END %]
 #line 353 "Libpng.xs.tmpl"
@@ -447,6 +452,10 @@ CODE:
 OUTPUT:
 	RETVAL
 
+# http://www.cpantesters.org/cpan/report/fc1cade6-3f17-11eb-9d08-9e4a1f24ea8f
+
+#ifdef PNG_SET_USER_LIMITS_SUPPORTED
+
 int
 perl_png_set_user_limits (Png, w, h)
 	Image::PNG::Libpng Png;
@@ -465,6 +474,23 @@ OUTPUT:
 	RETVAL
 
 [% END # what %]
+
+void
+perl_png_set_chunk_cache_max(Png, max)
+	Image::PNG::Libpng Png;
+	int max;
+CODE:
+	png_set_chunk_cache_max(Png->png, max);
+
+int
+perl_png_get_chunk_cache_max(Png)
+	Image::PNG::Libpng Png;
+CODE:
+	RETVAL = png_get_chunk_cache_max(Png->png);
+OUTPUT:
+	RETVAL
+
+#endif /* PNG_SET_USER_LIMITS_SUPPORTED */
 
 void
 perl_png_set_image_data (Png, image_data, own = & PL_sv_undef)
@@ -739,20 +765,6 @@ perl_png_set_expand_gray_1_2_4_to_8(Png)
 CODE:
 	png_set_expand_gray_1_2_4_to_8 (Png->png);
 
-void
-perl_png_set_chunk_cache_max(Png, max)
-	Image::PNG::Libpng Png;
-	int max;
-CODE:
-	png_set_chunk_cache_max(Png->png, max);
-
-int
-perl_png_get_chunk_cache_max(Png)
-	Image::PNG::Libpng Png;
-CODE:
-	RETVAL = png_get_chunk_cache_max(Png->png);
-OUTPUT:
-	RETVAL
 
 void
 perl_png_set_tRNS_to_alpha(Png)
