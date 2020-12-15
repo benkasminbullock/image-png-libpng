@@ -69,22 +69,23 @@ CODE:
 void perl_png_read_info (Png)
         Image::PNG::Libpng  Png
 CODE:
+	check_init_io (Png);
         png_read_info (Png->png, Png->info);
 
 
 void perl_png_read_update_info (Png)
         Image::PNG::Libpng  Png
 CODE:
+	check_init_io (Png);
         png_read_update_info (Png->png, Png->info);
 
-
-
-void perl_png_read_png (Png, transforms = PNG_TRANSFORM_IDENTITY)
+void
+perl_png_read_png (Png, transforms = PNG_TRANSFORM_IDENTITY)
         Image::PNG::Libpng  Png
         int transforms
 CODE:
+	check_init_io (Png);
         perl_png_read_png (Png, transforms);
-OUTPUT:
 
 SV * perl_png_get_text (Png)
         Image::PNG::Libpng  Png
@@ -765,24 +766,28 @@ perl_png_write_image(Png, rows)
 	Image::PNG::Libpng Png;
 	AV * rows
 CODE:
+	check_init_io (Png);
 	perl_png_write_image (Png, rows);
 
 void
 perl_png_write_info(Png)
 	Image::PNG::Libpng Png;
 CODE:
+	check_init_io (Png);
 	png_write_info (Png->png, Png->info);
 
 void
 perl_png_write_end(Png)
 	Image::PNG::Libpng Png;
 CODE:
+	check_init_io (Png);
 	png_write_end (Png->png, Png->info);
 
 SV *
 perl_png_read_image(Png)
 	Image::PNG::Libpng Png;
 CODE:
+	check_init_io (Png);
 	RETVAL = perl_png_read_image (Png);
 OUTPUT:
 	RETVAL
@@ -791,6 +796,7 @@ void
 perl_png_read_end(Png)
 	Image::PNG::Libpng Png;
 CODE:
+	check_init_io (Png);
 	png_read_end (Png->png, Png->info);
 
 	

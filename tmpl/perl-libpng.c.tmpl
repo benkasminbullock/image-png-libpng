@@ -925,6 +925,14 @@ perl_png_write_to_scalar (perl_libpng_t * png, int transforms)
     return image_data;
 }
 
+static void
+check_init_io (perl_libpng_t * png)
+{
+    if (! png->init_io_done) {
+	croak ("No call to init_io before read/write");
+    }
+}
+
 /* Write a PNG. */
 
 static void
@@ -934,11 +942,7 @@ perl_png_write_png (perl_libpng_t * png, int transforms)
 
     GET_TRANSFORMS;
 
-    if (! png->init_io_done) {
-        /* write_png was called before a file handle was associated
-           with the PNG. */
-        croak ("Attempt to write PNG without calling init_io");
-    }
+    check_init_io (png);
     png_write_png (pngi, transforms, UNUSED_ZERO_ARG);
 }
 
@@ -2038,6 +2042,7 @@ static void
 perl_png_read_png (perl_libpng_t * png, int transforms)
 {
     GET_TRANSFORMS;
+    check_init_io (png);
     png_read_png (pngi, transforms, 0);
 }
 
@@ -2065,6 +2070,7 @@ perl_png_read_image (perl_libpng_t * png)
     int rowbytes;
     int i;
 
+    check_init_io (png);
     n_rows = png_get_image_height (pngi);
     rowbytes = png_get_rowbytes (pngi);
     if (! n_rows) {
@@ -2178,6 +2184,7 @@ static void perl_png_set_rows (perl_libpng_t * png, AV * rows)
 static void
 perl_png_write_image (perl_libpng_t * png, AV * rows)
 {
+    check_init_io (png);
     perl_png_set_rows (png, rows);
     png_write_image (png->png, png->row_pointers);
 }

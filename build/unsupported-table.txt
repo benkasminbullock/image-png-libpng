@@ -433,11 +433,6 @@ item: png_progressive_combine_row
 %%
 cat: rwfunc
 
-item: png_read_end
-%%desc:
-%%
-cat: rwfunc
-
 item: png_read_row
 %%desc:
 %%
@@ -592,22 +587,7 @@ item: png_write_chunk_start
 %%
 cat: unimplemented
 
-item: png_write_end
-%%desc:
-%%
-cat: unimplemented
-
 item: png_write_flush
-%%desc:
-%%
-cat: unimplemented
-
-item: png_write_image
-%%desc:
-%%
-cat: unimplemented
-
-item: png_write_info
 %%desc:
 %%
 cat: unimplemented
