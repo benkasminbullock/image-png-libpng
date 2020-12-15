@@ -59,12 +59,11 @@ CODE:
         perl_png_write_png (Png, transforms);
 
 
-void perl_png_init_io (Png, fp)
+void perl_png_init_io (Png, fpsv)
         Image::PNG::Libpng  Png
-        FILE * fp
+        SV * fpsv
 CODE:
-        png_init_io (Png->png, fp);
-        Png->init_io_done = 1;
+	perl_png_init_io_x (Png, fpsv);
 
 void perl_png_read_info (Png)
         Image::PNG::Libpng  Png
@@ -800,3 +799,13 @@ CODE:
 	png_read_end (Png->png, Png->info);
 
 	
+void
+perl_png_set_background(Png, perl_color, gamma_code, need_expand, background_gamma)
+	Image::PNG::Libpng Png;
+	HV * perl_color;
+	int gamma_code;
+	SV * need_expand;
+	double background_gamma;
+CODE:
+	perl_png_set_back (Png, perl_color, gamma_code, SvTRUE(need_expand),
+			   background_gamma);

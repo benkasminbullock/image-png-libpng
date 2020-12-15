@@ -57,6 +57,15 @@ typedef struct perl_libpng
     /* How much of the data in "image_data" we have read. */
     int read_position;
     unsigned char * all_rows;
+    /* init_io file handle holder, we need this for "create_reader"
+       and "create_writer" otherwise our FILE * gets closed by Perl
+       when the SV goes out of scope. This holds the SV we got in
+       "init_io" and increments its reference count so that the file
+       doesn't get closed after the filehandle goes out of scope. Then
+       when the "perl_libpng_t" object is destroyed by
+       "perl_png_destroy", this gets its reference count
+       decremented. */
+    SV * io_sv;
     /* If the following variable is set to a true value, the module
        prints messages about what it is doing. */
     int verbosity : 1;
@@ -290,6 +299,11 @@ perl_png_destroy (perl_libpng_t * png)
     if (png->all_rows) {
 	PERL_PNG_FREE (png->all_rows);
 	png->all_rows = 0;
+    }
+    if (png->io_sv) {
+	SvREFCNT_dec (png->io_sv);
+	png->io_sv = 0;
+	png->memory_gets--;
     }
     if (png->type == perl_png_write_obj) {
         png_destroy_write_struct (& png->png, & png->info);
@@ -2812,6 +2826,35 @@ perl_png_split_alpha (perl_libpng_t * png)
     hv_store (split, "alpha", strlen ("alpha"), alpha, 0);
     split_ref = newRV_noinc ((SV*) split);
     return split_ref;
+}
+
+static void
+perl_png_set_back(perl_libpng_t * png, HV * perl_color, int gamma_code,
+		  int need_expand, double background_gamma)
+{
+    png_color_16 color;
+    perl_png_hv_to_color_16 (perl_color, & color);
+    png_set_background (png->png, & color, gamma_code,
+			need_expand, background_gamma);
+}
+
+static void
+perl_png_init_io_x (perl_libpng_t * Png, SV * fpsv)
+{
+    FILE * fp;
+    PerlIO *io;
+    
+    io = IoIFP (sv_2io (fpsv));
+    if (io) {
+	Png->io_sv = SvREFCNT_inc (fpsv);
+	Png->memory_gets++;
+	fp = PerlIO_findFILE (io);
+	png_init_io (Png->png, fp);
+	Png->init_io_done = 1;
+    }
+    else {
+	croak ("Error doing init_io: unopened file handle?");
+    }
 }
 
 #undef pngi

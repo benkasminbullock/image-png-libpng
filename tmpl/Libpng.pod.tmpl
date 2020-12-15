@@ -35,16 +35,33 @@ with L</libpng_supports> as follows:
         # do something
     }
 [%- END %]
-[% source_link = "http://cpansearch.perl.org/src/" _ config.author_pause _ "/" _ config.base_hyphen _ "-" _ config.version _ "/" %]
-[% perl_libpng_c = "L<in the file C<perl-libpng.c> in the top directory of the distribution|" _ source_link  _ "perl-libpng.c>" %]
+[% metacpan="https://fastapi.metacpan.org/source/BKB/Image-PNG-Libpng-"
+ _ config.version %]
+[% perl_libpng_c = "L<in the file C<perl-libpng.c> in the top directory of the distribution|" _ metacpan  _ "/perl-libpng.c>" %]
 [% unused_title = "Unused arguments omitted" %]
 [% unused = "See L<" _ unused_title _ ">." %]
 [%- MACRO example(pl) BLOCK %]
 [%- file = pl _ ".pl" %]
 [%- INCLUDE $file | xtidy %]
-(This example is included as L<F<[% file %]>|https://fastapi.metacpan.org/source/BKB/Image-PNG-Libpng-[% config.version %]/examples/[% file %]> in the distribution.)
+(This example is included as L<F<examples/[% file %]>|[% metacpan %]/examples/[% file %]>
+in the distribution.)
 
 [%- END # macro -%]
+[%- MACRO eximg(file) BLOCK %]
+[%- imgurl=metacpan _ "/examples/" _ file _ ".png" %]
+[% filename= "examples/" _ file _ ".png" %]
+The output is included as L<[% filename %]|[% imgurl %]> in the
+distribution.
+
+=begin html
+
+<figure>
+<img src="[% imgurl %]">
+<figcaption>[% filename %]</figcaption>
+</figure>
+
+=end html
+[% END # eximg -%]
 
 =pod
 
@@ -121,6 +138,39 @@ from a read structure to a write structure.
 The following example demonstrates copying a PNG.
 
 [% example('copy-png') %]
+
+=head2 create_reader
+
+     my $png = create_reader ('file.png');
+     $png->read_png ();
+
+This combines L</create_read_struct>, C<open>, and L</init_io> on
+the specified file name but does not read the file in. This is for the case that the user wants to apply some kind of transformation.
+
+In the following example, the user sets the background with
+L</set_background> to replace the alpha channel.
+
+[% example("set-background") %]
+
+[% eximg("loveheartface") %]
+
+[% eximg("set-background") %]
+
+This function was added to the module in version 0.53.
+
+=head2 create_writer
+
+     my $png = create_writer ('file.png');
+     $png->set_IHDR (\%ihdr);
+     $png->set_rows (\@rows);
+     $png->write_png ();
+
+This combines L</create_write_struct>, C<open>, and L</init_io> on the
+specified file name but does not read the file in. This is for the
+case that the user wants to apply some kind of transformation before
+writing.
+
+This function was added to the module in version 0.53.
 
 =head2 read_from_scalar
 
@@ -206,13 +256,11 @@ C<open> plus L</init_io> followed by L</read_png> or L</write_png>.
 
 =head3 Writing a PNG
 
+This demonstrates writing a monochrome PNG to a filehandle using the separate functions L</write_info>, L</write_image>, and then L</write_end>.
+
 [% example("libpng-write") %]
 
-=begin html
-
-<img src="https://fastapi.metacpan.org/source/BKB/Image-PNG-Libpng-[% config.version %]/examples/mono.png">
-
-=end html
+[% eximg("mono") %]
 
 =head2 create_read_struct
 
@@ -261,6 +309,19 @@ or
 
 [% cor(fn="init_io") %], with a Perl
 file handle substituting for the C C<FILE *>.
+
+On some versions of Perl, L</init_io> may crash in some circumstances
+with an error like "segmentation fault", if you use code like
+
+    my $png = create_read_struct ();
+    open my $file, "<:raw", "some.png";
+    $png->init_io ($file);
+
+and you do not check whether the call to C<open> was successful, and
+F<some.png> does not exist. The crash occurs within Perl's conversion
+of C<$file> into a C C<FILE *> pointer, before this module's code
+runs. This bug was fixed in Perls after version 5.24.1. To avoid
+trouble, please check the return value of C<open>.
 
 =head2 read_end
 
@@ -1750,11 +1811,11 @@ images. [% manual %]
     my $max = $png->get_chunk_cache_max ();
 
 [% danger %] Untested. Get the maximum number of ancilliary chunks
-allowed.
+allowed. See also L</set_chunk_cache_max>.
 
 [% cor(fn="png_get_chunk_cache_max") %]
 
-[% FOR what IN ['width', 'height'] %]
+[% FOR what IN ['height', 'width'] %]
 
 =head2 get_user_[% what %]_max
 
@@ -1792,14 +1853,28 @@ manual %]
 C<PNG_ALPHA_*> constants. C<$screen_gamma> is a floating point
 number. [% manual %]
 
+You can test whether this is available on your version of libpng with
+L</libpng_supports> as follows:
+
+    if (libpng_supports ('READ_ALPHA_MODE')) {
+        ...
+    }
+
 [% cor(fn="set_alpha_mode") %]
+
+=head2 set_background
+
+    $png->set_background (\%color, PNG_, $need_expand, $gamma);
+
+C<%color> is a hash reference containing color values as integers
+from 0 to 255.
 
 =head2 set_chunk_cache_max
 
     $png->set_chunk_cache_max (42);
 
 [% danger %] Untested. Set the maximum number of ancilliary chunks
-allowed. The default is 1000.
+allowed. The default is 1000. See also L</get_chunk_cache_max>.
 
 [% cor(fn="png_set_chunk_cache_max") %]
 
@@ -2106,17 +2181,6 @@ and C<png_set_read_fn>. However, it is possible to use their
 functionality to access Perl data via L</read_from_scalar> and
 L</write_to_scalar>.
 
-=item Partial read/write functions
-
-This module does not currently offer an interface to the partial read
-and write functions of libpng. The reason is because I don't know
-enough about Perl's internal structures to be able to create a
-memory-safe interface to these functions. The partial read/write
-functions would rely on preserving pointers to data structures within
-the Perl program's data area between calls. So this module doesn't
-deal with C<png_write_chunk>, C<png_write_end>, C<png_write_info>,
-C<png_write_row>, or C<png_write_rows>.
-
 =item Fixed point functions
 
 There is currently no support for the PNG fixed point functions in
@@ -2177,26 +2241,6 @@ compilation choices which I've found in practice, but it does not
 support every possible choice. If you encounter problems using this
 Perl module because of a conditionally-compiled libpng, then please
 let me know and I'll consider adding that facility to the module.
-
-=head2 init_io may crash
-
-On some versions of Perl, L</init_io> may crash in some circumstances
-with an error like "segmentation fault", if you use code like
-
-    my $png = create_read_struct ();
-    open my $file, "<:raw", "some.png";
-    $png->init_io ($file);
-
-and you do not check whether the call to C<open> was successful, and
-F<some.png> does not exist. The crash occurs not within this module
-but within Perl's conversion of C<$file> into a C C<FILE *> pointer,
-because some older versions of Perl don't seem to check whether
-C<$file> contains a valid C<FILE *> structure before dereferencing the
-pointer. I believe this is a bug which has been fixed in Perls after
-version 5.24.1. Because this problem occurs within code generated by
-Perl itself, and not within this module's code, it is not feasible to
-mitigate this, so please check the return value of C<open> in the
-usual way, or use L<autodie>, to avoid this problem.
 
 =head2 Not all constants are available
 

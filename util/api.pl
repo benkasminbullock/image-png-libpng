@@ -17,7 +17,7 @@ use LibpngUtil ':all';
 my $dir = libpngdir ();
 my @files = <$dir/*.[ch]>;
 my @api;
-my $api_re = qr!PNGF?API\s*\n(\w+)(\s*)\(.*?\)!sm;
+my $api_re = qr!(PNGF?API)\s*\n(\w+)(\s*)\(.*?\)!sm;
 my $example = <<EOF;
 void PNGAPI
 png_set_chunk_cache_max (png_structrp png_ptr, png_uint_32 user_chunk_cache_max)
@@ -29,9 +29,14 @@ EOF
 for my $file (@files) {
     my $text = read_text ($file);
     while ($text =~ /$api_re/g) {
-	push @api, $1;
-	# if (length ($2) > 0) {
-	#     print "Extra space in $1\n";
+	my $func = $2;
+	push @api, $func;
+	# if (length ($3) > 0) {
+	#     print "Extra space in $func\n";
+	# }
+	# my $api = $1;
+	# if ($func =~ /_fixed$/) {
+	#     print "$func $api\n";
 	# }
     }
 }

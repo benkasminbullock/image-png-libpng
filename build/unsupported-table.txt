@@ -118,14 +118,6 @@ Duplicates L</get_oFFs>.
 %%
 cat: unimplemented
 
-item: png_set_background
-%%desc:
-Sets the background when an alpha channel is removed. This is not yet
-supported due to requiring some thought about how to implement the
-background color structure.
-%%
-cat: unimplemented
-
 item: png_set_benign_errors
 %%desc:
 

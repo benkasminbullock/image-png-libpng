@@ -1,7 +1,10 @@
-0.52_03 2020-12-15
+0.52_04 2020-12-15
 - Support get/set cHRM_XYZ
-- More support for png_set_(.*) where possible
-- New support for png_(read|write)_(end|image|info)
+- Support for transforms png_set_(.*) where possible
+- Support png_(read|write)_(end|image|info)
+- Add create_(reader|writer) convenience function
+- Support png_set_background
+- init_io made safer
 
 0.52 2020-12-13
 

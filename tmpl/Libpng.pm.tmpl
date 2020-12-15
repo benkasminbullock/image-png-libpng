@@ -15,6 +15,8 @@ our @EXPORT_OK = qw/
 [% END -%]
 	color_type_name
 	copy_png
+	create_reader
+	create_writer
 	get_internals
 	image_data_diff
 	png_compare
@@ -227,6 +229,24 @@ sub png_compare
     }
     # No difference.
     return 0;
+}
+
+sub create_reader
+{
+    my ($file) = @_;
+    open my $in, "<:raw", $file or croak "Can't open '$file': $!";
+    my $png = create_read_struct ();
+    $png->init_io ($in);
+    return $png;
+}
+
+sub create_writer
+{
+    my ($file) = @_;
+    open my $in, ">:raw", $file or croak "Can't open '$file': $!";
+    my $png = create_write_struct ();
+    $png->init_io ($in);
+    return $png;
 }
 
 1;
