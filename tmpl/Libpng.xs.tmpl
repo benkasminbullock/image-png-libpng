@@ -78,11 +78,6 @@ CODE:
         png_read_update_info (Png->png, Png->info);
 
 
-void perl_png_read_image (Png)
-        Image::PNG::Libpng  Png
-CODE:
-        perl_png_read_image (Png);
-
 
 void perl_png_read_png (Png, transforms = PNG_TRANSFORM_IDENTITY)
         Image::PNG::Libpng  Png
@@ -765,4 +760,37 @@ perl_png_set_tRNS_to_alpha(Png)
 CODE:
 	png_set_tRNS_to_alpha(Png->png);
 
+void
+perl_png_write_image(Png, rows)
+	Image::PNG::Libpng Png;
+	AV * rows
+CODE:
+	perl_png_write_image (Png, rows);
 
+void
+perl_png_write_info(Png)
+	Image::PNG::Libpng Png;
+CODE:
+	png_write_info (Png->png, Png->info);
+
+void
+perl_png_write_end(Png)
+	Image::PNG::Libpng Png;
+CODE:
+	png_write_end (Png->png, Png->info);
+
+SV *
+perl_png_read_image(Png)
+	Image::PNG::Libpng Png;
+CODE:
+	RETVAL = perl_png_read_image (Png);
+OUTPUT:
+	RETVAL
+
+void
+perl_png_read_end(Png)
+	Image::PNG::Libpng Png;
+CODE:
+	png_read_end (Png->png, Png->info);
+
+	

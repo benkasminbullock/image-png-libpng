@@ -1979,13 +1979,28 @@ static SV * perl_png_get_valid (perl_libpng_t * png)
 
 
 static SV *
+rows_to_av (png_bytepp rows, int rowbytes, int height)
+{
+    AV * perl_rows;
+    int r;
+
+    perl_rows = newAV ();
+//    MESSAGE ("Making %d scalars.\n", height);
+    for (r = 0; r < height; r++) {
+	SV * row_sv = newSVpv ((char *) rows[r], rowbytes);
+	av_push (perl_rows, row_sv);
+    }
+//    MESSAGE ("There are %d elements in the array.\n",
+//	     (int) av_len (perl_rows) + 1);
+    return newRV_noinc ((SV *) perl_rows);
+}
+
+static SV *
 perl_png_get_rows (perl_libpng_t * png)
 {
     png_bytepp rows;
     int rowbytes;
     int height;
-    int r;
-    AV * perl_rows;
 
     /* Get the information from the PNG. */
 
@@ -2016,15 +2031,7 @@ perl_png_get_rows (perl_libpng_t * png)
 
     /* Create Perl stuff to put the row info into. */
 
-    perl_rows = newAV ();
-    MESSAGE ("Making %d scalars.\n", height);
-    for (r = 0; r < height; r++) {
-	SV * row_sv = newSVpv ((char *) rows[r], rowbytes);
-	av_push (perl_rows, row_sv);
-    }
-    MESSAGE ("There are %d elements in the array.\n",
-	     (int) av_len (perl_rows) + 1);
-    return newRV_noinc ((SV *) perl_rows);
+    return rows_to_av (rows, rowbytes, height);
 }
 
 static void
@@ -2034,9 +2041,24 @@ perl_png_read_png (perl_libpng_t * png, int transforms)
     png_read_png (pngi, transforms, 0);
 }
 
+/* Get the row pointers directly. */
+
+static void *
+perl_png_get_row_pointers (perl_libpng_t * png)
+{
+    png_bytepp rows;
+    if (png->row_pointers) {
+        rows = png->row_pointers;
+    }
+    else {
+        rows = png_get_rows (pngi);
+    }
+    return rows;
+}
+
 /* Read the image data into allocated memory */
 
-static void
+static SV *
 perl_png_read_image (perl_libpng_t * png)
 {
     int n_rows;
@@ -2060,22 +2082,9 @@ perl_png_read_image (perl_libpng_t * png)
     for (i = 0; i < n_rows; i++) {
         png->row_pointers[i] = png->image_data + rowbytes * i;
     }
+    png_set_rows(png->png, png->info, png->row_pointers);
     png_read_image (png->png, png->row_pointers);
-}
-
-/* Get the row pointers directly. */
-
-static void *
-perl_png_get_row_pointers (perl_libpng_t * png)
-{
-    png_bytepp rows;
-    if (png->row_pointers) {
-        rows = png->row_pointers;
-    }
-    else {
-        rows = png_get_rows (pngi);
-    }
-    return rows;
+    return rows_to_av (png->row_pointers, rowbytes, n_rows);
 }
 
 /* Set the rows of the image to "rows". */
@@ -2164,6 +2173,13 @@ static void perl_png_set_rows (perl_libpng_t * png, AV * rows)
        it. */
     png->row_pointers = row_pointers;
     png->all_rows = ar;
+}
+
+static void
+perl_png_write_image (perl_libpng_t * png, AV * rows)
+{
+    perl_png_set_rows (png, rows);
+    png_write_image (png->png, png->row_pointers);
 }
 
 /*  __  __                                                                      

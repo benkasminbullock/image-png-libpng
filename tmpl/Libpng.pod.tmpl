@@ -282,6 +282,25 @@ need to be supplied. [% unused %]
 
 [% noinfoxref %]
 
+=head2 write_end
+
+    $png->write_end ();
+
+Write the final part of the PNG file.
+
+=head2 write_image
+
+    $png->write_image ($rows);
+
+Write the image of the PNG file. C<$rows> is an array reference as per
+L</set_rows>.
+
+=head2 write_info
+
+    $png->write_info ();
+
+Write the first part of the PNG file.
+
 =head2 write_png
 
     $png->write_png ();
