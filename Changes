@@ -1,6 +1,7 @@
-0.52_02 2020-12-15
+0.52_03 2020-12-15
 - Support get/set cHRM_XYZ
-- Add most of the simpler functions from the public API
+- More support for png_set_(.*) where possible
+- New support for png_(read|write)_(end|image|info)
 
 0.52 2020-12-13
 
