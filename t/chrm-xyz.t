@@ -9,7 +9,7 @@ BEGIN: {
     use IPNGLT;
 };
 
-chunk_ok ('cHRM');
+chunk_ok ('cHRM_XYZ');
 
 my $wpng = fake_wpng ();
 my %chrm;

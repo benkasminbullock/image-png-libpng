@@ -1740,7 +1740,7 @@ Convert a grayscale PNG file to RGB format on reading.
 
     $png->set_invert_mono ();
 
-[% danger %] Untested. [% manual %]
+Invert monochrome images. [% manual %]
 
 [% cor(fn="set_invert_mono") %]
 
@@ -1749,9 +1749,10 @@ Convert a grayscale PNG file to RGB format on reading.
     $png->set_packing ();
 
 When reading a PNG, expand the image to 1 pixel per byte for
-bit-depths 1, 2 and 4 without changing the order of the pixels. If not
-called, pack pixels of bit_depths 1, 2 and 4 into bytes as small as
-possible, for example, 8 pixels per byte for 1-bit files
+bit-depths 1, 2 and 4 without changing the order of the pixels. If
+this is not called, the pixels of bit_depths 1, 2 and 4 are packed
+into bytes as small as possible, for example, 8 pixels per byte for
+1-bit files. [% manual %] See also L</set_packswap>.
 
 [% cor(fn="set_packing") %]
 
@@ -1759,8 +1760,15 @@ possible, for example, 8 pixels per byte for 1-bit files
 
     $png->set_packswap ();
 
-[% danger %] Untested. Swaps around the bits of 1, 2, or 4 bits/pixel
-images. [% manual %]
+Swaps the bits of 1, 2, or 4 bits/pixel images. The default for PNG
+image is to put the left pixel into the highest part of the byte, so
+for example if the bit depth is 1, the pixels from left to right go
+into a byte as values 128 for the leftmost, 64, 32, 16, 8, 4, 2, then
+1 for the rightmost pixel. This call reverses that behavior so that
+the pixels in a byte go 1 for the leftmost, 2, ..., then 128 for the
+rightmost.
+
+[% manual %]
 
 [% cor(fn="set_packswap") %]
 

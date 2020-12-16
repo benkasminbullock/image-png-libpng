@@ -132,7 +132,7 @@ sub chunk_ok
 {
     my ($chunk) = @_;
     if (! libpng_supports ($chunk)) {
-	plan skip_all => "This libpng doesn't support the $chunk chunk"
+	plan skip_all => "This libpng doesn't support '$chunk'"
     }
 }
 

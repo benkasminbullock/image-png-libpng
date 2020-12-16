@@ -1,5 +1,15 @@
 #line
 
+#if PNG_LIBPNG_VER_MAJOR >= 1 && PNG_LIBPNG_VER_MINOR >= 4 && PNG_LIBPNG_VER_RELEASE >= 0
+#define PNG_CHUNK_CACHE_MAX_SUPPORTED
+#endif /* version >= 1.4.0 */
+
+#if PNG_LIBPNG_VER_MAJOR >= 1 && PNG_LIBPNG_VER_MINOR >= 5 && PNG_LIBPNG_VER_RELEASE >= 5
+#ifdef PNG_cHRM_SUPPORTED
+#define PNG_cHRM_XYZ_SUPPORTED
+#endif /* PNG_cHRM_SUPPORTED */
+#endif /* version >= 1.5.5 */
+
 /* Coding style note: use "color" in code & variables, not "colour",
    as per libpng. 2020-12-09 08:03:03 */
 
@@ -2380,6 +2390,23 @@ int perl_png_libpng_supports (const char * what)
         return 0;
 #endif /* PERL_PNG_sCAL_s_SUPPORTED */
     }
+
+    if (strcmp (what, "CHUNK_CACHE_MAX") == 0) {
+#ifdef PNG_CHUNK_CACHE_MAX_SUPPORTED
+        return 1;
+#else
+        return 0;
+#endif /* PNG_CHUNK_CACHE_MAX_SUPPORTED */
+    }
+
+    if (strcmp (what, "cHRM_XYZ") == 0) {
+#ifdef PNG_cHRM_XYZ_SUPPORTED
+        return 1;
+#else
+        return 0;
+#endif /* PNG_cHRM_XYZ_SUPPORTED */
+    }
+
 #oline
 [%- FOR type IN supports_list %]
     if (strcmp (what, "[% type.c %]") == 0) {
