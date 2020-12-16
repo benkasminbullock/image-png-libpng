@@ -11,7 +11,7 @@
    against. */
 
 #define UNSUPPORTED(block)						\
-    warn ("The %s chunk is not supported in this libpng", #block);
+    warn ("'%s' is not supported in this libpng", #block);
 
 /* sCAL block support. This is complicated, see PNG mailing list
    archives. */
@@ -1073,7 +1073,7 @@ const char * perl_png_color_type_name (int color_type)
         PERL_PNG_COLOR_TYPE (GRAY_ALPHA);
     default:
         /* Moan about not knowing this colour type. */
-        name = "";
+        name = "unknown";
     }
     return name;
 }
@@ -2701,6 +2701,20 @@ perl_png_set_eXIf (perl_libpng_t * png, SV * exif)
 #endif /*  PNG_eXIf_SUPPORTED */
 }
 
+static unsigned char *
+bullshit (HV * split, char * name, int name_length, int len)
+{
+    SV * sv;
+    /* newSV(len) didn't work, because it's not clear how to turn that
+       into anything other than "undef", but assigning with an empty
+       string but with the length of data that we need seems to work
+       to get us the length of data we want, and the string value of
+       the data that we insert is also accessible by Perl. */
+    sv = newSVpv ("", len);
+    hv_store (split, name, name_length, sv, 0);
+    return (unsigned char *) SvPVX (sv);
+}
+
 static SV *
 perl_png_split_alpha (perl_libpng_t * png)
 {
@@ -2723,6 +2737,8 @@ perl_png_split_alpha (perl_libpng_t * png)
     png_bytepp rows;
     int rowpixels;
     int bytes;
+    int channels;
+    int colors;
 
     alphapix = 1;
     png_get_IHDR (pngi, & width, & height,
@@ -2739,91 +2755,53 @@ perl_png_split_alpha (perl_libpng_t * png)
 	bytes = 2;
 	break;
     default:
+	warn ("Bit depth of %d is not handled by split_alpha", bit_depth);
 	return &PL_sv_undef;
     }
     switch (color_type) {
     case PNG_COLOR_TYPE_RGB_ALPHA:
-	datapix = 3;
-	rowpixels /= 4;
+	colors = 3;
 	break;
     case PNG_COLOR_TYPE_GRAY_ALPHA:
-	datapix = 1;
-	rowpixels /= 2;
+	colors = 1;
 	break;
     default:
+	warn ("Color type %s (%d) is not handled by split_alpha",
+	      perl_png_color_type_name (color_type), color_type);
 	return &PL_sv_undef;
     }
-    npixels = height * rowpixels;
-    alphapix = npixels;
-    datapix *= npixels;
-    Newx (alphabytes, alphapix, unsigned char); 
-    Newx (databytes, datapix, unsigned char); 
-    int p;
+    channels = colors + 1;
+    alphapix = bytes * height * width;
+    datapix = colors * alphapix;
+    split = newHV ();
+    alphabytes = bullshit (split, "alpha", strlen ("alpha"), alphapix);
+    databytes = bullshit (split, "data", strlen ("data"), datapix);
     for (i = 0; i < height; i++) {
 	int j;
 	png_bytep row;
 	row = rows[i];
-	switch (bytes) {
-	case 1:
-	    for (j = 0; j < width; j++) {
-		int k;
-		int o;
-		o = i*width + j;
-		switch (color_type) {
-		case PNG_COLOR_TYPE_RGB_ALPHA:
-		    for (k = 0; k < 3; k++) {
-			p = 3*o+k;
-			databytes[p] = row[4*j + k];
-		    }
-		    alphabytes[o] = row[4*j+3];
-		    break;
-		    break;
-		case PNG_COLOR_TYPE_GRAY_ALPHA:
-		    databytes[o] = row[2*j];
-		    alphabytes[o] = row[2*j+1];
-		    break;
-		default:
-		    break;
+	for (j = 0; j < width; j++) {
+	    int byte;
+	    int o;
+	    int p;
+	    int q;
+	    // Offset into "alphabytes"
+	    o = bytes * (i * width + j);
+	    // Offset into "databytes"
+	    p = colors * o;
+	    // Offset into "row"
+	    q = bytes * channels * j;
+	    for (byte = 0; byte < bytes; byte++) {
+		int c;
+		for (c = 0; c < colors; c++) {
+		    int r;
+		    r = bytes*c + byte;
+		    databytes[p + r] = row[q + r];
 		}
+		alphabytes[o + byte] = row[q + bytes*colors + byte];
 	    }
-	    break;
-	case 2:
-	    for (j = 0; j < width; j++) {
-		int k;
-		int o;
-		int byte;
-		o = i*width + j;
-		switch (color_type) {
-		case PNG_COLOR_TYPE_RGB_ALPHA:
-		    for (k = 0; k < 3; k++) {
-			for (byte = 0; byte < 2; byte++) {
-			    databytes[6*o + 2*k + byte] = row[8*j + 2*k + byte];
-			}
-		    }
-		    for (byte = 0; byte < 2; byte++) {
-			alphabytes[2*o+byte] = row[8*j+6+byte];
-		    }
-		    break;
-		case PNG_COLOR_TYPE_GRAY_ALPHA:
-		    for (byte = 0; byte < 2; byte++) {
-			databytes[2*o+byte] = row[4*j+byte];
-			alphabytes[2*o+byte] = row[4*j+2+byte];
-		    }
-		    break;
-		default:
-		    break;
-		}
-	    }
-	    break;
 	}
     }
-    data = newSVpv ((const char *) databytes, datapix);
-    alpha = newSVpv ((const char *) alphabytes, alphapix);
-    Safefree (alphabytes);
-    Safefree (databytes);
-    split = newHV ();
-    hv_store (split, "data", strlen ("data"), data, 0);
-    hv_store (split, "alpha", strlen ("alpha"), alpha, 0);
     split_ref = newRV_noinc ((SV*) split);
     return split_ref;
 }

@@ -322,15 +322,31 @@ void perl_png_DESTROY (Png)
         	perl_png_destroy (Png);
 	}
 
+# The cHRM_XYZ functions are protected by the cHRM_SUPPORTED macro,
+# but this doesn't actually apply since cHRM_SUPPORTED is defined even
+# when png_(g|s)et_cHRM_XYZ are not available.
+
+#if PNG_LIBPNG_VER_MAJOR >= 1 && PNG_LIBPNG_VER_MINOR >= 5 && PNG_LIBPNG_VER_RELEASE >= 5
+#ifdef PNG_cHRM_SUPPORTED
+#define PNG_cHRM_XYZ_SUPPORTED
+#endif /* PNG_cHRM_SUPPORTED */
+#endif /* version >= 1.5.5 */
+
 [%- FOR chunk IN chunks %]
-[%- IF chunk.defined('pro') %]
-#ifdef [% chunk.pro %]
-[% END # pro %]
 [%- IF chunk.defined('auto_type') %]
 SV * perl_png_get_[% chunk.name %] (Png)
         Image::PNG::Libpng Png
 CODE:
+[%- IF chunk.defined('pro') %]
+#ifdef [% chunk.pro %]
+[%- END # pro %]
         RETVAL = perl_png_get_[% chunk.name %] (Png);
+[%- IF chunk.defined('pro') %]
+#else /* [% chunk.pro %] */
+	RETVAL = & PL_sv_undef;
+	UNSUPPORTED ('[% chunk.name %]');
+#endif /* [% chunk.pro %] */
+[%- END # pro %]
 OUTPUT:
         RETVAL
 
@@ -346,11 +362,16 @@ void perl_png_set_[% chunk.name %] (Png, [% chunk.name %]
         [% chunk.auto_type %] [% chunk.name %]
         [%- END %]
 CODE:
-        perl_png_set_[% chunk.name %] (Png, [% chunk.name %]);
-
 [%- IF chunk.defined('pro') %]
+#ifdef [% chunk.pro %]
+[%- END # pro %]
+        perl_png_set_[% chunk.name %] (Png, [% chunk.name %]);
+[%- IF chunk.defined('pro') %]
+#else /* [% chunk.pro %] */
+	UNSUPPORTED ('[% chunk.name %]');
 #endif /* [% chunk.pro %] */
 [%- END # pro %]
+
 [% END %]
 [%- END %]
 #line 353 "Libpng.xs.tmpl"

@@ -50,15 +50,23 @@ in the distribution.)
 [%- MACRO eximg(file) BLOCK %]
 [%- imgurl=metacpan _ "/examples/" _ file _ ".png" %]
 [% filename= "examples/" _ file _ ".png" %]
-The output is included as L<[% filename %]|[% imgurl %]> in the
-distribution.
+L<[% filename %]|[% imgurl %]> is included in the distribution.
 
 =begin html
 
-<figure>
+<!-- metacpan doesn't allow figure/figcaption tags. -->
+<table>
+<tr>
+<td>
 <img src="[% imgurl %]">
-<figcaption>[% filename %]</figcaption>
-</figure>
+</td>
+</tr>
+<tr>
+<th>
+L<[% filename %]|[% imgurl %]>
+</th>
+</tr>
+</table>
 
 =end html
 [% END # eximg -%]
@@ -146,6 +154,8 @@ The following example demonstrates copying a PNG.
 
 This combines L</create_read_struct>, C<open>, and L</init_io> on
 the specified file name but does not read the file in. This is for the case that the user wants to apply some kind of transformation.
+
+=head3 Setting the background
 
 In the following example, the user sets the background with
 L</set_background> to replace the alpha channel.
@@ -254,7 +264,7 @@ C<open> plus L</init_io> followed by L</read_png> or L</write_png>.
 
 =head2 Examples
 
-=head3 Writing a PNG
+=head3 A self-pixellating program
 
 This demonstrates writing a monochrome PNG to a filehandle using the separate functions L</write_info>, L</write_image>, and then L</write_end>.
 
@@ -1083,7 +1093,7 @@ For palette color types, this is the offset into the palette.
 
 =item gray
 
-For greyscale color types.
+For grayscale color types.
 
 =item red
 
@@ -1779,6 +1789,14 @@ per channel.
 
 [% cor(fn="set_strip_16") %]
 
+=head2 set_strip_alpha
+
+    $png->set_strip_alpha ();
+
+Strip the alpha channel of a PNG stream.
+
+[% cor(fn="set_strip_16") %]
+
 =head2 set_swap
 
     $png->set_swap ();
@@ -1867,7 +1885,7 @@ L</libpng_supports> as follows:
     $png->set_background (\%color, PNG_, $need_expand, $gamma);
 
 C<%color> is a hash reference containing color values as integers
-from 0 to 255.
+from 0 to 255. See L</Setting the background> for an example.
 
 =head2 set_chunk_cache_max
 
@@ -2076,12 +2094,15 @@ except for the freeing of the memory.
     my $color = $split->{data};
 
 Split the alpha channel away from the other data. This only works for
-RGBA images or gray/alpha images. This is not part of the libpng API,
-it was added to this module to assist the author of L<PDF::Builder>.
+images with color types C<PNG_COLOR_TYPE_RGB_ALPHA> and
+C<PNG_COLOR_TYPE_GRAY_ALPHA>. This is not part of the libpng API, it
+was added to this module to assist the author of L<PDF::Builder>.
 
-If your purpose of splitting out the Alpha channel is simply to
-discard it, you may get better performance by using
-C<PNG_TRANSFORM_STRIP_ALPHA> in L</read_png> instead.
+To remove the alpha channel from an image, use L</set_background>. See
+L</Setting the background> for an example. You can also use the
+transform C<PNG_TRANSFORM_STRIP_ALPHA> in L</read_png_file>, or
+L</set_strip_alpha>, but this may leave spurious pixel values in
+transparent parts of the image.
 
 =head1 EXPORTS
 
@@ -2254,8 +2275,16 @@ constants from the other files in a future version.
 =head2 Issues with old versions of libpng
 
 [% danger %] Some operating systems, in particular Linux systems, use
-old versions of libpng. The following are known issues with older
-libpng versions:
+rather old versions of libpng. The following are known issues with
+older libpng versions:
+
+=head3 cHRM chunk
+
+[% danger %] The L</get_cHRM_XYZ> and L</set_cHRM_XYZ> functions for
+the L</cHRM> chunk are not present in pre-1.5.5 versions of libpng,
+but the conditional compilation macro of libpng for these newer
+functions is the same as for L</get_cHRM> and L</set_cHRM> functions,
+which are present on older versions of libpng.
 
 =head3 Compression level
 

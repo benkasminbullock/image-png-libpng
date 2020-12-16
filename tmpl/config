@@ -6,5 +6,5 @@ email: bkb@cpan.org
 license: perl
 mylibpng: 1.6.37
 repo: https://github.com/benkasminbullock/image-png-libpng
-version: 0.52_05
+version: 0.52_06
 year: 2020

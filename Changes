@@ -1,15 +1,13 @@
-0.52_05 2020-12-16
-- Yet more incompatibilities at cpantesters
-- cHRM_XYZ
-- set/get_chunk_cache_max
-
-0.52_04 2020-12-15
+0.52_06 2020-12-16
+- split_alpha internals simplified, doc changed
 - Support get/set cHRM_XYZ
-- Support for transforms png_set_(.*) where possible
+- (g|s)et_(cHRM_XYZ|chunk_cache_max) problems for old libpngs 
+- Support for transform functions png_set_(.*) where possible
 - Support png_(read|write)_(end|image|info)
-- Add create_(reader|writer) convenience function
-- Support png_set_background
+- Add create_(reader|writer) convenience functions
+- Support png_set_background, add example of use
 - init_io made safer
+- Document set_strip_alpha
 
 0.52 2020-12-13
 

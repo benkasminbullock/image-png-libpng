@@ -16,6 +16,7 @@ $png->set_text ([{key => 'silly', text => 'finely-tuned breakfast cereal',}]);
 $png->set_tIME ({year => 1999});
 $png->write_info ();
 $png->set_invert_mono ();
+# PNG puts the leftmost pixel in the high-order part of the byte.
 $png->set_packswap ();
 $png->write_image ($rows);
 $png->write_end ();

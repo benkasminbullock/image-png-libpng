@@ -3,6 +3,7 @@ use strict;
 use Test::More;
 use Image::PNG::Libpng ':all';
 use FindBin '$Bin';
+
 BEGIN: {
     use lib "$Bin";
     use IPNGLT;
