@@ -197,10 +197,25 @@ d: Can libpng read PNGs?
 c: READ_16_TO_8
 
 c: READ_ALPHA_MODE
+%%d:
+
+See L</set_alpha_mode>.
+
+%%
 
 c: READ_BACKGROUND
+%%d:
+
+See L</set_background>.
+
+%%
 
 c: READ_BGR
+%%d:
+
+See L</set_bgr>.
+
+%%
 
 c: READ_COMPOSITE_NODIV
 
@@ -211,6 +226,13 @@ c: READ_EXPAND
 c: READ_EXPAND_16
 
 c: READ_FILLER
+
+c: READ_GAMMA
+%%d:
+
+See L</set_gamma>.
+
+%%
 
 c: READ_GRAY_TO_RGB
 
