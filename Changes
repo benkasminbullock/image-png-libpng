@@ -11,6 +11,7 @@
 - Support png_set_background, add example of use
 - init_io made safer
 - Document set_strip_alpha
+- color_type_channels
 
 0.52 2020-12-13
 

@@ -1993,6 +1993,13 @@ This section contains other functions which don't correspond to
 anything in libpng itself, but which have been added to the module for
 utility.
 
+=head2 color_type_channels
+
+    my $channels = color_type_channels ('PNG_COLOR_TYPE_RGB_ALPHA');
+
+Returns the number of channels (the number of components of one pixel)
+of the specified color type.
+
 =head2 copy_row_pointers
 
     $png->copy_row_pointers ($row_pointers);
@@ -2110,6 +2117,10 @@ does not compare to see if the PNG files "look like" each other, but
 whether each pixel contains exactly the same values. Please see
 L<Image::Similar> for a looser comparison of images.
 
+This uses the "expand" transform of libpng to read both the images, so
+it is able to compare images of different color types. It compares the
+alpha values as well as the color pixels.
+
 =head2 read_struct
 
     if ($png->read_struct ()) {
@@ -2126,8 +2137,13 @@ or allied functions like L</copy_png>.
     $png->set_chunk ('tIME', $timechunk);
 
 Set the specified chunk. This produces a fatal error if given an
-C<IDAT> (image data) chunk, use L</set_rows> instead. Produces a fatal
-error if given an unknown chunk name.
+C<IDAT> (image data) chunk, use L</set_rows> instead. This produces a
+fatal error if given an unknown chunk name.
+
+The first argument is the chunk name and then the second argument is a
+scalar containing whatever the chunk requires, for example a hash
+reference for the C<tIME> chunk as described under L</set_tIME> and
+L</get_tIME>.
 
 =head2 set_image_data
 
@@ -2193,6 +2209,9 @@ arguments, a C<png_structp> and a C<png_infop>. However, in
 Image::PNG::Libpng, both the "png" and the "info" are contained in
 the first argument to each function.
 
+This module does not support the "end info" structure of PNGs when
+writing, although these are handled when reading.
+
 =head2 [% unused_title %]
 
 This module eliminates unevaluated arguments of libpng. For example,
@@ -2208,8 +2227,8 @@ C<UNUSED_ZERO_ARG>.
 
 =head2 Useless functions omitted
 
-Functions from libpng which don't do anything have been
-omitted from this module.
+The functions from libpng which don't do anything have been omitted
+from this module.
 
 =head2 Function return values are used to return values
 
@@ -2249,9 +2268,9 @@ freeing is now handled by Perl automatically.
 
 =item Memory management functions
 
-For hopefully obvious reasons, this module does not offer an interface
-to C<png_malloc> and C<png_free> or other libpng memory handling
-functions.
+The management of memory for libpng objects is handled automatically
+by this module, and so it does not offer an interface to C<png_malloc>
+and C<png_free> or other libpng memory handling functions.
 
 =item Error handling functions
 
@@ -2320,13 +2339,12 @@ This section documents some known problems you may encounter.
 =head2 Conditional compilation
 
 It is possible to compile a version of the libpng library without
-support for various things. For example, it's possible to have a
-libpng without support for text chunks by undefining a macro
-C<PNG_TEXT_SUPPORTED>. The module supports some of the conditional
-compilation choices which I've found in practice, but it does not
-support every possible choice. If you encounter problems using this
-Perl module because of a conditionally-compiled libpng, then please
-let me know and I'll consider adding that facility to the module.
+support for various things. For example, a libpng without support for
+text chunks may be created by undefining the C macro
+C<PNG_TEXT_SUPPORTED>. This module supports the conditional
+compilation choices which I'm aware of, but if you encounter problems
+using this module because of a conditionally-compiled libpng, then let
+me know and I'll add the necessary facility.
 
 =head2 Not all constants are available
 

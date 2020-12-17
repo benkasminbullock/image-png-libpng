@@ -14,7 +14,7 @@
 #endif /* PNG_cHRM_SUPPORTED */
 #endif /* version >= 1.5.5 */
 
-/* Coding style note: use "color" in code & variables, not "colour",
+/* Coding style note: use "color" in code & variables, not "color",
    as per libpng. 2020-12-09 08:03:03 */
 
 #ifndef PNG_FLOATING_POINT_SUPPORTED
@@ -1073,9 +1073,10 @@ perl_png_set_IHDR (perl_libpng_t * png, HV * IHDR)
      name = #x;                                 \
      break
 
-/* Convert a PNG colour type number into its name. */
+/* Convert a PNG color type number into its name. */
 
-const char * perl_png_color_type_name (int color_type)
+static const char *
+perl_png_color_type_name (int color_type)
 {
     const char * name;
 
@@ -1086,13 +1087,37 @@ const char * perl_png_color_type_name (int color_type)
         PERL_PNG_COLOR_TYPE (RGB_ALPHA);
         PERL_PNG_COLOR_TYPE (GRAY_ALPHA);
     default:
-        /* Moan about not knowing this colour type. */
+        /* Moan about not knowing this color type. */
         name = "unknown";
     }
     return name;
 }
 
 #undef PERL_PNG_COLOR_TYPE
+
+/* Retrieve the number of channels of a PNG color type. */
+
+static int
+perl_png_color_type_channels (int color_type)
+{
+    const char * name;
+
+    switch (color_type) {
+    case PNG_COLOR_TYPE_GRAY:
+	return 1;
+    case PNG_COLOR_TYPE_PALETTE:
+	return 1;
+    case PNG_COLOR_TYPE_RGB:
+	return 3;
+    case PNG_COLOR_TYPE_RGB_ALPHA:
+	return 4;
+    case PNG_COLOR_TYPE_GRAY_ALPHA:
+	return 2;
+    default:
+	warn ("Unknown color type %d", color_type);
+	return 0;
+    }
+}
 
 #define PERL_PNG_TEXT_COMP(x,y)                  \
     case PNG_ ## x ## _COMPRESSION_ ## y:        \
@@ -1154,7 +1179,7 @@ perl_png_colors_to_av (png_colorp colors, int n_colors)
     return perl_colors;
 }
 
-/* Return an array of hashes containing the colour values of the palette. */
+/* Return an array of hashes containing the color values of the palette. */
 
 static SV *
 perl_png_get_PLTE (perl_libpng_t * png)
@@ -1184,14 +1209,14 @@ perl_png_set_PLTE (perl_libpng_t * png, AV * perl_colors)
 
     n_colors = av_len (perl_colors) + 1;
     if (n_colors == 0) {
-        /* The user tried to set an empty palette of colours. */
+        /* The user tried to set an empty palette of colors. */
         croak ("set_PLTE: Empty array of colors in set_PLTE");
     }
-    MESSAGE ("There are %d colours in the palette.\n", n_colors);
+    MESSAGE ("There are %d colors in the palette.\n", n_colors);
 
     GET_MEMORY (colors, n_colors, png_color);
 
-    /* Put the colours from Perl into the libpng structure. */
+    /* Put the colors from Perl into the libpng structure. */
 
 #define PERL_PNG_FETCH_COLOR(x) {                                       \
         SV * rgb_sv = * (hv_fetch (palette_entry, #x, strlen (#x), 0)); \
@@ -1215,7 +1240,7 @@ perl_png_set_PLTE (perl_libpng_t * png, AV * perl_colors)
     PERL_PNG_FREE (colors);
 }
 
-/* Create a hash containing the colour values of a pointer to a
+/* Create a hash containing the color values of a pointer to a
    png_color_16 structure. */
 
 static HV * perl_png_color_16_to_hv (png_color_16p color)
@@ -1233,7 +1258,7 @@ static HV * perl_png_color_16_to_hv (png_color_16p color)
     return perl_color;
 }
 
-/* Turn a hash into the colour values of a pointer to a png_color_16
+/* Turn a hash into the color values of a pointer to a png_color_16
    structure. */
 
 static void perl_png_hv_to_color_16 (HV * perl_color, png_color_16p color)
@@ -1918,7 +1943,8 @@ static void perl_png_set_pHYs (perl_libpng_t * png, HV * pHYs)
 
 /* Get the transparency information for a paletted image. */
 
-static SV * perl_png_get_tRNS_palette (perl_libpng_t * png)
+static SV *
+perl_png_get_tRNS_palette (perl_libpng_t * png)
 {
 #ifdef PNG_tRNS_SUPPORTED
     if (VALID (tRNS) && VALID (PLTE)) {

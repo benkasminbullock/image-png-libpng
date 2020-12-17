@@ -134,6 +134,14 @@ CODE:
 OUTPUT:
         RETVAL
 
+int
+perl_png_color_type_channels (color_type)
+        int color_type
+CODE:
+        RETVAL = perl_png_color_type_channels (color_type);
+OUTPUT:
+        RETVAL
+
 const char *
 perl_png_text_compression_name (text_compression)
         int text_compression
