@@ -26,17 +26,34 @@ PROTOTYPES: ENABLE
 
 INCLUDE: const-xs.inc
 
-Image::PNG::Libpng perl_png_create_read_struct ()
+# Constructors and destructors
+
+Image::PNG::Libpng
+perl_png_create_read_struct ()
 CODE:
         RETVAL = perl_png_create_read_struct ();
 OUTPUT:
         RETVAL
 
-Image::PNG::Libpng perl_png_create_write_struct ()
+
+Image::PNG::Libpng
+perl_png_create_write_struct ()
 CODE:
         RETVAL = perl_png_create_write_struct ();
 OUTPUT:
         RETVAL
+
+# XS destructor, this does the work.
+
+void
+perl_png_DESTROY (Png)
+        Image::PNG::Libpng Png
+	CODE:
+        if (Png) {
+        	perl_png_destroy (Png);
+	}
+
+# No-ops supplied since they used to be in use in old versions of the module.
 
 void
 perl_png_destroy_read_struct (Png)
@@ -52,31 +69,82 @@ CODE:
         perl_png_destroy_write_struct (Png);
 
 
-void perl_png_write_png (Png, transforms = PNG_TRANSFORM_IDENTITY)
+# libpng-style input/output functions
+
+void
+perl_png_write_image(Png, rows)
+	Image::PNG::Libpng Png;
+	AV * rows
+CODE:
+	check_init_io (Png);
+	perl_png_write_image (Png, rows);
+
+
+void
+perl_png_write_info(Png)
+	Image::PNG::Libpng Png;
+CODE:
+	check_init_io (Png);
+	png_write_info (Png->png, Png->info);
+
+
+void
+perl_png_write_end(Png)
+	Image::PNG::Libpng Png;
+CODE:
+	check_init_io (Png);
+	png_write_end (Png->png, Png->info);
+
+
+SV *
+perl_png_read_image(Png)
+	Image::PNG::Libpng Png;
+CODE:
+	check_init_io (Png);
+	RETVAL = perl_png_read_image (Png);
+OUTPUT:
+	RETVAL
+
+
+void
+perl_png_read_end(Png)
+	Image::PNG::Libpng Png;
+CODE:
+	check_init_io (Png);
+	png_read_end (Png->png, Png->info);
+
+
+void
+perl_png_write_png (Png, transforms = PNG_TRANSFORM_IDENTITY)
         Image::PNG::Libpng  Png
         int transforms
 CODE:
         perl_png_write_png (Png, transforms);
 
 
-void perl_png_init_io (Png, fpsv)
+void
+perl_png_init_io (Png, fpsv)
         Image::PNG::Libpng  Png
         SV * fpsv
 CODE:
 	perl_png_init_io_x (Png, fpsv);
 
-void perl_png_read_info (Png)
+
+void
+perl_png_read_info (Png)
         Image::PNG::Libpng  Png
 CODE:
 	check_init_io (Png);
         png_read_info (Png->png, Png->info);
 
 
-void perl_png_read_update_info (Png)
+void
+perl_png_read_update_info (Png)
         Image::PNG::Libpng  Png
 CODE:
 	check_init_io (Png);
         png_read_update_info (Png->png, Png->info);
+
 
 void
 perl_png_read_png (Png, transforms = PNG_TRANSFORM_IDENTITY)
@@ -86,21 +154,26 @@ CODE:
 	check_init_io (Png);
         perl_png_read_png (Png, transforms);
 
-SV * perl_png_get_text (Png)
+
+SV *
+perl_png_get_text (Png)
         Image::PNG::Libpng  Png
 CODE:
         RETVAL = perl_png_get_text (Png);
 OUTPUT:
         RETVAL
 
-void perl_png_set_text (Png, text)
+
+void
+perl_png_set_text (Png, text)
         Image::PNG::Libpng  Png
         AV * text
 CODE:
         perl_png_set_text (Png, text);
 
 
-int perl_png_sig_cmp (sig, start = 0, num_to_check = 8)
+int
+perl_png_sig_cmp (sig, start = 0, num_to_check = 8)
         SV * sig
         int start
         int num_to_check
@@ -109,7 +182,9 @@ CODE:
 OUTPUT:
         RETVAL
 
-void perl_png_scalar_as_input (Png, scalar, transforms = 0)
+
+void
+perl_png_scalar_as_input (Png, scalar, transforms = 0)
         Image::PNG::Libpng Png
         SV * scalar
         int transforms
@@ -126,29 +201,6 @@ CODE:
 OUTPUT:
 	RETVAL
 
-const char *
-perl_png_color_type_name (color_type)
-        int color_type
-CODE:
-        RETVAL = perl_png_color_type_name (color_type);
-OUTPUT:
-        RETVAL
-
-int
-perl_png_color_type_channels (color_type)
-        int color_type
-CODE:
-        RETVAL = perl_png_color_type_channels (color_type);
-OUTPUT:
-        RETVAL
-
-const char *
-perl_png_text_compression_name (text_compression)
-        int text_compression
-CODE:
-        RETVAL = perl_png_text_compression_name (text_compression);
-OUTPUT:
-        RETVAL
 
 const char *
 perl_png_get_libpng_ver ()
@@ -157,12 +209,14 @@ CODE:
 OUTPUT:
         RETVAL
 
+
 int
 perl_png_access_version_number ()
 CODE:
         RETVAL = png_access_version_number ();
 OUTPUT:
         RETVAL
+
 
 void *
 perl_png_get_row_pointers (Png)
@@ -172,6 +226,7 @@ CODE:
 OUTPUT:
         RETVAL
 
+
 SV *
 perl_png_get_rows (Png)
         Image::PNG::Libpng  Png
@@ -179,6 +234,7 @@ CODE:
         RETVAL = perl_png_get_rows (Png);
 OUTPUT:
         RETVAL
+
 
 int
 perl_png_get_rowbytes (Png)
@@ -189,14 +245,17 @@ OUTPUT:
         RETVAL
 
 
-SV * perl_png_get_valid (Png)
+SV *
+perl_png_get_valid (Png)
         Image::PNG::Libpng Png
 CODE:
         RETVAL = perl_png_get_valid (Png);
 OUTPUT:
         RETVAL
 
-void perl_png_set_tRNS_pointer (Png, tRNS_pointer, num_tRNS_pointer)
+
+void
+perl_png_set_tRNS_pointer (Png, tRNS_pointer, num_tRNS_pointer)
         Image::PNG::Libpng Png
         void * tRNS_pointer
         int num_tRNS_pointer
@@ -204,14 +263,16 @@ CODE:
         perl_png_set_tRNS_pointer (Png, tRNS_pointer, num_tRNS_pointer);
 
 
-void perl_png_set_rows (Png, rows)
+void
+perl_png_set_rows (Png, rows)
         Image::PNG::Libpng Png
         AV * rows
 CODE:
         perl_png_set_rows (Png, rows);
 
 
-SV * perl_png_write_to_scalar (Png, transforms = 0)
+SV *
+perl_png_write_to_scalar (Png, transforms = 0)
         Image::PNG::Libpng Png
         int transforms;
 CODE:
@@ -219,42 +280,34 @@ CODE:
 OUTPUT:
         RETVAL
 
-void perl_png_set_filter (Png, filters)
+
+void
+perl_png_set_filter (Png, filters)
         Image::PNG::Libpng Png
         int filters;
 CODE:
         png_set_filter (Png->png, UNUSED_ZERO_ARG, filters);
 
 
-void perl_png_set_verbosity (Png, verbosity = 0)
-        Image::PNG::Libpng Png
-        int verbosity; 
-CODE:
-        perl_png_set_verbosity (Png, verbosity);
-OUTPUT:
-        
-void perl_png_set_unknown_chunks (Png, unknown_chunks)
+void
+perl_png_set_unknown_chunks (Png, unknown_chunks)
         Image::PNG::Libpng Png
         AV * unknown_chunks
 CODE:
         perl_png_set_unknown_chunks (Png, unknown_chunks);
 
 
-SV * perl_png_get_unknown_chunks (Png)
+SV *
+perl_png_get_unknown_chunks (Png)
         Image::PNG::Libpng Png
 CODE:
         RETVAL = perl_png_get_unknown_chunks (Png);
 OUTPUT:
         RETVAL
 
-int perl_png_libpng_supports (what)
-        const char * what
-CODE:
-        RETVAL = perl_png_libpng_supports (what);
-OUTPUT:
-        RETVAL
 
-void perl_png_set_keep_unknown_chunks (Png, keep, chunk_list = 0)
+void
+perl_png_set_keep_unknown_chunks (Png, keep, chunk_list = 0)
         Image::PNG::Libpng Png
         int keep
         SV * chunk_list
@@ -262,14 +315,17 @@ CODE:
         perl_png_set_keep_unknown_chunks (Png, keep, chunk_list);
 
 
-SV * perl_png_get_tRNS_palette (Png)
+SV *
+perl_png_get_tRNS_palette (Png)
         Image::PNG::Libpng Png
 CODE:
         RETVAL = perl_png_get_tRNS_palette (Png);
 OUTPUT:
         RETVAL
 
-void perl_png_set_expand (Png)
+
+void
+perl_png_set_expand (Png)
         Image::PNG::Libpng Png
 CODE:
 #ifdef PNG_READ_EXPAND_SUPPORTED
@@ -278,7 +334,9 @@ CODE:
 	UNSUPPORTED("READ_EXPAND");
 #endif /* READ_EXPAND */
 
-void perl_png_set_expand_16 (Png)
+
+void
+perl_png_set_expand_16 (Png)
         Image::PNG::Libpng Png
 CODE:
 #ifdef PNG_READ_EXPAND_16_SUPPORTED
@@ -287,27 +345,41 @@ CODE:
 	UNSUPPORTED("READ_EXPAND_16");
 #endif /* READ_EXPAND_16 */
 
-void perl_png_set_gray_to_rgb (Png)
+
+void
+perl_png_set_filler (Png, filler, flags)
+        Image::PNG::Libpng Png
+        int filler
+        int flags
+CODE:
+	if (Png->type == perl_png_read_obj) { 
+#if defined(PNG_READ_FILLER_SUPPORTED)
+	    png_set_filler (Png->png, filler, flags);
+#else
+	    UNSUPPORTED("READ_FILLER");
+#endif /* read/write filler */
+	}
+	else {
+#if defined(PNG_WRITE_FILLER_SUPPORTED)
+	    png_set_filler (Png->png, filler, flags);
+#else
+	    UNSUPPORTED("WRITE_FILLER");
+#endif /* read/write filler */
+	}
+
+
+void
+perl_png_set_gray_to_rgb (Png)
         Image::PNG::Libpng Png
 CODE:
 #ifdef PNG_READ_GRAY_TO_RGB_SUPPORTED
         png_set_gray_to_rgb (Png->png);
 #else
-	UNSUPPORTED("READ_GRAY_TO_RGB")
-#endif /* #ifdef PNG_READ_GRAY_TO_RGB_SUPPORTED */
+	UNSUPPORTED("READ_GRAY_TO_RGB");
+#endif /* READ_GRAY_TO_RGB */
 
 
-void perl_png_set_filler (Png, filler, flags)
-        Image::PNG::Libpng Png
-        int filler
-        int flags
-CODE:
-#if defined(PNG_READ_FILLER_SUPPORTED) && defined(PNG_WRITE_FILLER_SUPPORTED)
-        png_set_filler (Png->png, filler, flags);
-#else
-	UNSUPPORTED("READ_FILLER");
-	UNSUPPORTED("WRITE_FILLER");
-#endif /* read/write filler */
+# Chunk code which is not automatically generated.
 
 int
 perl_png_get_sRGB (Png)
@@ -317,13 +389,108 @@ CODE:
 OUTPUT:
         RETVAL
 
-void perl_png_set_sRGB (Png, sRGB)
+
+void
+perl_png_set_sRGB (Png, sRGB)
         Image::PNG::Libpng Png
         int sRGB
 CODE:
         png_set_sRGB (Png->png, Png->info, sRGB);
 
-void perl_png_set_packing (Png)
+
+# Transform routines. These generally doesn't take any arguments but
+# usually do require conditional wrappers to compile on older
+# versions of libpng.
+
+void
+perl_png_set_add_alpha(Png, filler, filler_loc)
+	Image::PNG::Libpng Png;
+	unsigned int filler;
+	int filler_loc;
+CODE:
+	if (Png->type == perl_png_read_obj) {
+#if defined(PNG_READ_FILLER_SUPPORTED)
+	    png_set_add_alpha (Png->png, filler, filler_loc);
+#else
+	    UNSUPPORTED("READ_FILLER");
+#endif /* read/write filler */
+	}
+	else {
+#if defined(PNG_WRITE_FILLER_SUPPORTED)
+	    png_set_add_alpha (Png->png, filler, filler_loc);
+#else
+	    UNSUPPORTED("WRITE_FILLER");
+#endif /* read/write filler */
+	}
+
+void
+perl_png_set_alpha_mode (Png, mode, screen_gamma)
+	Image::PNG::Libpng Png;
+	int mode;
+	double screen_gamma;
+CODE:
+#ifdef PNG_READ_ALPHA_MODE_SUPPORTED
+	png_set_alpha_mode (Png->png, mode, screen_gamma);
+#else
+	UNSUPPORTED('READ_ALPHA_MODE');
+#endif /* def PNG_READ_ALPHA_MODE */
+
+
+void
+perl_png_set_bgr(Png)
+	Image::PNG::Libpng Png;
+CODE:
+	if (Png->type == perl_png_read_obj) { 
+#if defined(PNG_READ_BGR_SUPPORTED)
+            png_set_bgr (Png->png);
+#else
+	    UNSUPPORTED("READ_BGR");
+#endif /* READ_BGR */
+	}
+	else {
+#if defined(PNG_WRITE_BGR_SUPPORTED)
+            png_set_bgr (Png->png);
+#else
+	    UNSUPPORTED("WRITE_BGR");
+#endif /* WRITE_BGR */
+	}
+
+
+void
+perl_png_set_expand_gray_1_2_4_to_8(Png)
+	Image::PNG::Libpng Png;
+CODE:
+#ifdef PNG_READ_EXPAND_SUPPORTED
+	png_set_expand_gray_1_2_4_to_8 (Png->png);
+#else
+	UNSUPPORTED("READ_EXPAND");
+#endif /* read_expand */
+
+
+void
+perl_png_set_invert_alpha(Png)
+	Image::PNG::Libpng Png;
+CODE:
+#ifdef PNG_READ_INVERT_ALPHA_SUPPORTED
+	png_set_invert_alpha (Png->png);
+#else
+	UNSUPPORTED("READ_INVERT_ALPHA");
+#endif /* READ_INVERT_ALPHA */
+
+
+void
+perl_png_set_invert_mono(Png)
+	Image::PNG::Libpng Png;
+CODE:
+#ifdef PNG_READ_INVERT_SUPPORTED
+	png_set_invert_mono (Png->png);
+#else
+	UNSUPPORTED("READ_INVERT");
+#endif /* READ_INVERT */
+
+
+void
+perl_png_set_packing (Png)
         Image::PNG::Libpng Png
 CODE:
 	if (Png->type == perl_png_read_obj) { 
@@ -341,7 +508,61 @@ CODE:
 #endif /* WRITE_PACK */
 	}
 
-void perl_png_set_strip_16 (Png)
+void
+perl_png_set_packswap(Png)
+	Image::PNG::Libpng Png;
+CODE:
+	if (Png->type == perl_png_read_obj) { 
+#if defined(PNG_READ_PACKSWAP_SUPPORTED)
+            png_set_packing (Png->png);
+#else
+	    UNSUPPORTED("READ_PACKSWAP");
+#endif /* READ_PACKSWAP */
+	}
+	else {
+#if defined(PNG_WRITE_PACKSWAP_SUPPORTED)
+	    png_set_packswap (Png->png);
+#else
+	    UNSUPPORTED("WRITE_PACKSWAP");
+#endif /* WRITE_PACKSWAP */
+	}
+
+
+void
+perl_png_set_palette_to_rgb(Png)
+	Image::PNG::Libpng Png;
+CODE:
+#ifdef PNG_READ_EXPAND_SUPPORTED
+	png_set_palette_to_rgb (Png->png);
+#else
+	UNSUPPORTED("READ_EXPAND");
+#endif /* READ_EXPAND */
+
+
+void
+perl_png_set_scale_16(Png)
+	Image::PNG::Libpng Png;
+CODE:
+#ifdef PNG_READ_SCALE_16_TO_8_SUPPORTED
+	png_set_scale_16 (Png->png);
+#else
+	UNSUPPORTED("READ_SCALE_16_TO_8");
+#endif /* READ_SCALE_16_TO_8 */
+
+
+void
+perl_png_set_tRNS_to_alpha(Png)
+	Image::PNG::Libpng Png;
+CODE:
+#ifdef PNG_READ_EXPAND_SUPPORTED
+	png_set_tRNS_to_alpha(Png->png);
+#else
+	UNSUPPORTED("READ_EXPAND");
+#endif /* read_expand */
+
+
+void
+perl_png_set_strip_16 (Png)
         Image::PNG::Libpng Png
 CODE:
 #ifdef PNG_READ_STRIP_16_TO_8_SUPPORTED
@@ -350,7 +571,9 @@ CODE:
 	UNSUPPORTED("READ_STRIP_16_TO_8");
 #endif /* READ_STRIP_16_TO_8 */
 
-void perl_png_set_strip_alpha (Png)
+
+void
+perl_png_set_strip_alpha (Png)
         Image::PNG::Libpng Png
 CODE:
 #ifdef PNG_READ_STRIP_ALPHA_SUPPORTED
@@ -359,85 +582,65 @@ CODE:
 	UNSUPPORTED("READ_STRIP_ALPHA");
 #endif /* READ_STRIP_ALPHA */
 
-void perl_png_DESTROY (Png)
-        Image::PNG::Libpng Png
-	CODE:
-        if (Png) {
-        	perl_png_destroy (Png);
+
+void
+perl_png_set_swap(Png)
+	Image::PNG::Libpng Png;
+CODE:
+	if (Png->type == perl_png_read_obj) { 
+#if defined(PNG_READ_SWAP_SUPPORTED)
+	    png_set_swap (Png->png);
+#else
+	    UNSUPPORTED("WRITE_SWAP");
+#endif
+	}
+	else {
+#if defined(PNG_WRITE_SWAP_SUPPORTED)
+	    png_set_swap (Png->png);
+#else
+	    UNSUPPORTED("READ_SWAP");
+#endif
 	}
 
-[%- FOR chunk IN chunks %]
-[%- IF chunk.defined('auto_type') %]
-SV * perl_png_get_[% chunk.name %] (Png)
-        Image::PNG::Libpng Png
+void
+perl_png_set_swap_alpha(Png)
+	Image::PNG::Libpng Png;
 CODE:
-[%- IF chunk.defined('pro') %]
-#ifdef [% chunk.pro %]
-[%- END # pro %]
-        RETVAL = perl_png_get_[% chunk.name %] (Png);
-[%- IF chunk.defined('pro') %]
-#else /* [% chunk.pro %] */
-	RETVAL = & PL_sv_undef;
-	UNSUPPORTED ('[% chunk.name %]');
-#endif /* [% chunk.pro %] */
-[%- END # pro %]
-OUTPUT:
-        RETVAL
+#ifdef PNG_READ_SWAP_ALPHA_SUPPORTED
+	png_set_swap_alpha (Png->png);
+#else
+	UNSUPPORTED("READ_SWAP_ALPHA");
+#endif /* READ_SWAP_ALPHA */
 
-void perl_png_set_[% chunk.name %] (Png, [% chunk.name %]
-[%- IF chunk.defined('default') %] =  [% chunk.default %][%- END -%]
-)
-        Image::PNG::Libpng Png
-        [%- IF chunk.auto_type == "sv" ||
-	       chunk.auto_type == "av" ||
-	       chunk.auto_type == "hv" %]
-        [% chunk.auto_type | upper %] * [% chunk.name %]
-        [%- ELSE %]
-        [% chunk.auto_type %] [% chunk.name %]
-        [%- END %]
-CODE:
-[%- IF chunk.defined('pro') %]
-#ifdef [% chunk.pro %]
-[%- END # pro %]
-        perl_png_set_[% chunk.name %] (Png, [% chunk.name %]);
-[%- IF chunk.defined('pro') %]
-#else /* [% chunk.pro %] */
-	UNSUPPORTED ('[% chunk.name %]');
-#endif /* [% chunk.pro %] */
-[%- END # pro %]
 
-[% END %]
-[%- END %]
-#line 353 "Libpng.xs.tmpl"
-
-void perl_png_get_internals (Png)
-	Image::PNG::Libpng Png
-PREINIT:
-	png_structp png;
-	png_infop info;
-	SV * png_sv;
-	SV * info_sv;
-PPCODE:
-	png = Png->png;
-	info = Png->info;
-	png_sv = newSViv (PTR2IV (png));
-	info_sv = newSViv (PTR2IV (info));
-	XPUSHs(sv_2mortal(png_sv));
-	XPUSHs(sv_2mortal(info_sv));
-
-void perl_png_set_transforms (Png, transforms)
+void
+perl_png_set_transforms (Png, transforms)
 	Image::PNG::Libpng Png;
 	int transforms;
 CODE:
 	perl_png_set_transforms (Png, transforms);
 OUTPUT:
 
-void perl_png_copy_row_pointers (Png, row_pointers)
+
+int
+perl_png_get_palette_max(Png)
 	Image::PNG::Libpng Png;
-	SV * row_pointers;
 CODE:
-	perl_png_copy_row_pointers (Png, row_pointers);
+#ifdef PNG_CHECK_FOR_INVALID_INDEX_SUPPORTED
+#  ifdef PNG_GET_PALETTE_MAX_SUPPORTED
+	RETVAL = png_get_palette_max (Png->png, Png->info);
+#  else
+	UNSUPPORTED("GET_PALETTE_MAX");
+#  endif
+#else
+        UNSUPPORTED("CHECK_FOR_INVALID_INDEX");
+#endif
 OUTPUT:
+	RETVAL
+
+
+# Functions which retrieve individual values from the header.
+
 
 [% FOR what IN ['width', 'height'] %]
 int
@@ -449,31 +652,6 @@ OUTPUT:
 	RETVAL
 [% END %]
 
-int
-perl_png_get_palette_max(Png)
-	Image::PNG::Libpng Png;
-CODE:
-#ifdef PNG_CHECK_FOR_INVALID_INDEX_SUPPORTED
-#  ifdef PNG_GET_PALETTE_MAX_SUPPORTED
-	RETVAL = png_get_palette_max (Png->png, Png->info);
-#  else
-	UNSUPPORTED('GET_PALETTE_MAX');
-#  endif
-#else
-        UNSUPPORTED('CHECK_FOR_INVALID_INDEX');
-#endif
-OUTPUT:
-	RETVAL
-
-
-[% IF 0 %]
-void
-perl_png_set_rgb_to_gray (Png)
-	Image::PNG::Libpng Png;
-CODE: 
-    	perl_png_set_rgb_to_gray (Png);
-
-[% END %]
 
 int
 perl_png_get_channels (Png)
@@ -483,6 +661,7 @@ CODE:
 OUTPUT:
 	RETVAL
 
+
 int
 perl_png_get_bit_depth (Png)
 	Image::PNG::Libpng Png;
@@ -491,6 +670,7 @@ CODE:
 OUTPUT:
 	RETVAL
 
+
 int
 perl_png_get_interlace_type (Png)
 	Image::PNG::Libpng Png;
@@ -498,6 +678,7 @@ CODE:
     	RETVAL = png_get_interlace_type (Png->png, Png->info);
 OUTPUT:
 	RETVAL
+
 
 int
 perl_png_get_color_type (Png)
@@ -582,25 +763,12 @@ CODE:
         png_set_rows (Png->png, Png->info, Png->row_pointers);
 	Png->memory_gets++;
 
-int
-perl_png_set_rgb_to_gray_fixed (Png, error_action = 1, red_weight=-1, green_weight=-1)
-	Image::PNG::Libpng Png;
-	int error_action;
-	int red_weight;
-	int green_weight;
-CODE:
-	png_set_rgb_to_gray_fixed (Png->png, error_action, red_weight, green_weight);
-	RETVAL = png_get_rgb_to_gray_status (Png->png);
-	png_read_update_info (Png->png, Png->info);
-OUTPUT:
-	RETVAL
-
 # These functions predate the macro and were valid in libpng 1.2, yet
 # the macro is invalid except for libpng 1.6.17, so conditional
 # compilation doesn't seem to offer any benefit, hence the following
 # is commented out. 
 
-# #ifdef PNG_WRITE_CUSTOMIZE_COMPRESSION_SUPPORTED
+# // #ifdef PNG_WRITE_CUSTOMIZE_COMPRESSION_SUPPORTED
 
 void
 perl_png_set_compression_level (Png, level)
@@ -624,6 +792,7 @@ perl_png_set_compression_buffer_size (Png, size)
 CODE:
 	png_set_compression_buffer_size (Png->png, size);
 
+
 SV *
 perl_png_get_compression_buffer_size (Png)
 	Image::PNG::Libpng Png;
@@ -635,12 +804,14 @@ CODE:
 OUTPUT:
 	RETVAL
 	
+
 void
 perl_png_set_compression_mem_level (Png, mem_level);
 	Image::PNG::Libpng Png;
 	int mem_level;
 CODE:
 	png_set_compression_mem_level (Png->png, mem_level);
+
 
 void
 perl_png_set_compression_strategy (Png, strategy);
@@ -649,6 +820,7 @@ perl_png_set_compression_strategy (Png, strategy);
 CODE:
 	png_set_compression_strategy (Png->png, strategy);
 
+
 void
 perl_png_set_compression_window_bits  (Png,   window_bits);
 	Image::PNG::Libpng Png;
@@ -656,7 +828,8 @@ perl_png_set_compression_window_bits  (Png,   window_bits);
 CODE:
 	png_set_compression_window_bits (Png->png, window_bits);
 
-# #endif /* WRITE_CUSTOMIZE_COMPRESSION */
+# // #endif /* WRITE_CUSTOMIZE_COMPRESSION */
+
 
 # This macro is not documented in CHANGES in libpng.
 
@@ -669,6 +842,7 @@ perl_png_set_text_compression_level (Png, level);
 CODE:
 	png_set_text_compression_level (Png->png, level);
 
+
 void
 perl_png_set_text_compression_mem_level (Png, mem_level);
 	Image::PNG::Libpng Png;
@@ -676,12 +850,14 @@ perl_png_set_text_compression_mem_level (Png, mem_level);
 CODE:
 	png_set_compression_mem_level (Png->png, mem_level);
 
+
 void
 perl_png_set_text_compression_strategy (Png, strategy);
 	Image::PNG::Libpng Png;
 	int strategy;
 CODE:
 	png_set_compression_strategy (Png->png, strategy);
+
 
 void
 perl_png_set_text_compression_window_bits  (Png,   window_bits);
@@ -692,19 +868,18 @@ CODE:
 
 #endif /* WRITE_CUSTOMIZE_ZTXT_COMPRESSION */
 
-#if 0
 
+#if 0
 void
 perl_png_set_compression_method (Png, method);
 	Image::PNG::Libpng Png;
 	int method;
 CODE:
 	png_set_compression_method (Png->png, method);
-
 #endif /* 0 */
 
-#if 0
 
+#if 0
 void
 perl_png_set_crc_action  (Png, crit_action, ancil_action);
 	Image::PNG::Libpng Png;
@@ -712,25 +887,8 @@ perl_png_set_crc_action  (Png, crit_action, ancil_action);
 	int ancil_action;
 CODE:
 	png_set_crc_action (Png->png, crit_action, ancil_action);
-
 #endif /* 0 */
 
-SV *
-perl_png_split_alpha (Png)
-	Image::PNG::Libpng Png;
-CODE:
-	RETVAL = perl_png_split_alpha (Png);
-OUTPUT:
-	RETVAL
-
-
-int
-perl_png_read_struct (Png)
-	Image::PNG::Libpng Png;
-CODE:
-	RETVAL = (Png->type == perl_png_read_obj);
-OUTPUT:
-	RETVAL
 
 void
 perl_png_set_gamma (Png, gamma, override_gamma)
@@ -745,119 +903,6 @@ CODE:
 #endif /* READ_GAMMA */
 	
 
-#ifdef PNG_READ_ALPHA_MODE_SUPPORTED
-
-void
-perl_png_set_alpha_mode (Png, mode, screen_gamma)
-	Image::PNG::Libpng Png;
-	int mode;
-	double screen_gamma;
-CODE:
-	png_set_alpha_mode (Png->png, mode, screen_gamma);
-
-#endif /* def PNG_READ_ALPHA_MODE */
-
-void
-perl_png_set_scale_16(Png)
-	Image::PNG::Libpng Png;
-CODE:
-#ifdef PNG_READ_SCALE_16_TO_8_SUPPORTED
-	png_set_scale_16 (Png->png);
-#else
-	UNSUPPORTED("READ_SCALE_16_TO_8");
-#endif /* READ_SCALE_16_TO_8 */
-
-void
-perl_png_set_invert_mono(Png)
-	Image::PNG::Libpng Png;
-CODE:
-#ifdef PNG_READ_INVERT_SUPPORTED
-	png_set_invert_mono (Png->png);
-#else
-	UNSUPPORTED("READ_INVERT");
-#endif /* READ_INVERT */
-
-void
-perl_png_set_invert_alpha(Png)
-	Image::PNG::Libpng Png;
-CODE:
-#ifdef PNG_READ_INVERT_ALPHA_SUPPORTED
-	png_set_invert_alpha (Png->png);
-#else
-	UNSUPPORTED("READ_INVERT_ALPHA");
-#endif /* READ_INVERT_ALPHA */
-
-
-
-void
-perl_png_set_bgr(Png)
-	Image::PNG::Libpng Png;
-CODE:
-	if (Png->type == perl_png_read_obj) { 
-#if defined(PNG_READ_BGR_SUPPORTED)
-            png_set_bgr (Png->png);
-#else
-	    UNSUPPORTED("READ_BGR");
-#endif /* READ_BGR */
-	}
-	else {
-#if defined(PNG_WRITE_BGR_SUPPORTED)
-            png_set_bgr (Png->png);
-#else
-	    UNSUPPORTED("WRITE_BGR");
-#endif /* WRITE_BGR */
-	}
-
-void
-perl_png_set_palette_to_rgb(Png)
-	Image::PNG::Libpng Png;
-CODE:
-#ifdef PNG_READ_EXPAND_SUPPORTED
-	png_set_palette_to_rgb (Png->png);
-#else
-	UNSUPPORTED("READ_EXPAND");
-#endif /* READ_EXPAND */
-
-void
-perl_png_set_packswap(Png)
-	Image::PNG::Libpng Png;
-CODE:
-	if (Png->type == perl_png_read_obj) { 
-#if defined(PNG_READ_PACKSWAP_SUPPORTED)
-            png_set_packing (Png->png);
-#else
-	    UNSUPPORTED("READ_PACKSWAP");
-#endif /* READ_PACKSWAP */
-	}
-	else {
-#if defined(PNG_WRITE_PACKSWAP_SUPPORTED)
-	    png_set_packswap (Png->png);
-#else
-	    UNSUPPORTED("WRITE_PACKSWAP");
-#endif /* WRITE_PACKSWAP */
-	}
-
-void
-perl_png_set_swap(Png)
-	Image::PNG::Libpng Png;
-CODE:
-#if defined(PNG_READ_SWAP_SUPPORTED) && defined(PNG_WRITE_SWAP_SUPPORTED)
-	png_set_swap (Png->png);
-#else
-	UNSUPPORTED("WRITE_SWAP");
-	UNSUPPORTED("READ_SWAP");
-#endif
-
-void
-perl_png_set_swap_alpha(Png)
-	Image::PNG::Libpng Png;
-CODE:
-#ifdef PNG_READ_SWAP_ALPHA_SUPPORTED
-	png_set_swap_alpha (Png->png);
-#else
-	UNSUPPORTED("READ_SWAP_ALPHA");
-#endif /* READ_SWAP_ALPHA */
-
 void
 perl_png_permit_mng_features(Png, mask)
 	Image::PNG::Libpng Png;
@@ -868,6 +913,7 @@ CODE:
 #else
 	UNSUPPORTED("MNG_FEATURES");
 #endif /* MNG_FEATURES */
+
 
 [% IF 0 %]
 void
@@ -881,79 +927,23 @@ CODE:
 #endif /* READ_SHIFT */
 [% END %]
 
-void
-perl_png_set_add_alpha(Png, filler, filler_loc)
-	Image::PNG::Libpng Png;
-	unsigned int filler;
-	int filler_loc;
-CODE:
-#if defined(PNG_READ_FILLER_SUPPORTED) && defined(PNG_WRITE_FILLER_SUPPORTED)
-	png_set_add_alpha (Png->png, filler, filler_loc);
-#else
-	UNSUPPORTED("READ_FILLER");
-	UNSUPPORTED("WRITE_FILLER");
-#endif /* read/write filler */
 
-void
-perl_png_set_expand_gray_1_2_4_to_8(Png)
-	Image::PNG::Libpng Png;
-CODE:
-#ifdef PNG_READ_EXPAND_SUPPORTED
-	png_set_expand_gray_1_2_4_to_8 (Png->png);
-#else
-	UNSUPPORTED("READ_EXPAND");
-#endif /* read_expand */
-
-
-void
-perl_png_set_tRNS_to_alpha(Png)
-	Image::PNG::Libpng Png;
-CODE:
-#ifdef PNG_READ_EXPAND_SUPPORTED
-	png_set_tRNS_to_alpha(Png->png);
-#else
-	UNSUPPORTED("READ_EXPAND");
-#endif /* read_expand */
-
-void
-perl_png_write_image(Png, rows)
-	Image::PNG::Libpng Png;
-	AV * rows
-CODE:
-	check_init_io (Png);
-	perl_png_write_image (Png, rows);
-
-void
-perl_png_write_info(Png)
-	Image::PNG::Libpng Png;
-CODE:
-	check_init_io (Png);
-	png_write_info (Png->png, Png->info);
-
-void
-perl_png_write_end(Png)
-	Image::PNG::Libpng Png;
-CODE:
-	check_init_io (Png);
-	png_write_end (Png->png, Png->info);
-
-SV *
-perl_png_read_image(Png)
-	Image::PNG::Libpng Png;
-CODE:
-	check_init_io (Png);
-	RETVAL = perl_png_read_image (Png);
-OUTPUT:
-	RETVAL
-
-void
-perl_png_read_end(Png)
-	Image::PNG::Libpng Png;
-CODE:
-	check_init_io (Png);
-	png_read_end (Png->png, Png->info);
-
+# Transform functions which require arguments.
 	
+void
+perl_png_set_rgb_to_gray (Png, error_action, red, green)
+	Image::PNG::Libpng Png;
+	int error_action;
+	double red;
+	double green;
+CODE: 
+#ifdef PNG_READ_RGB_TO_GRAY_SUPPORTED
+    	perl_png_set_rgb_to_gray (Png, error_action, red, green);
+#else
+	UNSUPPORTED ("READ_RGB_TO_GRAY");
+#endif /* READ_RGB_TO_GRAY */
+
+
 void
 perl_png_set_background(Png, perl_color, gamma_code, need_expand, background_gamma)
 	Image::PNG::Libpng Png;
@@ -962,5 +952,148 @@ perl_png_set_background(Png, perl_color, gamma_code, need_expand, background_gam
 	SV * need_expand;
 	double background_gamma;
 CODE:
+#ifdef PNG_READ_BACKGROUND_SUPPORTED
 	perl_png_set_back (Png, perl_color, gamma_code, SvTRUE(need_expand),
 			   background_gamma);
+#else
+	UNSUPPORTED("READ_BACKGROUND");
+#endif /* READ_BACKGROUND */
+
+
+# These functions are not part of libpng and do not need preprocessor
+# conditional wrappers.
+
+int
+perl_png_color_type_channels (color_type)
+        int color_type
+CODE:
+        RETVAL = perl_png_color_type_channels (color_type);
+OUTPUT:
+        RETVAL
+
+
+const char *
+perl_png_color_type_name (color_type)
+        int color_type
+CODE:
+        RETVAL = perl_png_color_type_name (color_type);
+OUTPUT:
+        RETVAL
+
+
+void
+perl_png_copy_row_pointers (Png, row_pointers)
+	Image::PNG::Libpng Png;
+	SV * row_pointers;
+CODE:
+	perl_png_copy_row_pointers (Png, row_pointers);
+
+
+void
+perl_png_get_internals (Png)
+	Image::PNG::Libpng Png
+PREINIT:
+	png_structp png;
+	png_infop info;
+	SV * png_sv;
+	SV * info_sv;
+PPCODE:
+	png = Png->png;
+	info = Png->info;
+	png_sv = newSViv (PTR2IV (png));
+	info_sv = newSViv (PTR2IV (info));
+	XPUSHs(sv_2mortal(png_sv));
+	XPUSHs(sv_2mortal(info_sv));
+
+
+void
+perl_png_set_verbosity (Png, verbosity = 0)
+        Image::PNG::Libpng Png
+        int verbosity; 
+CODE:
+        perl_png_set_verbosity (Png, verbosity);
+        
+
+int
+perl_png_libpng_supports (what)
+        const char * what
+CODE:
+        RETVAL = perl_png_libpng_supports (what);
+OUTPUT:
+        RETVAL
+
+
+int
+perl_png_read_struct (Png)
+	Image::PNG::Libpng Png;
+CODE:
+	RETVAL = (Png->type == perl_png_read_obj);
+OUTPUT:
+	RETVAL
+
+
+SV *
+perl_png_split_alpha (Png)
+	Image::PNG::Libpng Png;
+CODE:
+	RETVAL = perl_png_split_alpha (Png);
+OUTPUT:
+	RETVAL
+
+
+const char *
+perl_png_text_compression_name (text_compression)
+        int text_compression
+CODE:
+        RETVAL = perl_png_text_compression_name (text_compression);
+OUTPUT:
+        RETVAL
+
+
+# The following automatically generates the get and set functions for
+# the chunks.
+
+[%- FOR chunk IN chunks %]
+[%- IF chunk.defined('auto_type') %]
+SV *
+perl_png_get_[% chunk.name %] (Png)
+        Image::PNG::Libpng Png
+CODE:
+[%- IF chunk.defined('pro') %]
+#ifdef [% chunk.pro %]
+[%- END # pro %]
+        RETVAL = perl_png_get_[% chunk.name %] (Png);
+[%- IF chunk.defined('pro') %]
+#else /* [% chunk.pro %] */
+	RETVAL = & PL_sv_undef;
+	UNSUPPORTED ('[% chunk.name %]');
+#endif /* [% chunk.pro %] */
+[%- END # pro %]
+OUTPUT:
+        RETVAL
+
+void
+perl_png_set_[% chunk.name %] (Png, [% chunk.name %]
+[%- IF chunk.defined('default') %] =  [% chunk.default %][%- END -%]
+)
+        Image::PNG::Libpng Png
+        [%- IF chunk.auto_type == "sv" ||
+	       chunk.auto_type == "av" ||
+	       chunk.auto_type == "hv" %]
+        [% chunk.auto_type | upper %] * [% chunk.name %]
+        [%- ELSE %]
+        [% chunk.auto_type %] [% chunk.name %]
+        [%- END %]
+CODE:
+[%- IF chunk.defined('pro') %]
+#ifdef [% chunk.pro %]
+[%- END # pro %]
+        perl_png_set_[% chunk.name %] (Png, [% chunk.name %]);
+[%- IF chunk.defined('pro') %]
+#else /* [% chunk.pro %] */
+	UNSUPPORTED ('[% chunk.name %]');
+#endif /* [% chunk.pro %] */
+[%- END # pro %]
+
+[% END # default %]
+[%- END # chunks %]

@@ -2868,9 +2868,13 @@ perl_png_set_back(perl_libpng_t * png, HV * perl_color, int gamma_code,
 		  int need_expand, double background_gamma)
 {
     png_color_16 color;
+#ifdef PNG_READ_BACKGROUND_SUPPORTED
     perl_png_hv_to_color_16 (perl_color, & color);
     png_set_background (png->png, & color, gamma_code,
 			need_expand, background_gamma);
+#else
+    UNSUPPORTED("READ_BACKGROUND");
+#endif /* READ_BACKGROUND */
 }
 
 static void
