@@ -4,6 +4,10 @@
 #define PNG_CHUNK_CACHE_MAX_SUPPORTED
 #endif /* version >= 1.4.0 */
 
+/* The cHRM_XYZ functions are protected by the cHRM_SUPPORTED macro,
+   but this doesn't actually apply since cHRM_SUPPORTED is defined
+   even when png_(g|s)et_cHRM_XYZ are not available. */
+
 #if PNG_LIBPNG_VER_MAJOR >= 1 && PNG_LIBPNG_VER_MINOR >= 5 && PNG_LIBPNG_VER_RELEASE >= 5
 #ifdef PNG_cHRM_SUPPORTED
 #define PNG_cHRM_XYZ_SUPPORTED

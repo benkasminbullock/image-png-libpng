@@ -335,6 +335,24 @@ c: WRITE_USER_TRANSFORM
 
 c: WRITE_WEIGHTED_FILTER
 
+c: CHUNK_CACHE_MAX
+local: 1
+%%d:
+It was necessary to extend libpng because the conditional compilation
+macro for L</set_chunk_cache_max> and L</get_chunk_cache_max>,
+C<PNG_USER_LIMITS_SUPPORTED> is defined (true) for old libpngs which
+do not actually contain these functions.
+%%
+
+c: cHRM_XYZ
+local: 1
+%%d:
+It was necessary to extend libpng because the conditional compilation
+macro for L</set_cHRM_XYZ> and L</get_cHRM_XYZ>, C<PNG_cHRM_SUPPORTED>
+is defined (true) for old libpngs which do not actually contain these
+functions.
+%%
+
 # Local variables:
 # mode: table-readable
 # End:

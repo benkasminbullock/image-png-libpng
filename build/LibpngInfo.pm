@@ -453,6 +453,9 @@ for (@supports_list) {
 	}
 	$_->{d} = $d;
     }
+    if (! defined ($_->{local})) {
+	$_->{local} = 0;
+    }
 }
 
 my $uns_file = dirfile ('unsupported-table.txt');

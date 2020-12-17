@@ -1,3 +1,6 @@
+0.52_07 2020-12-16
+- Wrap all of the new set_* functions with preprocessor conditionals
+
 0.52_06 2020-12-16
 - split_alpha internals simplified, doc changed
 - Support get/set cHRM_XYZ

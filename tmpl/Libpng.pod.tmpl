@@ -28,12 +28,22 @@ L</create_read_struct>.
 This function corresponds to C<png_[% fn %]> in libpng
 [%- END %]
 [%- MACRO supports BLOCK -%]
-You can test whether your version of libpng supports [% desc %]
-with L</libpng_supports> as follows:
+To test whether your version of libpng supports C<[% desc %]>, use
+L</libpng_supports> with argument 'L</[% val %]>':
 
     if (libpng_supports ('[% val %]')) {
         # do something
     }
+[%- END %]
+[%- MACRO rwsupports BLOCK -%]
+To test whether your version of libpng supports C<[% desc %]>, for a read
+object, use L</libpng_supports> with argument 'L</READ_[% val %]>'.
+
+    if (libpng_supports ('READ_[% val %]')) {
+        # do something
+    }
+
+For a write object, use argument 'L</WRITE_[% val %]>'.
 [%- END %]
 [% metacpan="https://fastapi.metacpan.org/source/BKB/Image-PNG-Libpng-"
  _ config.version %]
@@ -63,7 +73,7 @@ L<[% filename %]|[% imgurl %]> is included in the distribution.
 </tr>
 <tr>
 <th>
-L<[% filename %]|[% imgurl %]>
+<a href='[% imgurl %]'>[% filename %]</a>
 </th>
 </tr>
 </table>
@@ -1407,9 +1417,14 @@ If your libpng supports it, this will return the maximum palette index
 found in the image, or "-1" if the palette was not checked, or "0" if
 no palette was found.
 
+[% supports(desc='get_palette_max',val='GET_PALETTE_MAX') %]
+
 [% danger %] This function is implemented but so far it is not very
-clear to me what it does, since it seems to return zero for an image
-with a 256-color palette.
+clear to me what it does, since, for example, it returns zero for the
+test image F<t/tantei-san.png> which is an image with a fully-used
+256-color palette. I've L<asked about it on the libpng mailing
+list|https://sourceforge.net/p/png-mng/mailman/png-mng-implement/?viewmonth=202012&viewday=14>,
+but so far nobody has responded.
 
 =head3 get_PLTE
 
@@ -1692,6 +1707,8 @@ reference containing values for the keys red, green, blue and gray.
 
 [% danger %] Untested. Flips RGB to BGR. [% manual %]
 
+[% rwsupports(desc='set_bgr', val='BGR') %]
+
 [% cor(fn="set_bgr") %]
 
 =head2 set_expand
@@ -1702,6 +1719,8 @@ Set transformation in C<$png> such that paletted images are expanded
 to RGB, grayscale images of bit-depth less than 8 are expanded to
 8-bit images, and tRNS chunks are expanded to alpha channels.
 
+[% supports(desc='set_expand', val='READ_EXPAND') %]
+
 [% cor(fn="set_expand") %]
 
 =head2 set_expand_16
@@ -1709,6 +1728,8 @@ to RGB, grayscale images of bit-depth less than 8 are expanded to
     $png->set_expand_16 ();
 
 [% danger %] Untested.
+
+[% supports(desc='set_expand_16', val='READ_EXPAND_16') %]
 
 [% cor(fn="set_expand_16") %]
 
@@ -1718,6 +1739,8 @@ to RGB, grayscale images of bit-depth less than 8 are expanded to
 
 [% danger %] Untested.
 
+[% supports(desc="set_expand_gray_1_2_4_to_8", val="READ_EXPAND") %]
+
 [% cor(fn="set_expand_gray_1_2_4_to_8") %]
 
 =head2 set_gray_to_rgb
@@ -1725,6 +1748,8 @@ to RGB, grayscale images of bit-depth less than 8 are expanded to
     $png->set_gray_to_rgb ();
 
 Convert a grayscale PNG file to RGB format on reading.
+
+[% supports(desc='set_gray_to_rgb', val="READ_GRAY_TO_RGB") %]
 
 [% cor(fn="set_gray_to_rgb") %]
 
@@ -1734,6 +1759,8 @@ Convert a grayscale PNG file to RGB format on reading.
 
 [% danger %] Untested. [% manual %]
 
+[% supports(desc='set_invert_alpha',val='READ_INVERT_ALPHA') %]
+
 [% cor(fn="set_invert_alpha") %]
 
 =head2 set_invert_mono
@@ -1741,6 +1768,8 @@ Convert a grayscale PNG file to RGB format on reading.
     $png->set_invert_mono ();
 
 Invert monochrome images. [% manual %]
+
+[% supports(desc='set_invert_mono', val='READ_INVERT') %]
 
 [% cor(fn="set_invert_mono") %]
 
@@ -1754,6 +1783,8 @@ this is not called, the pixels of bit_depths 1, 2 and 4 are packed
 into bytes as small as possible, for example, 8 pixels per byte for
 1-bit files. [% manual %] See also L</set_packswap>.
 
+[% rwsupports(desc='set_packing', val='PACK') %]
+
 [% cor(fn="set_packing") %]
 
 =head2 set_packswap
@@ -1766,9 +1797,9 @@ for example if the bit depth is 1, the pixels from left to right go
 into a byte as values 128 for the leftmost, 64, 32, 16, 8, 4, 2, then
 1 for the rightmost pixel. This call reverses that behavior so that
 the pixels in a byte go 1 for the leftmost, 2, ..., then 128 for the
-rightmost.
+rightmost. [% manual %]
 
-[% manual %]
+[% rwsupports(desc='set_packswap', val='PACKSWAP') %]
 
 [% cor(fn="set_packswap") %]
 
@@ -1778,6 +1809,8 @@ rightmost.
 
 [% danger %] Untested. [% manual %]
 
+[% supports(desc='set_palette_to_rgb', val='READ_EXPAND') %]
+
 [% cor(fn="set_palette_to_rgb") %]
 
 =head2 set_scale_16
@@ -1785,6 +1818,8 @@ rightmost.
     $png->set_scale_16 ()
 
 [% danger %] Untested. 
+
+[% supports(desc='set_scale_16', val='READ_SCALE_16_TO_8') %]
 
 [% cor(fn="set_scale_16") %]
 
@@ -1795,6 +1830,8 @@ rightmost.
 Strip the pixels of a PNG stream with 16 bits per channel to 8 bits
 per channel.
 
+[% supports(desc='set_strip_16', val='READ_STRIP_16_TO_8') %]
+
 [% cor(fn="set_strip_16") %]
 
 =head2 set_strip_alpha
@@ -1803,7 +1840,9 @@ per channel.
 
 Strip the alpha channel of a PNG stream.
 
-[% cor(fn="set_strip_16") %]
+[% supports(desc='set_strip_alpha', val='READ_STRIP_ALPHA') %]
+
+[% cor(fn="set_strip_alpha") %]
 
 =head2 set_swap
 
@@ -1811,6 +1850,8 @@ Strip the alpha channel of a PNG stream.
 
 [% danger %] Untested. Swaps around the bytes of 16 bits/pixel
 images. [% manual %]
+
+[% supports(desc='set_swap',val='READ_SWAP') %]
 
 [% cor(fn="set_swap") %]
 
@@ -1820,6 +1861,8 @@ images. [% manual %]
 
 [% danger %] Untested.  [% manual %]
 
+[% supports(desc='set_swap_alpha',val='READ_SWAP_ALPHA') %]
+
 [% cor(fn="set_swap_alpha") %]
 
 =head2 set_tRNS_to_alpha
@@ -1827,6 +1870,8 @@ images. [% manual %]
     $png->set_tRNS_to_alpha
 
 [% danger %] Untested. [% manual %]
+
+[% supports(desc="set_tRNS_to_alpha", val="READ_EXPAND") %]
 
 [% cor(fn="set_tRNS_to_alpha") %]
 
@@ -1836,8 +1881,10 @@ images. [% manual %]
 
     my $max = $png->get_chunk_cache_max ();
 
-[% danger %] Untested. Get the maximum number of ancilliary chunks
+Get the maximum number of ancilliary chunks
 allowed. See also L</set_chunk_cache_max>.
+
+[% supports(desc='get_chunk_cache_max', val='CHUNK_CACHE_MAX') %]
 
 [% cor(fn="png_get_chunk_cache_max") %]
 
@@ -1861,6 +1908,8 @@ million pixels. These values can be changed by L</set_user_limits>.
 [% danger %] Untested. C<$mask> is an integer containing flags. [%
 manual %]
 
+[% supports(desc='permit_mng_features', val='MNG_FEATURES') %]
+
 [% cor(fn="permit_mng_features") %]
 
 =head2 set_add_alpha
@@ -1868,6 +1917,8 @@ manual %]
     $png->set_add_alpha ($filler, $filler_loc);
 
 [% danger %] Untested. [% manual %]
+
+[% supports(desc='set_add_alpha', val='READ_FILLER') %]
 
 [% cor(fn="set_add_alpha") %]
 
@@ -1879,12 +1930,7 @@ manual %]
 C<PNG_ALPHA_*> constants. C<$screen_gamma> is a floating point
 number. [% manual %]
 
-You can test whether this is available on your version of libpng with
-L</libpng_supports> as follows:
-
-    if (libpng_supports ('READ_ALPHA_MODE')) {
-        ...
-    }
+[% supports(desc='set_alpha_mode', val='READ_ALPHA_MODE') %]
 
 [% cor(fn="set_alpha_mode") %]
 
@@ -1895,12 +1941,16 @@ L</libpng_supports> as follows:
 C<%color> is a hash reference containing color values as integers
 from 0 to 255. See L</Setting the background> for an example.
 
+[% supports(desc='set_background', val='READ_BACKGROUND') %]
+
 =head2 set_chunk_cache_max
 
     $png->set_chunk_cache_max (42);
 
-[% danger %] Untested. Set the maximum number of ancilliary chunks
-allowed. The default is 1000. See also L</get_chunk_cache_max>.
+Set the maximum number of ancilliary chunks allowed. The default is
+1000. See also L</get_chunk_cache_max>.
+
+[% supports(desc='set_chunk_cache_max', val='CHUNK_CACHE_MAX') %]
 
 [% cor(fn="png_set_chunk_cache_max") %]
 
@@ -1913,6 +1963,8 @@ added when an 8-bit grayscale image or 24-bit RGB image is read, and a
 filler byte is deleted when an 8-bit grayscale image or 24-bit RGB
 image is written. C<$flags> may be C<PNG_FLAG_FILLER_AFTER> or zero.
 
+[% supports(desc='set_filler', val='READ_FILLER') %]
+
 [% cor(fn="set_filler") %]
 
 =head2 set_gamma
@@ -1921,6 +1973,8 @@ image is written. C<$flags> may be C<PNG_FLAG_FILLER_AFTER> or zero.
 
 [% danger %] Untested. C<$screen_gamma> and C<$output_gamma> should
 contain floating-point arguments.  [% manual %]
+
+[% supports(desc='set_gamma', val='READ_GAMMA') %]
 
 [% cor(fn="set_gamma") %]
 
@@ -2034,6 +2088,9 @@ The possible arguments to C<libpng_supports> are:
 
 =item [% type.c %]
 
+[% IF type.local %]
+This is local to Image::PNG::Libpng and not a part of libpng itself.
+[% END %]
 [% type.d | eval %]
 
 [%- END %]

@@ -264,17 +264,29 @@ OUTPUT:
 void perl_png_set_expand (Png)
         Image::PNG::Libpng Png
 CODE:
+#ifdef PNG_READ_EXPAND_SUPPORTED
         png_set_expand (Png->png);
+#else
+	UNSUPPORTED("READ_EXPAND");
+#endif /* READ_EXPAND */
 
 void perl_png_set_expand_16 (Png)
         Image::PNG::Libpng Png
 CODE:
+#ifdef PNG_READ_EXPAND_16_SUPPORTED
         png_set_expand_16 (Png->png);
+#else
+	UNSUPPORTED("READ_EXPAND_16");
+#endif /* READ_EXPAND_16 */
 
 void perl_png_set_gray_to_rgb (Png)
         Image::PNG::Libpng Png
 CODE:
+#ifdef PNG_READ_GRAY_TO_RGB_SUPPORTED
         png_set_gray_to_rgb (Png->png);
+#else
+	UNSUPPORTED("READ_GRAY_TO_RGB")
+#endif /* #ifdef PNG_READ_GRAY_TO_RGB_SUPPORTED */
 
 
 void perl_png_set_filler (Png, filler, flags)
@@ -282,7 +294,12 @@ void perl_png_set_filler (Png, filler, flags)
         int filler
         int flags
 CODE:
+#if defined(PNG_READ_FILLER_SUPPORTED) && defined(PNG_WRITE_FILLER_SUPPORTED)
         png_set_filler (Png->png, filler, flags);
+#else
+	UNSUPPORTED("READ_FILLER");
+	UNSUPPORTED("WRITE_FILLER");
+#endif /* read/write filler */
 
 int
 perl_png_get_sRGB (Png)
@@ -298,22 +315,41 @@ void perl_png_set_sRGB (Png, sRGB)
 CODE:
         png_set_sRGB (Png->png, Png->info, sRGB);
 
-
 void perl_png_set_packing (Png)
         Image::PNG::Libpng Png
 CODE:
-        png_set_packing (Png->png);
-
+	if (Png->type == perl_png_read_obj) { 
+#if defined(PNG_READ_PACK_SUPPORTED)
+            png_set_packing (Png->png);
+#else
+	    UNSUPPORTED("READ_PACK");
+#endif /* READ_PACK */
+	}
+	else {
+#if defined(PNG_WRITE_PACK_SUPPORTED)
+            png_set_packing (Png->png);
+#else
+	    UNSUPPORTED("WRITE_PACK");
+#endif /* WRITE_PACK */
+	}
 
 void perl_png_set_strip_16 (Png)
         Image::PNG::Libpng Png
 CODE:
+#ifdef PNG_READ_STRIP_16_TO_8_SUPPORTED
         png_set_strip_16 (Png->png);
+#else 
+	UNSUPPORTED("READ_STRIP_16_TO_8");
+#endif /* READ_STRIP_16_TO_8 */
 
 void perl_png_set_strip_alpha (Png)
         Image::PNG::Libpng Png
 CODE:
+#ifdef PNG_READ_STRIP_ALPHA_SUPPORTED
         png_set_strip_alpha (Png->png);
+#else 
+	UNSUPPORTED("READ_STRIP_ALPHA");
+#endif /* READ_STRIP_ALPHA */
 
 void perl_png_DESTROY (Png)
         Image::PNG::Libpng Png
@@ -321,10 +357,6 @@ void perl_png_DESTROY (Png)
         if (Png) {
         	perl_png_destroy (Png);
 	}
-
-# The cHRM_XYZ functions are protected by the cHRM_SUPPORTED macro,
-# but this doesn't actually apply since cHRM_SUPPORTED is defined even
-# when png_(g|s)et_cHRM_XYZ are not available.
 
 [%- FOR chunk IN chunks %]
 [%- IF chunk.defined('auto_type') %]
@@ -501,7 +533,7 @@ CODE:
 	png_set_chunk_cache_max(Png->png, max);
 #else
 	UNSUPPORTED ('CHUNK_CACHE_MAX');
-#endif /* PNG_CHUNK_CACHE_MAX_SUPPORTED */
+#endif /* CHUNK_CACHE_MAX */
 
 int
 perl_png_get_chunk_cache_max(Png)
@@ -512,11 +544,11 @@ CODE:
 #else
 	RETVAL = -1;
 	UNSUPPORTED ('CHUNK_CACHE_MAX');
-#endif /* PNG_CHUNK_CACHE_MAX_SUPPORTED */
+#endif /* CHUNK_CACHE_MAX */
 OUTPUT:
 	RETVAL
 
-#endif /* PNG_SET_USER_LIMITS_SUPPORTED */
+#endif /* SET_USER_LIMITS */
 
 void
 perl_png_set_image_data (Png, image_data, own = & PL_sv_undef)
@@ -698,7 +730,11 @@ perl_png_set_gamma (Png, gamma, override_gamma)
 	double gamma;
 	double override_gamma;
 CODE:
+#ifdef PNG_READ_GAMMA_SUPPORTED
 	png_set_gamma (Png->png, gamma, override_gamma);
+#else
+	UNSUPPORTED("READ_GAMMA");
+#endif /* READ_GAMMA */
 	
 
 #ifdef PNG_READ_ALPHA_MODE_SUPPORTED
@@ -711,69 +747,130 @@ perl_png_set_alpha_mode (Png, mode, screen_gamma)
 CODE:
 	png_set_alpha_mode (Png->png, mode, screen_gamma);
 
-#endif /* def PNG_READ_ALPHA_MODE_SUPPORTED */
+#endif /* def PNG_READ_ALPHA_MODE */
 
 void
 perl_png_set_scale_16(Png)
 	Image::PNG::Libpng Png;
 CODE:
+#ifdef PNG_READ_SCALE_16_TO_8_SUPPORTED
 	png_set_scale_16 (Png->png);
+#else
+	UNSUPPORTED("READ_SCALE_16_TO_8");
+#endif /* READ_SCALE_16_TO_8 */
 
 void
 perl_png_set_invert_mono(Png)
 	Image::PNG::Libpng Png;
 CODE:
+#ifdef PNG_READ_INVERT_SUPPORTED
 	png_set_invert_mono (Png->png);
+#else
+	UNSUPPORTED("READ_INVERT");
+#endif /* READ_INVERT */
 
 void
 perl_png_set_invert_alpha(Png)
 	Image::PNG::Libpng Png;
 CODE:
+#ifdef PNG_READ_INVERT_ALPHA_SUPPORTED
 	png_set_invert_alpha (Png->png);
+#else
+	UNSUPPORTED("READ_INVERT_ALPHA");
+#endif /* READ_INVERT_ALPHA */
+
+
 
 void
 perl_png_set_bgr(Png)
 	Image::PNG::Libpng Png;
 CODE:
-	png_set_bgr (Png->png);
+	if (Png->type == perl_png_read_obj) { 
+#if defined(PNG_READ_BGR_SUPPORTED)
+            png_set_bgr (Png->png);
+#else
+	    UNSUPPORTED("READ_BGR");
+#endif /* READ_BGR */
+	}
+	else {
+#if defined(PNG_WRITE_BGR_SUPPORTED)
+            png_set_bgr (Png->png);
+#else
+	    UNSUPPORTED("WRITE_BGR");
+#endif /* WRITE_BGR */
+	}
 
 void
 perl_png_set_palette_to_rgb(Png)
 	Image::PNG::Libpng Png;
 CODE:
+#ifdef PNG_READ_EXPAND_SUPPORTED
 	png_set_palette_to_rgb (Png->png);
+#else
+	UNSUPPORTED("READ_EXPAND");
+#endif /* READ_EXPAND */
 
 void
 perl_png_set_packswap(Png)
 	Image::PNG::Libpng Png;
 CODE:
-	png_set_packswap (Png->png);
+	if (Png->type == perl_png_read_obj) { 
+#if defined(PNG_READ_PACKSWAP_SUPPORTED)
+            png_set_packing (Png->png);
+#else
+	    UNSUPPORTED("READ_PACKSWAP");
+#endif /* READ_PACKSWAP */
+	}
+	else {
+#if defined(PNG_WRITE_PACKSWAP_SUPPORTED)
+	    png_set_packswap (Png->png);
+#else
+	    UNSUPPORTED("WRITE_PACKSWAP");
+#endif /* WRITE_PACKSWAP */
+	}
 
 void
 perl_png_set_swap(Png)
 	Image::PNG::Libpng Png;
 CODE:
+#if defined(PNG_READ_SWAP_SUPPORTED) && defined(PNG_WRITE_SWAP_SUPPORTED)
 	png_set_swap (Png->png);
+#else
+	UNSUPPORTED("WRITE_SWAP");
+	UNSUPPORTED("READ_SWAP");
+#endif
 
 void
 perl_png_set_swap_alpha(Png)
 	Image::PNG::Libpng Png;
 CODE:
+#ifdef PNG_READ_SWAP_ALPHA_SUPPORTED
 	png_set_swap_alpha (Png->png);
+#else
+	UNSUPPORTED("READ_SWAP_ALPHA");
+#endif /* READ_SWAP_ALPHA */
 
 void
 perl_png_permit_mng_features(Png, mask)
 	Image::PNG::Libpng Png;
 	int mask;
 CODE:
+#ifdef PNG_MNG_FEATURES_SUPPORTED
 	png_permit_mng_features(Png->png, mask);
+#else
+	UNSUPPORTED("MNG_FEATURES");
+#endif /* MNG_FEATURES */
 
 [% IF 0 %]
 void
 perl_png_shift(Png)
 	Image::PNG::Libpng Png;
 CODE:
+#ifdef PNG_READ_SHIFT_SUPPORTED
 	png_set_shift (Png->png)
+#else
+	UNSUPPORTED("READ_SHIFT");
+#endif /* READ_SHIFT */
 [% END %]
 
 void
@@ -782,21 +879,33 @@ perl_png_set_add_alpha(Png, filler, filler_loc)
 	unsigned int filler;
 	int filler_loc;
 CODE:
+#if defined(PNG_READ_FILLER_SUPPORTED) && defined(PNG_WRITE_FILLER_SUPPORTED)
 	png_set_add_alpha (Png->png, filler, filler_loc);
-
+#else
+	UNSUPPORTED("READ_FILLER");
+	UNSUPPORTED("WRITE_FILLER");
+#endif /* read/write filler */
 
 void
 perl_png_set_expand_gray_1_2_4_to_8(Png)
 	Image::PNG::Libpng Png;
 CODE:
+#ifdef PNG_READ_EXPAND_SUPPORTED
 	png_set_expand_gray_1_2_4_to_8 (Png->png);
+#else
+	UNSUPPORTED("READ_EXPAND");
+#endif /* read_expand */
 
 
 void
 perl_png_set_tRNS_to_alpha(Png)
 	Image::PNG::Libpng Png;
 CODE:
+#ifdef PNG_READ_EXPAND_SUPPORTED
 	png_set_tRNS_to_alpha(Png->png);
+#else
+	UNSUPPORTED("READ_EXPAND");
+#endif /* read_expand */
 
 void
 perl_png_write_image(Png, rows)
