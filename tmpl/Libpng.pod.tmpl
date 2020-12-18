@@ -1987,7 +1987,9 @@ contain floating-point arguments.  [% manual %]
 
 =head2 set_quantize
 
-    $png->set_quantize (\@palette);
+    $png->set_quantize (\@palette, $ncolors, \@histogram, 1);
+
+This is partially supported. At the moment C<@histogram> is not set up but the C<@palette> part can be set to a palette similar to
 
 =head2 set_rgb_to_gray
 
@@ -2007,7 +2009,7 @@ C<$red_weight> or C<$green_weight>, use any negative value. [% manual
 %]
 
 If you choose C<PNG_ERROR_ACTION_NONE> you can find out whether there
-were non-RGB pixels in your image. See L</get_rgb_to_gray_status>.
+were non-RGB pixels in your image using L</get_rgb_to_gray_status>.
 
 [% cor(fn="png_set_rgb_to_gray") %] with C<$error_action> having a
 default value of C<PNG_ERROR_ACTION_NONE>, and C<$red_weight> and
