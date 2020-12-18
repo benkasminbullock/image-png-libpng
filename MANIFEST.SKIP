@@ -23,3 +23,5 @@ doc/.*
 ^unt/unknown-chunk\.t$
 # Scripts for building from libpng source code
 ^util/.*$
+# Examples not ready for cpan
+^nocpan/.*$

@@ -5,20 +5,27 @@ use utf8;
 use FindBin '$Bin';
 use Image::PNG::Libpng ':all';
 my $file = "wave.png";
-my $ncolors = 20;
+my $ncolors = 40;
 my $palette = randompalette ($ncolors);
-my $rpng = create_reader ($file);
-$rpng->set_quantize ($palette, $ncolors, [], 1);
-$rpng->read_png ();
-print scalar (@$palette), "\n";
-my $wpng = copy_png ($rpng);
-$wpng->set_PLTE ($palette);
-$wpng->write_png_file ('wave-quant.png');
+write_with_palette ($file, randompalette ($ncolors), $ncolors, "random");
+write_with_palette ($file, points ($file, $ncolors), $ncolors, "picked");
 exit;
+
+sub write_with_palette
+{
+    my ($file, $palette, $ncolors, $name) = @_;
+    my $rpng = create_reader ($file);
+    $rpng->set_quantize ($palette, $ncolors, [], 1);
+    $rpng->read_png ();
+    my $wpng = copy_png ($rpng);
+    $wpng->set_PLTE ($palette);
+    $wpng->write_png_file ("$name-$file");
+}
 
 sub points
 {
-    my ($png, $ncolors) = @_;
+    my ($pngfile, $ncolors) = @_;
+    my $png = read_png_file ($pngfile);
     my $rows = $png->get_rows ();
     my $h = $png->height ();
     my $w = $png->width ();

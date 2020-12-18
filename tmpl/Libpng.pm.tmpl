@@ -170,12 +170,14 @@ sub [% what %]
 sub image_data_diff
 {
     my ($file1, $file2, %options) = @_;
-    my $png1 = read_png_file ($file1, transforms => PNG_TRANSFORM_EXPAND);
-    my $png2 = read_png_file ($file2, transforms => PNG_TRANSFORM_EXPAND);
+    my $transforms = PNG_TRANSFORM_EXPAND | PNG_TRANSFORM_GRAY_TO_RGB;
+    my $png1 = read_png_file ($file1, transforms => $transforms);
+    my $png2 = read_png_file ($file2, transforms => $transforms);
     my $ihdr1 = $png1->get_IHDR ();
     my $ihdr2 = $png2->get_IHDR ();
     my @fields = qw/height width/;
     for my $field (@fields) {
+	print "$field: $ihdr1->{$field} != $ihdr2->{$field}\n";
 	if ($ihdr1->{$field} != $ihdr2->{$field}) {
 	    return "$field differs: $file1: ".
 	    "$ihdr1->{field}; $file2: $ihdr2->{field}";
@@ -192,7 +194,10 @@ sub image_data_diff
 		my @bytes1 = unpack "C*", $row1;
 		my @bytes2 = unpack "C*", $row2;
 		for my $byte (0..$#bytes1) {
-		    printf ("%02X,%02X ", $bytes1[$byte], $bytes2[$byte]);
+		    if ($bytes1[$byte] != $bytes2[$byte]) {
+			printf 'byte %0d: %02X,%02X' . "\n", $byte,
+				$bytes1[$byte], $bytes2[$byte];
+		    }
 		}
 		print "\n";
 	    }
@@ -206,8 +211,9 @@ sub image_data_diff
 sub png_compare
 {
     my ($file1, $file2, %options) = @_;
-    my $png1 = read_png_file ($file1, transforms => PNG_TRANSFORM_EXPAND);
-    my $png2 = read_png_file ($file2, transforms => PNG_TRANSFORM_EXPAND);
+    my $transforms = PNG_TRANSFORM_EXPAND | PNG_TRANSFORM_GRAY_TO_RGB;
+    my $png1 = read_png_file ($file1, transforms => $transforms);
+    my $png2 = read_png_file ($file2, transforms => $transforms);
     my $ihdr1 = $png1->get_IHDR ();
     my $ihdr2 = $png2->get_IHDR ();
     my @fields = qw/height width/;

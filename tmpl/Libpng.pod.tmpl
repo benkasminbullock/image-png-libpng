@@ -57,8 +57,16 @@ For a write object, use argument 'L</WRITE_[% val %]>'.
 in the distribution.)
 
 [%- END # macro -%]
+[%- MACRO output(pl) BLOCK %]
+[%- file = pl _ "-out.txt" %]
+[%- INCLUDE $file | xtidy %]
+[%- END # macro -%]
 [%- MACRO eximg(file) BLOCK %]
+[%- IF 0 %]
 [%- imgurl=metacpan _ "/examples/" _ file _ ".png" %]
+[%- ELSE %]
+[%- imgurl="http://mikan/examples/" _ file _ ".png" %]
+[%- END # 0 %]
 [% filename= "examples/" _ file _ ".png" %]
 L<[% filename %]|[% imgurl %]> is included in the distribution.
 
@@ -204,6 +212,10 @@ reads in all the data from the structure on being called.
 This is useful when image data is stored in a Perl scalar. For example
 
 [% example('get-www-png') %]
+
+The output looks like this:
+
+[% output('get-www-png') %]
 
 See also L</Input/output manipulation functions>.
 
@@ -1895,6 +1907,29 @@ allowed. See also L</set_chunk_cache_max>.
 Returns a true value if there were some non-gray pixels in an RGB
 image after calling L</set_rgb_to_gray>.
 
+=head3 Saving bandwidth
+
+Try this one weird old C<get_rgb_to_gray_status> trick to check
+whether an image marked as RGB is really monochrome or not.
+
+[% example("xkcd") %]
+
+The output looks like this:
+
+[% output("xkcd") %]
+
+The resulting image looks like this:
+
+[% eximg("life-gray") %]
+
+Correct use of Image::PNG::Libpng could have spared as many as 50,000
+bytes from the indignity of being sent around the internet.
+
+This also illustrates the use of L</png_compare>.
+
+L<Original image, licence statement and copyright notice
+here|https://xkcd.com/2391/>.
+
 [% FOR what IN ['height', 'width'] %]
 
 =head2 get_user_[% what %]_max
@@ -1989,7 +2024,29 @@ contain floating-point arguments.  [% manual %]
 
     $png->set_quantize (\@palette, $ncolors, \@histogram, 1);
 
-This is partially supported. At the moment C<@histogram> is not set up but the C<@palette> part can be set to a palette similar to
+This is partially supported. At the moment C<@histogram> is not set up
+but the C<@palette> part can be set to a palette similar to
+L</set_PLTE>.
+
+=head3 Experiments in quantization
+
+This example program experiments with two ways to quantize a PNG
+image, first ofall using a completely random palette, and second using
+colors picked from the image at random:
+
+[% example('q') %]
+
+The input image is this:
+
+[% eximg('wave') %]
+
+Completely random colors gives this kind of output:
+
+[% eximg('random-wave') %]
+
+Picked colors gives this kind of output:
+
+[% eximg('picked-wave') %]
 
 =head2 set_rgb_to_gray
 
@@ -2162,7 +2219,8 @@ L<Image::Similar> for a looser comparison of images.
 
 This uses the "expand" transform of libpng to read both the images, so
 it is able to compare images of different color types. It compares the
-alpha values as well as the color pixels.
+alpha values as well as the color pixels. See L</Saving bandwidth> for
+an example of comparing an RGB and a grayscale image.
 
 =head2 read_struct
 

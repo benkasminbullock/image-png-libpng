@@ -1,18 +1,13 @@
-0.52_08 2020-12-16
-- split_alpha internals simplified, doc changed
-- Support get/set cHRM_XYZ
-- (g|s)et_(cHRM_XYZ|chunk_cache_max) problems for old libpngs 
-- Support for transform functions png_set_(.*) where possible
-- Support png_(read|write)_(end|image|info)
-- Add create_(reader|writer) convenience functions
-- Support png_set_background, add example of use
+0.53 2020-12-16
+
+- Support png_(g|s)et_(cHRM_XYZ|chunk_cache_max) 
+- Support png_set_(background|rgb_to_gray|quantize); add examples
+- Add create_(reader|writer), color_type_channels convenience functions
+- Support partial read functions png_(read|write)_(end|image|info)
+- Support transform functions png_set_(.*) where possible
 - init_io made safer
-- Document set_strip_alpha
-- color_type_channels
-- Set palette chunk bugs fixed (crash on empty palette etc.)
-- Wrap the new set_* functions with preprocessor conditionals
-- Partial support for set_quantize (no histogram yet)
-- Support rgb_to_gray
+- Set palette chunk bugs fixed
+- split_alpha internals simplified, doc changed
 
 0.52 2020-12-13
 
