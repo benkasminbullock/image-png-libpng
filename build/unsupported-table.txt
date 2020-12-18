@@ -634,8 +634,6 @@ item: png_set_gamma_fixed
 %%
 cat: unimplemented
 
-
-
 # Local variables:
 # mode: table-readable
 # End:

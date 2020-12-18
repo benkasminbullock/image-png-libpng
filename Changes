@@ -1,7 +1,4 @@
-0.52_07 2020-12-16
-- Wrap all of the new set_* functions with preprocessor conditionals
-
-0.52_06 2020-12-16
+0.52_08 2020-12-16
 - split_alpha internals simplified, doc changed
 - Support get/set cHRM_XYZ
 - (g|s)et_(cHRM_XYZ|chunk_cache_max) problems for old libpngs 
@@ -12,6 +9,10 @@
 - init_io made safer
 - Document set_strip_alpha
 - color_type_channels
+- Set palette chunk bugs fixed (crash on empty palette etc.)
+- Wrap the new set_* functions with preprocessor conditionals
+- Partial support for set_quantize (no histogram yet)
+- Support rgb_to_gray
 
 0.52 2020-12-13
 

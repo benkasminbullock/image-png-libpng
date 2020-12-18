@@ -1,5 +1,8 @@
 #line
 
+/* Coding style note: we use "color" in code, documentation &
+   variables, not "colour", as per libpng. 2020-12-09 08:03:03 */
+
 #if PNG_LIBPNG_VER_MAJOR >= 1 && PNG_LIBPNG_VER_MINOR >= 4 && PNG_LIBPNG_VER_RELEASE >= 0
 #define PNG_CHUNK_CACHE_MAX_SUPPORTED
 #endif /* version >= 1.4.0 */
@@ -13,9 +16,6 @@
 #define PNG_cHRM_XYZ_SUPPORTED
 #endif /* PNG_cHRM_SUPPORTED */
 #endif /* version >= 1.5.5 */
-
-/* Coding style note: use "color" in code & variables, not "color",
-   as per libpng. 2020-12-09 08:03:03 */
 
 #ifndef PNG_FLOATING_POINT_SUPPORTED
 #  error libpng support requires libpng to export the floating point APIs
@@ -314,6 +314,9 @@ perl_png_destroy (perl_libpng_t * png)
 	PERL_PNG_FREE (png->all_rows);
 	png->all_rows = 0;
     }
+    /* The io_sv holds any FILE * which we got from "init_io". We keep
+       that scalar until now because otherwise Perl automatically
+       closes the FILE * when the scalar goes out of scope. */
     if (png->io_sv) {
 	SvREFCNT_dec (png->io_sv);
 	png->io_sv = 0;
@@ -402,6 +405,8 @@ static SV * make_text_sv (perl_libpng_t * png, const png_textp text_ptr)
     return sv;
 }
 
+#ifdef PNG_iTXt_SUPPORTED
+
 /* Convert the "lang_key" field of a "png_text" structure into a Perl
    scalar. */
 
@@ -430,6 +435,8 @@ static SV * lang_key_to_sv (perl_libpng_t * png, const char * lang_key)
     }
     return sv;
 }
+
+#endif /* #ifdef PNG_iTXt_SUPPORTED */
 
 /* "text_fields" contains the names of the various fields in a
    "png_text" structure. The following routine uses these names to put
@@ -663,8 +670,7 @@ perl_png_set_text (perl_libpng_t * png, AV * text_chunks)
         return;
     }
     /* This memory needs to be freed before we call "croak", hence we
-       cannot "croak" inside perl_png_set_text_from_hash but have to
-       use error return values, then free this, and then croak. */
+        have to free this and then croak. */
     GET_MEMORY (png_texts, num_text, png_text);
     for (i = 0; i < num_text; i++) {
         SV ** chunk_pointer;
@@ -1100,8 +1106,6 @@ perl_png_color_type_name (int color_type)
 static int
 perl_png_color_type_channels (int color_type)
 {
-    const char * name;
-
     switch (color_type) {
     case PNG_COLOR_TYPE_GRAY:
 	return 1;
@@ -1197,6 +1201,69 @@ perl_png_get_PLTE (perl_libpng_t * png)
     return newRV_noinc ((SV *) perl_colors);
 }
 
+
+static void
+perl_png_av_to_colors (perl_libpng_t * png, AV * perl_colors,
+		       png_colorpp colors_ptr, int * n_colors_ptr)
+{
+    int n_colors;
+    png_colorp colors;
+    int i;
+
+    *n_colors_ptr = 0;
+    *colors_ptr = 0;
+
+    if (! perl_colors) {
+	return;
+    }
+
+    n_colors = av_len (perl_colors) + 1;
+    if (n_colors == 0) {
+	return;
+    }
+    MESSAGE ("There are %d colors in the palette.\n", n_colors);
+    GET_MEMORY (colors, n_colors, png_color);
+    /* Put the colors from Perl into the libpng structure. */
+
+#define PERL_PNG_FETCH_COLOR(x) {                                       \
+        SV ** rgb_sv = hv_fetch (palette_entry, #x, strlen (#x), 0);    \
+	if (! rgb_sv) {							\
+	    warn ("Palette entry %d is missing color %s",		\
+		  i, #x);						\
+    	    PERL_PNG_FREE (colors);					\
+	    return;							\
+	}								\
+        colors[i].x = SvIV (*rgb_sv);					\
+    }
+    for (i = 0; i < n_colors; i++) {
+        HV * palette_entry;
+        SV ** color_i;
+
+        color_i = av_fetch (perl_colors, i, 0);
+	if (! color_i) {
+	    warn ("Palette entry %d is empty", i);
+	    PERL_PNG_FREE (colors);
+	    return;
+	}
+
+	if (! SvOK (* color_i) ||
+	    ! SvROK (* color_i) ||
+	    SvTYPE (SvRV (* color_i)) != SVt_PVHV) {
+	    warn ("Palette entry %d is not a hash reference", i);
+	    PERL_PNG_FREE (colors);
+	    return;
+	}
+        palette_entry = (HV *) SvRV (*color_i);
+
+        PERL_PNG_FETCH_COLOR (red);
+        PERL_PNG_FETCH_COLOR (green);
+        PERL_PNG_FETCH_COLOR (blue);
+    }
+#undef PERL_PNG_FETCH_COLOR
+    * colors_ptr = colors;
+    * n_colors_ptr = n_colors;
+}
+
 /* Set the palette chunk of a PNG image to the palette described in
    "perl_colors". */
 
@@ -1205,37 +1272,13 @@ perl_png_set_PLTE (perl_libpng_t * png, AV * perl_colors)
 {
     int n_colors;
     png_colorp colors;
-    int i;
 
-    n_colors = av_len (perl_colors) + 1;
+    perl_png_av_to_colors (png, perl_colors, & colors, & n_colors);
     if (n_colors == 0) {
         /* The user tried to set an empty palette of colors. */
         croak ("set_PLTE: Empty array of colors in set_PLTE");
     }
     MESSAGE ("There are %d colors in the palette.\n", n_colors);
-
-    GET_MEMORY (colors, n_colors, png_color);
-
-    /* Put the colors from Perl into the libpng structure. */
-
-#define PERL_PNG_FETCH_COLOR(x) {                                       \
-        SV * rgb_sv = * (hv_fetch (palette_entry, #x, strlen (#x), 0)); \
-        colors[i].x = SvIV (rgb_sv);                                    \
-    }
-    for (i = 0; i < n_colors; i++) {
-        HV * palette_entry;
-        SV * color_i;
-
-        color_i = * av_fetch (perl_colors, i, 0);
-        palette_entry = (HV *) SvRV (color_i);
-
-        PERL_PNG_FETCH_COLOR (red);
-        PERL_PNG_FETCH_COLOR (green);
-        PERL_PNG_FETCH_COLOR (blue);
-    }
-
-#undef PERL_PNG_FETCH_COLOR
-
     png_set_PLTE (pngi, colors, n_colors);
     PERL_PNG_FREE (colors);
 }
@@ -1427,16 +1470,24 @@ static void perl_png_set_gAMA (perl_libpng_t * png, double gamma)
 #endif
 }
 
+#if PNG_LIBPNG_VER_MINOR <= 4
+typedef png_charp png_profile_t;
+#else
+    /* Modern version */
+typedef png_bytep png_profile_t;
+#endif /* minor <= 2 */
+
+
 static SV * perl_png_get_iCCP (perl_libpng_t * png)
 {
     SV * iccp = & PL_sv_undef;
 #ifdef PNG_iCCP_SUPPORTED
     png_charp name;
-    png_bytep profile;
     int compression_type = UNUSED_ZERO_ARG;
     png_uint_32 proflen;
     HV * ice;
     SV * profile_sv;
+    png_profile_t profile;
 
     if (! VALID (iCCP)) {
 	return iccp;
@@ -1459,14 +1510,21 @@ static void perl_png_set_iCCP (perl_libpng_t * png, HV * iCCP)
 #ifdef PNG_iCCP_SUPPORTED
     char * name;
     STRLEN name_length;
-    char * profile;
     STRLEN profile_length;
+    /* If we set profile to be char * (png_charp), we get warnings
+       from version 1.2 and version 1.4 of libpng, but if we set
+       profile to be unsigned char * (png_bytep) we get warnings from
+       Perl when fetching from the hash. Here it is called "profile"
+       due to economising of typing in the HASH_FETCH_PV macro, then
+       we copy that pointer into "p". */
+    char * profile;
+    png_profile_t p;
 
     HASH_FETCH_PV (iCCP, profile);
     HASH_FETCH_PV (iCCP, name);
-
-    png_set_iCCP (pngi, name, UNUSED_ZERO_ARG,
-		  (png_bytep) profile, (png_uint_32) profile_length);
+    p = (png_profile_t) profile;
+    png_set_iCCP (pngi, name, UNUSED_ZERO_ARG, p,
+		  (png_uint_32) profile_length);
 #else /* PNG_iCCP_SUPPORTED */
     UNSUPPORTED(iCCP);
 #endif /* PNG_iCCP_SUPPORTED */
@@ -2588,10 +2646,15 @@ static void perl_png_set_cHRM (perl_libpng_t * png, HV * cHRM)
 #endif
 }
 
+#ifdef PNG_cHRM_XYZ_SUPPORTED
+
+/* The following two functions are already protected within
+   Libpng.XS.tmpl, so we don't need a protector or UNSUPPORTED call
+   within these functions. */
+
 static SV * perl_png_get_cHRM_XYZ (perl_libpng_t * png)
 {
     SV * chrm = & PL_sv_undef; 
-#ifdef PNG_cHRM_SUPPORTED
     if (VALID (cHRM)) {
         HV * ice;
 #oline
@@ -2610,16 +2673,11 @@ static SV * perl_png_get_cHRM_XYZ (perl_libpng_t * png)
 #line
         chrm = newRV_noinc ((SV *) ice);
     }
-#else
-    /* libpng was compiled without this option. */
-    UNSUPPORTED(cHRM);
-#endif
     return chrm;
 }
 
 static void perl_png_set_cHRM_XYZ (perl_libpng_t * png, HV * cHRM_XYZ)
 {
-#ifdef PNG_cHRM_SUPPORTED
     SV ** key_sv_ptr;
 #oline
 [% FOR key IN chunk_hash.cHRM_XYZ.fields -%]
@@ -2635,11 +2693,9 @@ static void perl_png_set_cHRM_XYZ (perl_libpng_t * png, HV * cHRM_XYZ)
     png_set_cHRM_XYZ (pngi
 [%- FOR key IN chunk_hash.cHRM_XYZ.fields -%], [% key %][%- END -%]);
 #line
-#else
-    /* libpng was compiled without this option. */
-    UNSUPPORTED(cHRM);
-#endif
 }
+
+#endif /* PNG_cHRM_XYZ_SUPPORTED */
 
 static void perl_png_set_transforms (perl_libpng_t * png, int transforms)
 {
@@ -2777,8 +2833,6 @@ perl_png_split_alpha (perl_libpng_t * png)
 {
     HV * split;
     SV * split_ref;
-    SV * data;
-    SV * alpha;
     int datapix;
     png_uint_32 width;
     png_uint_32 height;
@@ -2787,47 +2841,36 @@ perl_png_split_alpha (perl_libpng_t * png)
     int interlace_method;
     int rowbytes;
     int alphapix;
-    int npixels;
     unsigned char * databytes;
     unsigned char * alphabytes;
     int i;
     png_bytepp rows;
-    int rowpixels;
     int bytes;
     int channels;
     int colors;
 
-    alphapix = 1;
     png_get_IHDR (pngi, & width, & height,
 		  & bit_depth, & color_type, & interlace_method,
-		  0, 0);
+		  UNUSED_ZERO_ARG, UNUSED_ZERO_ARG);
     rows = png_get_rows (pngi);
     rowbytes = png_get_rowbytes (pngi);
-    rowpixels = rowbytes;
-    switch (bit_depth) {
-    case 8:
+    if (bit_depth == 8) {
 	bytes = 1;
-	break;
-    case 16:
+    }
+    else if (bit_depth == 16) {
 	bytes = 2;
-	break;
-    default:
+    }
+    else {
 	warn ("Bit depth of %d is not handled by split_alpha", bit_depth);
 	return &PL_sv_undef;
     }
-    switch (color_type) {
-    case PNG_COLOR_TYPE_RGB_ALPHA:
-	colors = 3;
-	break;
-    case PNG_COLOR_TYPE_GRAY_ALPHA:
-	colors = 1;
-	break;
-    default:
-	warn ("Color type %s (%d) is not handled by split_alpha",
+    if ((color_type & PNG_COLOR_MASK_ALPHA) == 0) {
+	warn ("Color type %s (%d) has no alpha channel",
 	      perl_png_color_type_name (color_type), color_type);
 	return &PL_sv_undef;
     }
-    channels = colors + 1;
+    channels = perl_png_color_type_channels (color_type);
+    colors = channels - 1;
     alphapix = bytes * height * width;
     datapix = colors * alphapix;
     split = newHV ();
@@ -2894,6 +2937,27 @@ perl_png_init_io_x (perl_libpng_t * Png, SV * fpsv)
     else {
 	croak ("Error doing init_io: unopened file handle?");
     }
+}
+
+static void
+perl_png_set_quantize (perl_libpng_t * png, AV * palette,
+		       int max_screen_colors, AV * histogram,
+		       int full_quantize)
+{
+#ifdef PNG_READ_QUANTIZE_SUPPORTED
+    int n_colors;
+    png_colorp colors;
+
+    perl_png_av_to_colors (png, palette, & colors, & n_colors);
+    if (n_colors == 0) {
+	croak ("set_quantize: empty palette");
+    }
+    png_set_quantize (png->png, colors, n_colors, max_screen_colors,
+		      NULL, full_quantize);
+    PERL_PNG_FREE (colors);
+#else
+    UNSUPPORTED(READ_QUANTIZE);
+#endif /* #ifdef PNG_READ_QUANTIZE_SUPPORTED */
 }
 
 #undef pngi

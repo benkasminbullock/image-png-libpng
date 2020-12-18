@@ -1888,6 +1888,13 @@ allowed. See also L</set_chunk_cache_max>.
 
 [% cor(fn="png_get_chunk_cache_max") %]
 
+=head2 get_rgb_to_gray_status
+
+    my $badpixels = $png->get_rgb_to_gray_status ();
+
+Returns a true value if there were some non-gray pixels in an RGB
+image after calling L</set_rgb_to_gray>.
+
 [% FOR what IN ['height', 'width'] %]
 
 =head2 get_user_[% what %]_max
@@ -1977,6 +1984,40 @@ contain floating-point arguments.  [% manual %]
 [% supports(desc='set_gamma', val='READ_GAMMA') %]
 
 [% cor(fn="set_gamma") %]
+
+=head2 set_quantize
+
+    $png->set_quantize (\@palette);
+
+=head2 set_rgb_to_gray
+
+    $png->set_rgb_to_gray ();
+
+    $png->set_rgb_to_gray ($error_action, $red_weight, $green_weight);
+
+Convert a PNG image from RGB (colored) to gray. [% manual %]
+
+Without arguments, the libpng default values are used for
+C<$red_weight> and C<$green_weight>, and an error action of "none" is
+chosen. If the error action is set to a value of
+C<PNG_ERROR_ACTION_WARN> or C<PNG_ERROR_ACTION_ERROR>, pixels in the
+RGB image where the R, G and B values are not equal will cause a
+warning or error respectively. To get the default values for
+C<$red_weight> or C<$green_weight>, use any negative value. [% manual
+%]
+
+If you choose C<PNG_ERROR_ACTION_NONE> you can find out whether there
+were non-RGB pixels in your image. See L</get_rgb_to_gray_status>.
+
+[% cor(fn="png_set_rgb_to_gray") %] with C<$error_action> having a
+default value of C<PNG_ERROR_ACTION_NONE>, and C<$red_weight> and
+C<$green_weight> both set to negative values.
+
+=head3 Convert a colored image to gray
+
+[% example("rgb-to-gray") %]
+
+[% eximg("grayface") %]
 
 =head2 set_user_limits
 

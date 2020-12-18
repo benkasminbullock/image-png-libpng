@@ -15,9 +15,45 @@ BEGIN {
 };
 use autodie;
 use Getopt::Long;
+use File::Compare;
+use File::Copy;
 
-#my $verbose = 1;
-my $verbose;
+my $warned;
+
+my $ok = GetOptions (
+    lines => \my $lines,
+    verbose => \my $verbose,
+);
+
+if (! $ok) {
+    print <<EOF;
+Options:
+
+--lines         - use correct line numbering
+--verbose       - turn on error messages
+
+EOF
+    exit;
+}
+
+if ($verbose) {
+    print "Making the files for Image::PNG::Libpng from templates.\n";
+}
+
+# Copy the file if it is newer.
+
+my $checkerdir = '/home/ben/projects/check4libpng/lib';
+my $checker = 'CheckForLibPng.pm';
+my $checkermaster = "$checkerdir/$checker";
+my $checkercopy = "$Bin/../inc/$checker";
+if (! -f $checkercopy || compare ($checkermaster, $checkercopy)) {
+    if (-f $checkercopy) {
+	chmod 0644, $checkercopy or die $!;
+    }
+    warn "$checker is outdated, overwriting with new version";
+    copy $checkermaster, $checkercopy or die $!;
+    chmod 0444, $checkercopy or die $!;
+}
 
 # Read the configuration file "tmpl/config".
 
@@ -134,13 +170,19 @@ for my $file (@files) {
 	    or die $!;
 	while (<$in>) {
 
-# This is better for my purposes, but it causes errors on
-# SunOS/Solaris compilers:
-# http://www.cpantesters.org/cpan/report/f25ae7b0-94c3-11e3-ae04-8631d666d1b8
-
-#	    s/^(#line)$/sprintf "$1 %d \"tmpl\/%s\"", $. + 1, $template/e; 
-
-	    s/^(#line)$/sprintf "$1 %d \"%s\"", $. + 1, $template/e; 
+	    # This is better for my purposes, but it causes errors on
+	    # SunOS/Solaris compilers:
+	    # http://www.cpantesters.org/cpan/report/f25ae7b0-94c3-11e3-ae04-8631d666d1b8
+	    if ($lines) {
+		if (! $warned) {
+		    warn "Switch off correct line numbers";
+		    $warned = 1;
+		}
+		s/^(#line)$/sprintf "$1 %d \"tmpl\/%s\"", $. + 1, $template/e; 
+	    }
+	    else {
+		s/^(#line)$/sprintf "$1 %d \"%s\"", $. + 1, $template/e; 
+	    }
 	    $text .= $_;
 	}
 	my $outtext;
@@ -167,39 +209,5 @@ for my $file (@files) {
     }
     chmod 0444, $output;
 }
-
-# Other files which aren't made from templates.
-
-my @extras = qw!
-my-xs.c
-tmpl/author
-tmpl/config
-tmpl/examples_doc
-tmpl/generated
-tmpl/libpng_doc
-tmpl/other_modules
-tmpl/png_doc
-tmpl/pngspec
-tmpl/version
-tmpl/warning
-build/ImagePNGBuild.pm
-build/LibpngInfo.pm
-build/make-files.pl
-MANIFEST
-MANIFEST.SKIP
-my-xs.h
-perl-libpng.h
-t/bKGD.t
-t/cHRM.t
-t/pHYs.t
-t/tRNS.t
-t/tIME.t
-README
-!;
-my @mani;
-push @mani, map {"tmpl/$_.tmpl"} @files;
-push @mani, @outputs;
-push @mani, @extras;
-push @mani, 'makeitfile';
 
 exit;

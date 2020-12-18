@@ -1,0 +1,28 @@
+#!/home/ben/software/install/bin/perl
+
+# Compile this distribution against old versions of libpng.
+
+use warnings;
+use strict;
+use utf8;
+use FindBin '$Bin';
+use Deploy ('do_system');
+use Getopt::Long;
+my $ok = GetOptions (
+    verbose => \my $verbose,
+    "v=s" => \my $v,
+);
+if (! $ok || ! $v) {
+    die "Specify version with --v <1.2.5> etc.";
+}
+my $dir = "/home/ben/software/libpng/v/$v";
+my $topdir = '/home/ben/projects/image-png-libpng';
+chdir "$topdir" or die $!;
+do_system ("./build/make-files.pl", $verbose);
+do_system ("perl Makefile.PL --optimize --check --prefix $dir", $verbose);
+do_system ("make", $verbose);
+do_system ("make test", $verbose);
+
+# Local variables:
+# mode: perl
+# End:

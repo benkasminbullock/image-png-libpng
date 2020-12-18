@@ -26,7 +26,7 @@ PROTOTYPES: ENABLE
 
 INCLUDE: const-xs.inc
 
-# Constructors and destructors
+ # Constructors and destructors
 
 Image::PNG::Libpng
 perl_png_create_read_struct ()
@@ -43,7 +43,7 @@ CODE:
 OUTPUT:
         RETVAL
 
-# XS destructor, this does the work.
+ # XS destructor, this does the work.
 
 void
 perl_png_DESTROY (Png)
@@ -53,7 +53,7 @@ perl_png_DESTROY (Png)
         	perl_png_destroy (Png);
 	}
 
-# No-ops supplied since they used to be in use in old versions of the module.
+ # No-ops supplied since they used to be in use in old versions of the module.
 
 void
 perl_png_destroy_read_struct (Png)
@@ -69,7 +69,7 @@ CODE:
         perl_png_destroy_write_struct (Png);
 
 
-# libpng-style input/output functions
+ # libpng-style input/output functions
 
 void
 perl_png_write_image(Png, rows)
@@ -314,72 +314,7 @@ perl_png_set_keep_unknown_chunks (Png, keep, chunk_list = 0)
 CODE:
         perl_png_set_keep_unknown_chunks (Png, keep, chunk_list);
 
-
-SV *
-perl_png_get_tRNS_palette (Png)
-        Image::PNG::Libpng Png
-CODE:
-        RETVAL = perl_png_get_tRNS_palette (Png);
-OUTPUT:
-        RETVAL
-
-
-void
-perl_png_set_expand (Png)
-        Image::PNG::Libpng Png
-CODE:
-#ifdef PNG_READ_EXPAND_SUPPORTED
-        png_set_expand (Png->png);
-#else
-	UNSUPPORTED("READ_EXPAND");
-#endif /* READ_EXPAND */
-
-
-void
-perl_png_set_expand_16 (Png)
-        Image::PNG::Libpng Png
-CODE:
-#ifdef PNG_READ_EXPAND_16_SUPPORTED
-        png_set_expand_16 (Png->png);
-#else
-	UNSUPPORTED("READ_EXPAND_16");
-#endif /* READ_EXPAND_16 */
-
-
-void
-perl_png_set_filler (Png, filler, flags)
-        Image::PNG::Libpng Png
-        int filler
-        int flags
-CODE:
-	if (Png->type == perl_png_read_obj) { 
-#if defined(PNG_READ_FILLER_SUPPORTED)
-	    png_set_filler (Png->png, filler, flags);
-#else
-	    UNSUPPORTED("READ_FILLER");
-#endif /* read/write filler */
-	}
-	else {
-#if defined(PNG_WRITE_FILLER_SUPPORTED)
-	    png_set_filler (Png->png, filler, flags);
-#else
-	    UNSUPPORTED("WRITE_FILLER");
-#endif /* read/write filler */
-	}
-
-
-void
-perl_png_set_gray_to_rgb (Png)
-        Image::PNG::Libpng Png
-CODE:
-#ifdef PNG_READ_GRAY_TO_RGB_SUPPORTED
-        png_set_gray_to_rgb (Png->png);
-#else
-	UNSUPPORTED("READ_GRAY_TO_RGB");
-#endif /* READ_GRAY_TO_RGB */
-
-
-# Chunk code which is not automatically generated.
+ # Chunk code which is not automatically generated.
 
 int
 perl_png_get_sRGB (Png)
@@ -395,12 +330,22 @@ perl_png_set_sRGB (Png, sRGB)
         Image::PNG::Libpng Png
         int sRGB
 CODE:
-        png_set_sRGB (Png->png, Png->info, sRGB);
+        perl_png_set_sRGB (Png, sRGB);
 
 
-# Transform routines. These generally doesn't take any arguments but
-# usually do require conditional wrappers to compile on older
-# versions of libpng.
+
+SV *
+perl_png_get_tRNS_palette (Png)
+        Image::PNG::Libpng Png
+CODE:
+        RETVAL = perl_png_get_tRNS_palette (Png);
+OUTPUT:
+        RETVAL
+
+
+ # Transform routines. These generally doesn't take any arguments but
+ # usually do require conditional wrappers to compile on older
+ # versions of libpng.
 
 void
 perl_png_set_add_alpha(Png, filler, filler_loc)
@@ -412,14 +357,14 @@ CODE:
 #if defined(PNG_READ_FILLER_SUPPORTED)
 	    png_set_add_alpha (Png->png, filler, filler_loc);
 #else
-	    UNSUPPORTED("READ_FILLER");
+	    UNSUPPORTED(READ_FILLER);
 #endif /* read/write filler */
 	}
 	else {
 #if defined(PNG_WRITE_FILLER_SUPPORTED)
 	    png_set_add_alpha (Png->png, filler, filler_loc);
 #else
-	    UNSUPPORTED("WRITE_FILLER");
+	    UNSUPPORTED(WRITE_FILLER);
 #endif /* read/write filler */
 	}
 
@@ -432,7 +377,7 @@ CODE:
 #ifdef PNG_READ_ALPHA_MODE_SUPPORTED
 	png_set_alpha_mode (Png->png, mode, screen_gamma);
 #else
-	UNSUPPORTED('READ_ALPHA_MODE');
+	UNSUPPORTED(READ_ALPHA_MODE);
 #endif /* def PNG_READ_ALPHA_MODE */
 
 
@@ -444,16 +389,71 @@ CODE:
 #if defined(PNG_READ_BGR_SUPPORTED)
             png_set_bgr (Png->png);
 #else
-	    UNSUPPORTED("READ_BGR");
+	    UNSUPPORTED (READ_BGR);
 #endif /* READ_BGR */
 	}
 	else {
 #if defined(PNG_WRITE_BGR_SUPPORTED)
             png_set_bgr (Png->png);
 #else
-	    UNSUPPORTED("WRITE_BGR");
+	    UNSUPPORTED (WRITE_BGR);
 #endif /* WRITE_BGR */
 	}
+
+
+void
+perl_png_set_expand (Png)
+        Image::PNG::Libpng Png
+CODE:
+#ifdef PNG_READ_EXPAND_SUPPORTED
+        png_set_expand (Png->png);
+#else
+	UNSUPPORTED (READ_EXPAND);
+#endif /* READ_EXPAND */
+
+
+void
+perl_png_set_expand_16 (Png)
+        Image::PNG::Libpng Png
+CODE:
+#ifdef PNG_READ_EXPAND_16_SUPPORTED
+        png_set_expand_16 (Png->png);
+#else
+	UNSUPPORTED (READ_EXPAND_16);
+#endif /* READ_EXPAND_16 */
+
+
+void
+perl_png_set_filler (Png, filler, flags)
+        Image::PNG::Libpng Png
+        int filler
+        int flags
+CODE:
+	if (Png->type == perl_png_read_obj) { 
+#if defined(PNG_READ_FILLER_SUPPORTED)
+	    png_set_filler (Png->png, filler, flags);
+#else
+	    UNSUPPORTED (READ_FILLER);
+#endif /* read/write filler */
+	}
+	else {
+#if defined(PNG_WRITE_FILLER_SUPPORTED)
+	    png_set_filler (Png->png, filler, flags);
+#else
+	    UNSUPPORTED (WRITE_FILLER);
+#endif /* read/write filler */
+	}
+
+
+void
+perl_png_set_gray_to_rgb (Png)
+        Image::PNG::Libpng Png
+CODE:
+#ifdef PNG_READ_GRAY_TO_RGB_SUPPORTED
+        png_set_gray_to_rgb (Png->png);
+#else
+	UNSUPPORTED (READ_GRAY_TO_RGB);
+#endif /* READ_GRAY_TO_RGB */
 
 
 void
@@ -463,7 +463,7 @@ CODE:
 #ifdef PNG_READ_EXPAND_SUPPORTED
 	png_set_expand_gray_1_2_4_to_8 (Png->png);
 #else
-	UNSUPPORTED("READ_EXPAND");
+	UNSUPPORTED (READ_EXPAND);
 #endif /* read_expand */
 
 
@@ -474,7 +474,7 @@ CODE:
 #ifdef PNG_READ_INVERT_ALPHA_SUPPORTED
 	png_set_invert_alpha (Png->png);
 #else
-	UNSUPPORTED("READ_INVERT_ALPHA");
+	UNSUPPORTED (READ_INVERT_ALPHA);
 #endif /* READ_INVERT_ALPHA */
 
 
@@ -485,7 +485,7 @@ CODE:
 #ifdef PNG_READ_INVERT_SUPPORTED
 	png_set_invert_mono (Png->png);
 #else
-	UNSUPPORTED("READ_INVERT");
+	UNSUPPORTED (READ_INVERT);
 #endif /* READ_INVERT */
 
 
@@ -497,14 +497,14 @@ CODE:
 #if defined(PNG_READ_PACK_SUPPORTED)
             png_set_packing (Png->png);
 #else
-	    UNSUPPORTED("READ_PACK");
+	    UNSUPPORTED (READ_PACK);
 #endif /* READ_PACK */
 	}
 	else {
 #if defined(PNG_WRITE_PACK_SUPPORTED)
             png_set_packing (Png->png);
 #else
-	    UNSUPPORTED("WRITE_PACK");
+	    UNSUPPORTED (WRITE_PACK);
 #endif /* WRITE_PACK */
 	}
 
@@ -516,14 +516,14 @@ CODE:
 #if defined(PNG_READ_PACKSWAP_SUPPORTED)
             png_set_packing (Png->png);
 #else
-	    UNSUPPORTED("READ_PACKSWAP");
+	    UNSUPPORTED (READ_PACKSWAP);
 #endif /* READ_PACKSWAP */
 	}
 	else {
 #if defined(PNG_WRITE_PACKSWAP_SUPPORTED)
 	    png_set_packswap (Png->png);
 #else
-	    UNSUPPORTED("WRITE_PACKSWAP");
+	    UNSUPPORTED (WRITE_PACKSWAP);
 #endif /* WRITE_PACKSWAP */
 	}
 
@@ -535,7 +535,7 @@ CODE:
 #ifdef PNG_READ_EXPAND_SUPPORTED
 	png_set_palette_to_rgb (Png->png);
 #else
-	UNSUPPORTED("READ_EXPAND");
+	UNSUPPORTED (READ_EXPAND);
 #endif /* READ_EXPAND */
 
 
@@ -546,7 +546,7 @@ CODE:
 #ifdef PNG_READ_SCALE_16_TO_8_SUPPORTED
 	png_set_scale_16 (Png->png);
 #else
-	UNSUPPORTED("READ_SCALE_16_TO_8");
+	UNSUPPORTED (READ_SCALE_16_TO_8);
 #endif /* READ_SCALE_16_TO_8 */
 
 
@@ -557,7 +557,7 @@ CODE:
 #ifdef PNG_READ_EXPAND_SUPPORTED
 	png_set_tRNS_to_alpha(Png->png);
 #else
-	UNSUPPORTED("READ_EXPAND");
+	UNSUPPORTED (READ_EXPAND);
 #endif /* read_expand */
 
 
@@ -568,7 +568,7 @@ CODE:
 #ifdef PNG_READ_STRIP_16_TO_8_SUPPORTED
         png_set_strip_16 (Png->png);
 #else 
-	UNSUPPORTED("READ_STRIP_16_TO_8");
+	UNSUPPORTED (READ_STRIP_16_TO_8);
 #endif /* READ_STRIP_16_TO_8 */
 
 
@@ -579,7 +579,7 @@ CODE:
 #ifdef PNG_READ_STRIP_ALPHA_SUPPORTED
         png_set_strip_alpha (Png->png);
 #else 
-	UNSUPPORTED("READ_STRIP_ALPHA");
+	UNSUPPORTED (READ_STRIP_ALPHA);
 #endif /* READ_STRIP_ALPHA */
 
 
@@ -591,14 +591,14 @@ CODE:
 #if defined(PNG_READ_SWAP_SUPPORTED)
 	    png_set_swap (Png->png);
 #else
-	    UNSUPPORTED("WRITE_SWAP");
+	    UNSUPPORTED (WRITE_SWAP);
 #endif
 	}
 	else {
 #if defined(PNG_WRITE_SWAP_SUPPORTED)
 	    png_set_swap (Png->png);
 #else
-	    UNSUPPORTED("READ_SWAP");
+	    UNSUPPORTED (READ_SWAP);
 #endif
 	}
 
@@ -609,7 +609,7 @@ CODE:
 #ifdef PNG_READ_SWAP_ALPHA_SUPPORTED
 	png_set_swap_alpha (Png->png);
 #else
-	UNSUPPORTED("READ_SWAP_ALPHA");
+	UNSUPPORTED (READ_SWAP_ALPHA);
 #endif /* READ_SWAP_ALPHA */
 
 
@@ -626,20 +626,21 @@ int
 perl_png_get_palette_max(Png)
 	Image::PNG::Libpng Png;
 CODE:
+	RETVAL = -1;
 #ifdef PNG_CHECK_FOR_INVALID_INDEX_SUPPORTED
 #  ifdef PNG_GET_PALETTE_MAX_SUPPORTED
 	RETVAL = png_get_palette_max (Png->png, Png->info);
 #  else
-	UNSUPPORTED("GET_PALETTE_MAX");
+	UNSUPPORTED (GET_PALETTE_MAX);
 #  endif
 #else
-        UNSUPPORTED("CHECK_FOR_INVALID_INDEX");
+        UNSUPPORTED (CHECK_FOR_INVALID_INDEX);
 #endif
 OUTPUT:
 	RETVAL
 
 
-# Functions which retrieve individual values from the header.
+ # Functions which retrieve individual values from the header.
 
 
 [% FOR what IN ['width', 'height'] %]
@@ -688,11 +689,11 @@ CODE:
 OUTPUT:
 	RETVAL
 
-# http://www.cpantesters.org/cpan/report/fc1cade6-3f17-11eb-9d08-9e4a1f24ea8f
+ # http://www.cpantesters.org/cpan/report/fc1cade6-3f17-11eb-9d08-9e4a1f24ea8f
 
 #ifdef PNG_SET_USER_LIMITS_SUPPORTED
 
-int
+void
 perl_png_set_user_limits (Png, w, h)
 	Image::PNG::Libpng Png;
 	unsigned w;
@@ -712,7 +713,6 @@ OUTPUT:
 [% END # what %]
 
 
-
 void
 perl_png_set_chunk_cache_max(Png, max)
 	Image::PNG::Libpng Png;
@@ -721,8 +721,9 @@ CODE:
 #ifdef PNG_CHUNK_CACHE_MAX_SUPPORTED
 	png_set_chunk_cache_max(Png->png, max);
 #else
-	UNSUPPORTED ('CHUNK_CACHE_MAX');
+	UNSUPPORTED (CHUNK_CACHE_MAX);
 #endif /* CHUNK_CACHE_MAX */
+
 
 int
 perl_png_get_chunk_cache_max(Png)
@@ -732,12 +733,13 @@ CODE:
 	RETVAL = png_get_chunk_cache_max(Png->png);
 #else
 	RETVAL = -1;
-	UNSUPPORTED ('CHUNK_CACHE_MAX');
+	UNSUPPORTED (CHUNK_CACHE_MAX);
 #endif /* CHUNK_CACHE_MAX */
 OUTPUT:
 	RETVAL
 
 #endif /* SET_USER_LIMITS */
+
 
 void
 perl_png_set_image_data (Png, image_data, own = & PL_sv_undef)
@@ -751,6 +753,7 @@ CODE:
 	Png->image_data = image_data;
 	Png->memory_gets++;
 
+
 void
 perl_png_set_row_pointers (Png, row_pointers)
 	Image::PNG::Libpng Png;
@@ -763,12 +766,12 @@ CODE:
         png_set_rows (Png->png, Png->info, Png->row_pointers);
 	Png->memory_gets++;
 
-# These functions predate the macro and were valid in libpng 1.2, yet
-# the macro is invalid except for libpng 1.6.17, so conditional
-# compilation doesn't seem to offer any benefit, hence the following
-# is commented out. 
+ # These functions predate the macro and were valid in libpng 1.2, yet
+ # the macro is invalid except for libpng 1.6.17, so conditional
+ # compilation doesn't seem to offer any benefit, hence the following
+ # is commented out. 
 
-# // #ifdef PNG_WRITE_CUSTOMIZE_COMPRESSION_SUPPORTED
+ # #ifdef PNG_WRITE_CUSTOMIZE_COMPRESSION_SUPPORTED
 
 void
 perl_png_set_compression_level (Png, level)
@@ -828,10 +831,10 @@ perl_png_set_compression_window_bits  (Png,   window_bits);
 CODE:
 	png_set_compression_window_bits (Png->png, window_bits);
 
-# // #endif /* WRITE_CUSTOMIZE_COMPRESSION */
+ # #endif /* WRITE_CUSTOMIZE_COMPRESSION */
 
 
-# This macro is not documented in CHANGES in libpng.
+ # This macro is not documented in CHANGES in libpng.
 
 #ifdef PNG_WRITE_CUSTOMIZE_ZTXT_COMPRESSION_SUPPORTED
 
@@ -870,16 +873,18 @@ CODE:
 
 
 #if 0
+
 void
 perl_png_set_compression_method (Png, method);
 	Image::PNG::Libpng Png;
 	int method;
 CODE:
 	png_set_compression_method (Png->png, method);
+
 #endif /* 0 */
 
-
 #if 0
+
 void
 perl_png_set_crc_action  (Png, crit_action, ancil_action);
 	Image::PNG::Libpng Png;
@@ -887,6 +892,7 @@ perl_png_set_crc_action  (Png, crit_action, ancil_action);
 	int ancil_action;
 CODE:
 	png_set_crc_action (Png->png, crit_action, ancil_action);
+
 #endif /* 0 */
 
 
@@ -899,7 +905,7 @@ CODE:
 #ifdef PNG_READ_GAMMA_SUPPORTED
 	png_set_gamma (Png->png, gamma, override_gamma);
 #else
-	UNSUPPORTED("READ_GAMMA");
+	UNSUPPORTED (READ_GAMMA);
 #endif /* READ_GAMMA */
 	
 
@@ -911,7 +917,7 @@ CODE:
 #ifdef PNG_MNG_FEATURES_SUPPORTED
 	png_permit_mng_features(Png->png, mask);
 #else
-	UNSUPPORTED("MNG_FEATURES");
+	UNSUPPORTED (MNG_FEATURES);
 #endif /* MNG_FEATURES */
 
 
@@ -923,15 +929,38 @@ CODE:
 #ifdef PNG_READ_SHIFT_SUPPORTED
 	png_set_shift (Png->png)
 #else
-	UNSUPPORTED("READ_SHIFT");
+	UNSUPPORTED (READ_SHIFT);
 #endif /* READ_SHIFT */
 [% END %]
 
 
-# Transform functions which require arguments.
+ # Transform functions which require arguments.
+
+void
+perl_png_set_quantize(Png, palette, max_screen_colors, histogram, full_quantize_sv)
+	Image::PNG::Libpng Png;
+	AV * palette;
+	int max_screen_colors;
+	AV * histogram;
+	SV * full_quantize_sv;
+PREINIT:
+	int full_quantize;
+CODE:
+	full_quantize = SvTRUE (full_quantize_sv);
+	perl_png_set_quantize(Png, palette, max_screen_colors, histogram,
+			      full_quantize);
+
+
+ # These macros are for rgb_to_gray
+
+#define DEFAULT_WEIGHT -1.0
+
+#ifndef PNG_ERROR_ACTION_NONE
+#define PNG_ERROR_ACTION_NONE 1
+#endif /* ndef PNG_ERROR_ACTION_NONE */
 	
 void
-perl_png_set_rgb_to_gray (Png, error_action, red, green)
+perl_png_set_rgb_to_gray (Png, error_action = PNG_ERROR_ACTION_NONE, red = DEFAULT_WEIGHT, green = DEFAULT_WEIGHT)
 	Image::PNG::Libpng Png;
 	int error_action;
 	double red;
@@ -942,6 +971,21 @@ CODE:
 #else
 	UNSUPPORTED ("READ_RGB_TO_GRAY");
 #endif /* READ_RGB_TO_GRAY */
+
+#undef DEFAULT_WEIGHT
+
+int
+perl_png_get_rgb_to_gray_status (Png)
+	Image::PNG::Libpng Png;
+CODE: 
+#ifdef PNG_READ_RGB_TO_GRAY_SUPPORTED
+    	RETVAL = (int) png_get_rgb_to_gray_status (Png->png);
+#else
+	UNSUPPORTED ("READ_RGB_TO_GRAY");
+	RETVAL = 0;
+#endif /* READ_RGB_TO_GRAY */
+OUTPUT:
+	RETVAL
 
 
 void
@@ -956,12 +1000,12 @@ CODE:
 	perl_png_set_back (Png, perl_color, gamma_code, SvTRUE(need_expand),
 			   background_gamma);
 #else
-	UNSUPPORTED("READ_BACKGROUND");
+	UNSUPPORTED (READ_BACKGROUND);
 #endif /* READ_BACKGROUND */
 
 
-# These functions are not part of libpng and do not need preprocessor
-# conditional wrappers.
+ # These functions are not part of libpng and do not need preprocessor
+ # conditional wrappers.
 
 int
 perl_png_color_type_channels (color_type)
@@ -1006,14 +1050,6 @@ PPCODE:
 	XPUSHs(sv_2mortal(info_sv));
 
 
-void
-perl_png_set_verbosity (Png, verbosity = 0)
-        Image::PNG::Libpng Png
-        int verbosity; 
-CODE:
-        perl_png_set_verbosity (Png, verbosity);
-        
-
 int
 perl_png_libpng_supports (what)
         const char * what
@@ -1031,6 +1067,14 @@ CODE:
 OUTPUT:
 	RETVAL
 
+
+void
+perl_png_set_verbosity (Png, verbosity = 0)
+        Image::PNG::Libpng Png
+        int verbosity; 
+CODE:
+        perl_png_set_verbosity (Png, verbosity);
+        
 
 SV *
 perl_png_split_alpha (Png)
@@ -1050,8 +1094,8 @@ OUTPUT:
         RETVAL
 
 
-# The following automatically generates the get and set functions for
-# the chunks.
+ # The following automatically generates the get and set functions for
+ # the chunks.
 
 [%- FOR chunk IN chunks %]
 [%- IF chunk.defined('auto_type') %]
@@ -1066,7 +1110,7 @@ CODE:
 [%- IF chunk.defined('pro') %]
 #else /* [% chunk.pro %] */
 	RETVAL = & PL_sv_undef;
-	UNSUPPORTED ('[% chunk.name %]');
+	UNSUPPORTED ([% chunk.name %]);
 #endif /* [% chunk.pro %] */
 [%- END # pro %]
 OUTPUT:
@@ -1091,7 +1135,7 @@ CODE:
         perl_png_set_[% chunk.name %] (Png, [% chunk.name %]);
 [%- IF chunk.defined('pro') %]
 #else /* [% chunk.pro %] */
-	UNSUPPORTED ('[% chunk.name %]');
+	UNSUPPORTED ([% chunk.name %]);
 #endif /* [% chunk.pro %] */
 [%- END # pro %]
 
