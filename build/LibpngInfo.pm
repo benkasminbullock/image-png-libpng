@@ -1,7 +1,7 @@
 package LibpngInfo;
 require Exporter;
 @ISA = qw(Exporter);
-@EXPORT_OK = qw/template_vars @chunks/;
+@EXPORT_OK = qw/template_vars @chunks oldversions/;
 use warnings;
 use strict;
 use Table::Readable 'read_table';
@@ -509,5 +509,17 @@ sub dirfile
     return $dfile;
 }
 
+sub oldversions
+{
+    my $dir = '/home/ben/software/libpng/v';
+    my @versions = <$dir/*>;
+    @versions = map {s!^.*/!!r} @versions;
+    for my $version (@versions) {
+	if ($version !~ qr!^([0-9]+\.){2}[0-9]+$!) {
+	    die "bad file $version in $dir";
+	}
+    }
+    return @versions;
+}
 
 1;

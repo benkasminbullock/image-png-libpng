@@ -61,7 +61,7 @@ in the distribution.)
 [%- file = pl _ "-out.txt" %]
 [%- INCLUDE $file | xtidy %]
 [%- END # macro -%]
-[%- MACRO eximg(file) BLOCK %]
+[%- MACRO eximg(file, info) BLOCK %]
 [%- IF 1 %]
 [%- imgurl=metacpan _ "/examples/" _ file _ ".png" %]
 [%- ELSE %]
@@ -71,6 +71,8 @@ in the distribution.)
 L<[% filename %]|[% imgurl %]> is included in the distribution.
 
 =begin html
+
+<p>[% info %]</p>
 
 <!-- metacpan doesn't allow figure/figcaption tags. -->
 <table>
@@ -143,8 +145,10 @@ describes functions which closely mirror libpng, L</The image header>,
 which describes functions for reading and writing the meta-information
 about PNG images, L</Image data>, which describes functions for
 accessing the image data itself, L</Text chunks>, L</Private chunks>,
-L</Library version functions>, L</Compression and filtering>, and
-L</Other chunks>.
+L</Library version functions>, L</Compression and filtering>, L</Other
+chunks>, L</Libpng transformations>, L</Other libpng functions>,
+functions from libpng which don't fit elsewhere, and L</OTHER
+FUNCTIONS>, which are functions specific to this module.
 
 =head1 Simple input and output
 
@@ -180,9 +184,10 @@ L</set_background> to replace the alpha channel.
 
 [% example("set-background") %]
 
-[% eximg("loveheartface") %]
+[% eximg("loveheartface",
+         'The input image has a transparent background:') %]
 
-[% eximg("set-background") %]
+[% eximg("set-background", 'The output image has a blue background:') %]
 
 This function was added to the module in version 0.53.
 
@@ -292,7 +297,7 @@ This demonstrates writing a monochrome PNG to a filehandle using the separate fu
 
 [% example("libpng-write") %]
 
-[% eximg("mono") %]
+[% eximg("mono", "The output has a bit depth of 1:") %]
 
 =head2 create_read_struct
 
@@ -1897,7 +1902,7 @@ images. [% manual %]
 
 [% cor(fn="set_tRNS_to_alpha") %]
 
-=head1 OTHER LIBPNG FUNCTIONS
+=head1 Other libpng functions
 
 =head2 get_chunk_cache_max
 
@@ -1928,9 +1933,7 @@ The output looks like this:
 
 [% output("xkcd") %]
 
-The resulting image looks like this:
-
-[% eximg("life-gray") %]
+[% eximg("life-gray", "The resulting image looks like this:") %]
 
 Correct use of Image::PNG::Libpng could have spared as many as 50,000
 bytes from the indignity of being sent around the internet.
@@ -1960,6 +1963,9 @@ million pixels. These values can be changed by L</set_user_limits>.
 [% danger %] Untested. C<$mask> is an integer containing flags. [%
 manual %]
 
+(MNG, 'Multiple-image Network Graphics', is an image animation format
+related to PNG. It has not been widely adopted.)
+
 [% supports(desc='permit_mng_features', val='MNG_FEATURES') %]
 
 [% cor(fn="permit_mng_features") %]
@@ -1968,7 +1974,13 @@ manual %]
 
     $png->set_add_alpha ($filler, $filler_loc);
 
-[% danger %] Untested. [% manual %]
+[% danger %] Untested. Change C<$png> to add an alpha channel. This
+only works for grayscale or RGB images with bit depth of 8 or
+16. C<$filler> contains the alpha value to assign to each pixel, and
+C<$filler_loc> is either C<PNG_FILLER_BEFORE> or
+C<PNG_FILLER_AFTER>. The function of C<set_add_alpha> is
+L</set_filler> and a change of the color type to add an alpha
+channel. [% manual %]
 
 [% supports(desc='set_add_alpha', val='READ_FILLER') %]
 
@@ -2013,7 +2025,12 @@ Set the maximum number of ancilliary chunks allowed. The default is
 Set transformations in C<$png> such that a filler byte C<$filler> is
 added when an 8-bit grayscale image or 24-bit RGB image is read, and a
 filler byte is deleted when an 8-bit grayscale image or 24-bit RGB
-image is written. C<$flags> may be C<PNG_FLAG_FILLER_AFTER> or zero.
+image is written. C<$flags> may be C<PNG_FILLER_BEFORE> or
+C<PNG_FILLER_AFTER>. An error is produced if C<$png> has bit depth
+less than 8.
+
+This does not change the color type of the image. See the related
+function L</set_add_alpha> if you want to add an alpha channel.
 
 [% supports(desc='set_filler', val='READ_FILLER') %]
 
@@ -2032,31 +2049,34 @@ contain floating-point arguments.  [% manual %]
 
 =head2 set_quantize
 
-    $png->set_quantize (\@palette, $ncolors, \@histogram, 1);
+    $png->set_quantize (\@palette, $ncolors, \@histogram, $full_quantize);
 
-This is partially supported. At the moment C<@histogram> is not set up
-but the C<@palette> part can be set to a palette similar to
-L</set_PLTE>.
+The C<@palette> part must be set to a palette similar to
+L</set_PLTE>. C<$ncolors> must be the length of C<@palette> or
+shorter. C<@histogram> can be an empty array or if not it needs to be
+an array of integers of exactly the same length as C<@palette>. The
+integers represent the frequency of the colors in C<@palette>. These
+integers can range from 0 to 65355. Larger values or negative values
+cause an error. The final argument, C<$full_quantize>, should be 1 for
+RGB images or 0 for paletted images.
 
 =head3 Experiments in quantization
 
 This example program experiments with two ways to quantize a PNG
-image, first ofall using a completely random palette, and second using
-colors picked from the image at random:
+image, first of all using a completely random palette, and second
+using colors picked from the image at random:
 
 [% example('q') %]
 
-The input image is this:
+[% eximg('wave', 'The input image is this:') %]
 
-[% eximg('wave') %]
+[% eximg('random-wave',
+         'Completely random colors gives this kind of output:')
+%]
 
-Completely random colors gives this kind of output:
-
-[% eximg('random-wave') %]
-
-Picked colors gives this kind of output:
-
-[% eximg('picked-wave') %]
+[% eximg('picked-wave',
+         'Picked colors gives this kind of output:')
+%]
 
 =head2 set_rgb_to_gray
 
@@ -2086,7 +2106,7 @@ C<$green_weight> both set to negative values.
 
 [% example("rgb-to-gray") %]
 
-[% eximg("grayface") %]
+[% eximg("grayface", "This is the output:") %]
 
 =head2 set_user_limits
 
@@ -2097,7 +2117,7 @@ pixels in width and one million pixels in height for a PNG image.
 
 [% cor(fn="set_user_limits") %]
 
-=head1 OTHER FUNCTIONS
+=head1 Other functions
 
 This section contains other functions which don't correspond to
 anything in libpng itself, but which have been added to the module for
@@ -2256,6 +2276,10 @@ scalar containing whatever the chunk requires, for example a hash
 reference for the C<tIME> chunk as described under L</set_tIME> and
 L</get_tIME>.
 
+This is essentially a convenience function for the benefit of
+L</copy_png> which, together with L</get_valid>, enables the PNG
+chunks to be copied in a loop rather than one-by-one.
+
 =head2 set_image_data
 
     $png->set_image_data ($image_data);
@@ -2287,8 +2311,10 @@ except for the freeing of the memory.
 
 Split the alpha channel away from the other data. This only works for
 images with color types C<PNG_COLOR_TYPE_RGB_ALPHA> and
-C<PNG_COLOR_TYPE_GRAY_ALPHA>. This is not part of the libpng API, it
-was added to this module to assist the author of L<PDF::Builder>.
+C<PNG_COLOR_TYPE_GRAY_ALPHA>. This is not part of the libpng API. This
+function was added to this module to assist the author of
+L<PDF::Builder> due to problems with very slow access to PNG images
+using Perl.
 
 To remove the alpha channel from an image, use L</set_background>. See
 L</Setting the background> for an example. You can also use the
@@ -2314,11 +2340,12 @@ libpng, with the following differences.
 
 =head2 [% noinfo %]
 
-This module, C<Image::PNG::Libpng> does not use the "info"
-structure of libpng. Almost all libpng functions require two initial
-arguments, a C<png_structp> and a C<png_infop>. However, in 
-Image::PNG::Libpng, both the "png" and the "info" are contained in
-the first argument to each function.
+This module does not use the "info" structure of libpng. Almost all
+libpng functions require two initial arguments, a C<png_structp> and a
+C<png_infop>. However, in Image::PNG::Libpng, both the "png" and the
+"info" are contained in the object. People who need access to the
+internals of an C<Image::PNG::Libpng> object (C programmers or XS
+programmers) can use L</get_internals> to access them.
 
 This module does not support the "end info" structure of PNGs when
 writing, although these are handled when reading.
@@ -2443,10 +2470,6 @@ This is an exhaustive list of unsupported libpng API functions,
 extracted from the libpng source code using F<util/api.pl> in this
 module's repository.
 
-=head1 BUGS
-
-This section documents some known problems you may encounter.
-
 =head2 Conditional compilation and old libpng versions
 
 It is possible to compile a version of the libpng library without
@@ -2458,10 +2481,14 @@ problems using this module because of a conditionally-compiled libpng,
 then let us know and we'll add the necessary facility.
 
 Currently we test this module against vanilla libpng versions
-C<1.2.59>, C<1.4.22>, and C<[% config.mylibpng %]> before releases.
+[% oldversions %], and C<[% config.mylibpng %]> before
+releases. There doesn't seem to have been a 1.3 or a 1.1 version of
+libpng. See
+L<http://www.libpng.org/pub/png/pngnews.html|http://www.libpng.org/pub/png/pngnews.html>. Versions
+1.0 and earlier of libpng are not tested against.
 
-The following are known issues with
-older libpng versions:
+The following issues with older libpng versions may affect users of
+this module:
 
 =head3 cHRM chunk
 

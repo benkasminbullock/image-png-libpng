@@ -11,7 +11,7 @@ BEGIN {
     use FindBin '$Bin';
     use lib "$Bin";
     use ImagePNGBuild;
-    use LibpngInfo 'template_vars', '@chunks';
+    use LibpngInfo 'template_vars', '@chunks', 'oldversions';
 };
 use autodie;
 use Getopt::Long;
@@ -115,6 +115,9 @@ $vars{functions} = \@functions;
 $vars{self} = $0;
 $vars{date} = scalar gmtime ();
 $vars{libpng_diagnostics} = \@libpng_diagnostics;
+my @oldversions = oldversions;
+my $oldversions = join (', ', map {$_ = "C<$_>"} @oldversions);
+$vars{oldversions} = $oldversions;
 
 # Get lots of stuff about libpng from the module LibpngInfo in the
 # same directory as this script, used to build documentation etc.

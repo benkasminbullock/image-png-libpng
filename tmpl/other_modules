@@ -7,10 +7,10 @@ These other modules may also be useful.
 =item Alien::PNG
 
 L<Alien::PNG> claims to be a way of "building, finding and using PNG
-binaries". It may help in installing libpng. I didn't use it as a
+binaries". It may help in installing libpng. We didn't use it as a
 dependency for this module because it seems not to work in batch mode,
-but stop and prompt the user. I'm interested in hearing feedback from
-users whether this works or not on various platforms.
+but stop and prompt the user. We're interested in hearing feedback
+from users whether this works or not on various platforms.
 
 =item Imager
 
