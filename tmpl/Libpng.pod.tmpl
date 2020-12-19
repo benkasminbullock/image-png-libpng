@@ -1264,10 +1264,19 @@ in the array reference is the same as in the palette.
 
     $png->set_hIST (\@hist);
 
-Set the histogram. The entries of the histogram are 16 bit unsigned
-integers, so the maximum value that can be entered will be 2^16 -
-1. Larger numbers and floating point numbers will just be silently
-truncated.
+Set the histogram of frequencies of the colors of a paletted (L</PLTE>)
+image. The entries of the histogram are 16 bit unsigned integers, so
+the maximum value that can be entered is 65535 = 2^16 - 1. Larger
+numbers and floating point numbers will cause a warning to be printed
+and the value to be set to zero. The histogram must have exactly the
+same number of entries as the palette or the call will fail with a
+warning. A histogram cannot be added to an image without a palette. A
+call to set_hIST for an image without a palette will cause a warning
+and return without setting the value.
+
+(I'm not sure of the best form of error handling for this function so
+it may change in future versions to have errors for a bad histogram
+rather than warnings.)
 
 [% cor(fn="set_hIST") %]
 
@@ -1302,8 +1311,9 @@ unused %]
 
     $png->set_iCCP ({name => 'name', profile => 'profile'});
 
-[% cor(fn="set_iCCP") %]. A C<compression_type> argument, which must
-always be 0 anyway, is ignored. [% unused %]
+[% cor(fn="set_iCCP") %]. For details of the arguments, see
+L</get_iCCP>. A C<compression_type> argument, which must always be 0
+anyway, is ignored. [% unused %]
 
 =head2 oFFs
 
@@ -2437,29 +2447,20 @@ module's repository.
 
 This section documents some known problems you may encounter.
 
-=head2 Conditional compilation
+=head2 Conditional compilation and old libpng versions
 
 It is possible to compile a version of the libpng library without
 support for various things. For example, a libpng without support for
 text chunks may be created by undefining the C macro
 C<PNG_TEXT_SUPPORTED>. This module supports the conditional
-compilation choices which I'm aware of, but if you encounter problems
-using this module because of a conditionally-compiled libpng, then let
-me know and I'll add the necessary facility.
+compilation choices which we're aware of, but if you encounter
+problems using this module because of a conditionally-compiled libpng,
+then let us know and we'll add the necessary facility.
 
-=head2 Not all constants are available
+Currently we test this module against vanilla libpng versions
+C<1.2.59>, C<1.4.22>, and C<[% config.mylibpng %]> before releases.
 
-Some of the libpng constants are defined in F<pnglibconf.h> or
-F<pngconf.h> but L<Image::PNG::Const> only looks at F<png.h> to make
-its constants. Because of this, some constant values like
-C<PNG_Z_DEFAULT_COMPRESSION> aren't currently available in
-L<Image::PNG::Const>. This probably should be fixed to extract the
-constants from the other files in a future version.
-
-=head2 Issues with old versions of libpng
-
-[% danger %] Some operating systems, in particular Linux systems, use
-rather old versions of libpng. The following are known issues with
+The following are known issues with
 older libpng versions:
 
 =head3 cHRM chunk
@@ -2489,6 +2490,15 @@ for pre-1.6 versions of libpng.
 with C<iTXt> (international text) chunks. Testing of text-related
 chunks is disabled by this Perl module for pre-1.6.13 versions of
 libpng.
+
+=head2 Not all constants are available
+
+Some of the libpng constants are defined in F<pnglibconf.h> or
+F<pngconf.h> but L<Image::PNG::Const> only looks at F<png.h> to make
+its constants. Because of this, some constant values like
+C<PNG_Z_DEFAULT_COMPRESSION> aren't currently available in
+L<Image::PNG::Const>. This probably should be fixed to extract the
+constants from the other files in a future version.
 
 =head1 STANDALONE SCRIPT
 

@@ -1,3 +1,8 @@
+0.53_01 2020-12-19
+
+- Implement the histogram part of set_quantize
+- set_hIST error handling changed to check values and warn within Perl
+
 0.53 2020-12-16
 
 - Support png_(g|s)et_(cHRM_XYZ|chunk_cache_max) 
