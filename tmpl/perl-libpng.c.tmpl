@@ -1,7 +1,40 @@
 #line
 
-/* Coding style note: we use "color" in code, documentation &
-   variables, not "colour", as per libpng. 2020-12-09 08:03:03 */
+/* This is the main file of Image::PNG::Libpng. This file is included
+   in Libpng.xs when compiling. It is separated out from Libpng.xs to
+   avoid the problems of editing a Perl XS file. */
+
+/*
+  Coding style:
+
+  Use "color", "gray", etc. in code, documentation & variables, not
+  "colour", "grey", as per libpng.
+
+  2020-12-09 08:03:03 
+*/
+
+/*
+  Coding style:
+
+  Going forward, use the following variable naming: Perl variables are
+  named using Hungarian notation with lower case and an underscore
+  with a suffix indicating the Perl role, like 'hist_av' or 'phys_sv' or
+  'sv_ptr'; libpng variables use native names like 'hist'.
+
+  This avoids confusion with the macro/valid chunk argument names like
+  'hIST'. This style is not fully implemented in this file yet.
+
+  2020-12-19 09:03:41
+*/
+
+/*
+  Coding style: 
+
+  Going forward, as far as possible, use libpng types for all libpng
+  variables, so use png_bytep etc rather than unsigned char *.
+
+  2020-12-19 09:05:18 
+*/
 
 #if PNG_LIBPNG_VER_MAJOR >= 1 && PNG_LIBPNG_VER_MINOR >= 4 && PNG_LIBPNG_VER_RELEASE >= 0
 #define PNG_CHUNK_CACHE_MAX_SUPPORTED
@@ -38,6 +71,10 @@
 #endif /* version or fixed point */
 #endif /* PNG_sCAL_SUPPORTED */
 
+/* The maximum value we put into a png_uint_16. */
+
+#define PNG_UINT_16_MAX 65535
+
 /* Container for PNG information. This corresponds to an
    "Image::PNG::Libpng" in Perl. */
 
@@ -45,15 +82,21 @@ typedef struct perl_libpng
 {
     png_structp png;
     png_infop info;
+    /* Member "end_info" is not used by Image::PNG::Libpng. */
     png_infop end_info;
+    /* It is not easy for user programs to find out whether a
+       png_structp is a read or write structure, and yet we do need to
+       know that, so we keep our own information here. */
     enum {
 	perl_png_unknown_obj,
 	perl_png_read_obj,
 	perl_png_write_obj,
-    } type;
-    /* Allocated memory which holds the rows. */
-    png_bytepp  row_pointers;
-    /* Allocated memory which holds the image data. */
+    }
+    type;
+    /* Allocated memory which holds pointers to the start of the
+       rows in the image. */
+    png_bytepp row_pointers;
+    /* Allocated memory which holds the image data itself. */
     png_bytep image_data;
     /* Number of times we have called "calloc"-like functions, for
        detecting memory leaks. */
@@ -83,7 +126,9 @@ typedef struct perl_libpng
     /* If the following variable is set to a true value, the module
        prints messages about what it is doing. */
     int verbosity : 1;
-    /* Has input/output been initiated? */
+    /* Has input/output been initiated? We protect ourselves from
+       crashes caused by dereferencing the FILE * pointer using
+       this. */
     int init_io_done : 1;
 }
 perl_libpng_t;
@@ -143,9 +188,8 @@ typedef perl_libpng_t * Image__PNG__Libpng;
    |_| |_|\__,_|_| |_|\__,_|_|\___|_|  |___/ */
                                          
 
-/* The following things are used to handle errors from libpng. See the
-   create_read_struct and create_write_struct calls below. */
-
+/* The following functions are used to handle errors from libpng. See
+   the create_read_struct and create_write_struct calls below. */
 
 /* Error handler for libpng. */
 
@@ -162,7 +206,7 @@ static void
 perl_png_warning_fn (png_structp png_ptr, png_const_charp warning_msg)
 {
     /* A warning from libpng sent via Perl's warning handler. */
-    warn ( "libpng warning: %s\n", warning_msg);
+    warn ("libpng warning: %s\n", warning_msg);
 }
 
 
@@ -517,6 +561,10 @@ perl_png_textp_to_hash (perl_libpng_t * png, const png_textp text_ptr)
 static SV *
 perl_png_get_text (perl_libpng_t * png)
 {
+    SV * text_ref;
+
+    text_ref = & PL_sv_undef;
+
 #ifdef PNG_tEXt_SUPPORTED
     int num_text = 0;
     png_textp text_ptr;
@@ -524,7 +572,6 @@ perl_png_get_text (perl_libpng_t * png)
     png_get_text (pngi, & text_ptr, & num_text);
     if (num_text > 0) {
         int i;
-        SV * text_ref;
         AV * text_chunks;
 
         MESSAGE ("Got some text:");
@@ -540,16 +587,14 @@ perl_png_get_text (perl_libpng_t * png)
             av_push (text_chunks, hash_ref);
         }
         text_ref = newRV_noinc ((SV *) text_chunks);
-        return text_ref;
     }
     else {
         MESSAGE ("There is no text:");
-        return & PL_sv_undef;
     }
 #else
     UNSUPPORTED(tEXt);
-    return & PL_sv_undef;
 #endif
+    return text_ref;
 }
 
 /* The macro which SvPV consists of fouls things up with the STRLEN
@@ -637,8 +682,8 @@ perl_png_set_text_from_hash (perl_libpng_t * png,
     text_out->text_length = text_length;
 #ifdef PNG_iTXt_SUPPORTED
     if (is_itxt) {
-    /* Set this in case it starts to be required by future versions of
-       libpng. */
+	/* Set this in case it starts to be required by future
+	   versions of libpng. */
 	text_out->itxt_length = text_length;
 	SOFT_HASH_FETCH_PV (chunk, lang);
 	text_out->lang = (char *) lang;
@@ -828,7 +873,8 @@ perl_png_sig_cmp (SV * png_header, int start, int num_to_check)
 /* Scalar as image stores information for the conversion of Perl
    scalar data into or out of the PNG structure. */
 
-typedef struct {
+typedef struct
+{
     SV * png_image;
     const char * data; 
     int read_position;
@@ -1823,26 +1869,106 @@ static void perl_png_set_sCAL (perl_libpng_t * png, HV * sCAL)
 #endif /* PERL_PNG_sCAL_s_SUPPORTED */
 }
 
-static void perl_png_set_hIST (perl_libpng_t * png, AV * hIST)
+#if 0
+
+/* TODO: Take the contents of get_hIST & put them here. 2020-12-19
+   08:59:55 */
+
+static void
+hist_to_av (png_uint_16p hist, AV * hIST)
+{
+
+}
+
+#endif /* 0 */
+
+/* AV * to libpng histogram. This is used by set_hIST and by
+   set_quantize. Failure is indicated by setting "* size_ptr" to
+   zero. */
+
+static void
+av_to_hist (perl_libpng_t * png, AV * hist_av, png_uint_16p * hist_ptr,
+	    int * size_ptr, int n_colors)
+{
+    int size;
+    png_uint_16p hist;
+    int i;
+
+    * hist_ptr = 0;
+    /* The returned size is also used to indicate success or
+       failure. */
+    * size_ptr = 0;
+
+    size = av_len (hist_av) + 1;
+    if (size != n_colors) {
+	warn ("Size of histogram %d != colors in palette %d", size, n_colors);
+	return;
+    }
+	
+    GET_MEMORY (hist, size, png_uint_16);
+    for (i = 0; i < size; i++) {
+	SV * sv;
+	SV ** sv_ptr;
+	IV iv;
+	
+	/* We use continue to break out of the loop so make sure
+	   hist[i] is set to something or another. */
+
+	hist[i] = (png_uint_16) 0;
+
+	iv = 0;
+	sv_ptr = av_fetch (hist_av, i, 0);
+	if (! sv_ptr) {
+	    /* If this warning is changed to "croak", "hist" needs to
+	       be freed here. */
+	    warn ("Empty value in histogram array at offset %d", i);
+	    continue;
+	}
+	sv = * sv_ptr;
+	if (! SvIOK(sv)) {
+	    warn ("Non-integer value in histogram array at offset %d", i);
+	    continue;
+	}
+	iv = SvIV (sv);
+	if (iv < 0 || iv > PNG_UINT_16_MAX) {
+	    warn ("Value %d of histogram array at offset %d < 0 or > %d",
+		  (int) iv, i, (int) PNG_UINT_16_MAX);
+	    continue;
+	}
+	hist[i] = (png_uint_16) iv;
+    }
+    * hist_ptr = hist;
+    * size_ptr = size;
+}
+
+static void
+perl_png_set_hIST (perl_libpng_t * png, AV * hist_av)
 {
 #ifdef PNG_hIST_SUPPORTED
     int hist_size;
     png_uint_16p hist;
-    int i;
-    hist_size = av_len (hIST) + 1;
-    GET_MEMORY (hist, hist_size, png_uint_16);
-    for (i = 0; i < hist_size; i++) {
-	ARRAY_FETCH_IV (hIST, i, hist[i]);
+    png_colorp colors;
+    int n_colors;
+
+    /* The reason why it doesn't need the histogram size seems to be
+       that it assumes that it is the same as the palette size. */
+    png_get_PLTE (pngi, & colors, & n_colors);
+    av_to_hist (png, hist_av, & hist, & hist_size, n_colors);
+    if (hist_size > 0) {
+	png_set_hIST (pngi, hist);
+	PERL_PNG_FREE (hist);
     }
-    png_set_hIST (pngi, hist);
-    PERL_PNG_FREE (hist);
 #else
     UNSUPPORTED(hIST);
 #endif
 }
 
-static SV * perl_png_get_hIST (perl_libpng_t * png)
+static SV *
+perl_png_get_hIST (perl_libpng_t * png)
 {
+    SV * hist_sv;
+
+    hist_sv = & PL_sv_undef;
 #ifdef PNG_hIST_SUPPORTED
     if (VALID (hIST)) {
 	png_colorp colors;
@@ -1858,13 +1984,12 @@ static SV * perl_png_get_hIST (perl_libpng_t * png)
 	for (i = 0; i < n_colors; i++) {
 	    av_push (hist_av, newSViv (hist[i]));
 	}
-	return newRV_noinc ((SV *) hist_av);
+	hist_sv = newRV_noinc ((SV *) hist_av);
     }
-    return & PL_sv_undef;
 #else
     UNSUPPORTED(hIST);
-    return & PL_sv_undef;
 #endif
+    return hist_sv;
 }
 
 /* Should this be a hash value or an array? */
@@ -1962,7 +2087,7 @@ static void perl_png_set_oFFs (perl_libpng_t * png, HV * oFFs)
 
 static SV * perl_png_get_pHYs (perl_libpng_t * png)
 {
-    SV * physsv = & PL_sv_undef;
+    SV * phys_sv = & PL_sv_undef;
 #ifdef PNG_pHYs_SUPPORTED
     if (VALID (pHYs)) {
         png_uint_32 res_x;
@@ -1974,13 +2099,13 @@ static SV * perl_png_get_pHYs (perl_libpng_t * png)
         HASH_STORE_IV (phys, res_x);
         HASH_STORE_IV (phys, res_y);
         HASH_STORE_IV (phys, unit_type);
-        physsv = newRV_noinc ((SV *) phys);
+        phys_sv = newRV_noinc ((SV *) phys);
     }
 #else
     /* libpng was compiled without this option. */
     UNSUPPORTED(pHYs);
 #endif
-    return physsv;
+    return phys_sv;
 }
 
 static void perl_png_set_pHYs (perl_libpng_t * png, HV * pHYs)
@@ -2947,14 +3072,23 @@ perl_png_set_quantize (perl_libpng_t * png, AV * palette,
 #ifdef PNG_READ_QUANTIZE_SUPPORTED
     int n_colors;
     png_colorp colors;
+    png_uint_16p hist;
 
     perl_png_av_to_colors (png, palette, & colors, & n_colors);
     if (n_colors == 0) {
 	croak ("set_quantize: empty palette");
     }
+    hist = 0;
+    if (av_len (histogram) + 1 > 0) {
+	int hist_size;
+	av_to_hist (png, histogram, & hist, & hist_size, n_colors);
+    }
     png_set_quantize (png->png, colors, n_colors, max_screen_colors,
-		      NULL, full_quantize);
+		      hist, full_quantize);
     PERL_PNG_FREE (colors);
+    if (hist != 0) {
+	PERL_PNG_FREE (hist);
+    }
 #else
     UNSUPPORTED(READ_QUANTIZE);
 #endif /* #ifdef PNG_READ_QUANTIZE_SUPPORTED */
@@ -2965,5 +3099,5 @@ perl_png_set_quantize (perl_libpng_t * png, AV * palette,
 /*
    Local Variables:
    mode: c
-   end: 
+   End: 
 */

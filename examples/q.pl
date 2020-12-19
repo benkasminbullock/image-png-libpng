@@ -7,15 +7,17 @@ use Image::PNG::Libpng ':all';
 my $file = "wave.png";
 my $ncolors = 40;
 my $palette = randompalette ($ncolors);
-write_with_palette ($file, randompalette ($ncolors), $ncolors, "random");
-write_with_palette ($file, points ($file, $ncolors), $ncolors, "picked");
+write_with_palette ($file, $palette, $ncolors, [], "random");
+my $picked = points ($file, $ncolors);
+my @hist = (1) x $ncolors;
+write_with_palette ($file, $picked, $ncolors, \@hist, "picked");
 exit;
 
 sub write_with_palette
 {
-    my ($file, $palette, $ncolors, $name) = @_;
+    my ($file, $palette, $ncolors, $hist, $name) = @_;
     my $rpng = create_reader ($file);
-    $rpng->set_quantize ($palette, $ncolors, [], 1);
+    $rpng->set_quantize ($palette, $ncolors, $hist, 1);
     $rpng->read_png ();
     my $wpng = copy_png ($rpng);
     $wpng->set_PLTE ($palette);
