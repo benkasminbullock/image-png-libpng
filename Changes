@@ -1,7 +1,8 @@
-0.53_01 2020-12-19
+0.54 2020-12-19
 
 - Implement the histogram part of set_quantize
 - set_hIST error handling changed to check values and warn within Perl
+- Automatically test against old versions of libpng before release
 
 0.53 2020-12-16
 
