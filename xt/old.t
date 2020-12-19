@@ -33,5 +33,6 @@ for my $version (@versions) {
     ok (! $@, "Tested OK against old version, $version");
     do_system ("cd $top;./build.pl -c $devnull", $verbose);
 }
-
+# Rebuild because we deleted everything.
+do_system ("./build.pl -d");
 done_testing ();
