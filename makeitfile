@@ -28,7 +28,13 @@ TIN= \
 	tmpl/typemap.tmpl \
 
 
-all:	$(TOUT) $(CONST)
+all:	$(TOUT) $(CONST) README
+
+README: lib/Image/PNG/Libpng.pod META.json
+	makereadme > $@
+
+META.json: Makefile.PL
+	perl Makefile.PL
 
 $(CONST): build/strip-constants.pl tmpl/Const.pm.tmpl
 	build/strip-constants.pl

@@ -1,3 +1,7 @@
+0.55
+
+- Add README to distribution
+
 0.54 2020-12-19
 
 - Implement the histogram part of set_quantize

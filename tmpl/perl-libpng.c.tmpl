@@ -2514,9 +2514,18 @@ static SV * perl_png_get_unknown_chunks (perl_libpng_t * png)
 #endif
 }
 
+static const char * bad_chunk_names[] = {
+    "IHDR",
+    "IEND",
+};
+
+static int n_bad_chunk_names =
+    (sizeof (bad_chunk_names) / sizeof (const char *));
+
 /* Set private chunks in the PNG. */
 
-static void perl_png_set_unknown_chunks (perl_libpng_t * png, AV * chunk_list)
+static void
+perl_png_set_unknown_chunks (perl_libpng_t * png, AV * chunk_list)
 {
 #ifdef PNG_WRITE_UNKNOWN_CHUNKS_SUPPORTED
     /* n_chunks is the number of chunks the user proposes to add to
@@ -2536,7 +2545,6 @@ static void perl_png_set_unknown_chunks (perl_libpng_t * png, AV * chunk_list)
     }
     GET_MEMORY (unknown_chunks, n_chunks, png_unknown_chunk);
     n_ok_chunks = 0;
-    MESSAGE ("OK.");
     for (i = 0; i < n_chunks; i++) {
         HV * perl_chunk = 0;
 	SV ** chunk_pointer;
@@ -2545,12 +2553,16 @@ static void perl_png_set_unknown_chunks (perl_libpng_t * png, AV * chunk_list)
         STRLEN name_length;
         char * data;
         STRLEN data_length;
+	int location;
+	int j;
+	int bad;
 
         MESSAGE ("%d.\n", i);
         /* Get the chunk name and check it is four bytes long. */
 
 	chunk_pointer = av_fetch (chunk_list, i, 0);
-	if (! SvROK (* chunk_pointer) ||
+	if (! chunk_pointer ||
+	    ! SvROK (* chunk_pointer) ||
 	    SvTYPE(SvRV(*chunk_pointer)) != SVt_PVHV) {
             warn ( "Non-hash in chunk array");
             continue;
@@ -2561,11 +2573,20 @@ static void perl_png_set_unknown_chunks (perl_libpng_t * png, AV * chunk_list)
         if (name_length != PERL_PNG_CHUNK_NAME_LENGTH) {
             /* The user's name for a private chunk was not a valid
                length. In this case the chunk is ignored. */
-            warn ( "Illegal PNG chunk name length, "
-                           "chunk names must be %d characters long",
-                           PERL_PNG_CHUNK_NAME_LENGTH);
+            warn ( "Illegal PNG chunk name length %d, "
+		   "chunk names must be %d characters long",
+		   (int) name_length, PERL_PNG_CHUNK_NAME_LENGTH);
             continue;
         }
+	bad = 0;
+	for (j = 0; j < n_bad_chunk_names; j++) {
+	    if (strcmp (name, bad_chunk_names[j]) == 0) {
+		warn ("Cannot use name '%s' for private chunk", name);
+	    }
+	}
+	if (bad) {
+	    continue;
+	}
         png_chunk = unknown_chunks + n_ok_chunks;
         strncpy ((char *) png_chunk->name, (char *) name,
                  PERL_PNG_CHUNK_NAME_LENGTH);
@@ -2576,6 +2597,9 @@ static void perl_png_set_unknown_chunks (perl_libpng_t * png, AV * chunk_list)
         
         png_chunk->data = (unsigned char *) data;
         png_chunk->size = data_length;
+
+	HASH_FETCH_IV (perl_chunk, location);
+	png_chunk->location = location;
         n_ok_chunks++;
     }
     png_set_keep_unknown_chunks(png->png, 3,
@@ -2584,7 +2608,7 @@ static void perl_png_set_unknown_chunks (perl_libpng_t * png, AV * chunk_list)
     MESSAGE ("sending %d chunks.\n", n_ok_chunks);
     png_set_unknown_chunks (pngi, unknown_chunks, n_ok_chunks);
     for (i = 0; i < n_ok_chunks; i++) {
-	png_set_unknown_chunk_location (pngi, i, PNG_AFTER_IDAT);
+       	png_set_unknown_chunk_location (pngi, i, PNG_AFTER_IDAT);
     }
     PERL_PNG_FREE (unknown_chunks);
 #else

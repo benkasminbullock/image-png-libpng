@@ -951,6 +951,9 @@ The "size" field of the PNG structure is not stored, because the
 
 =head2 set_unknown_chunks
 
+    $png->set_unknown_chunks (name => 'dUCk', data => 'abcdefg',
+			      location => PNG_AFTER_IDAT);
+
 [% danger %] This currently does not fully function.
 
 [% cor(fn="set_unknown_chunks") %]
@@ -1201,8 +1204,8 @@ Set the cHRM chunk from a hash reference for the XYZ color space.
 The keys of the hash are as for L</get_cHRM_XYZ>. The values are
 floating point numbers between 0 and 1. The C<Y> values C<red_y>,
 C<green_y>, and C<blue_y> should sum to 1. If you supply values
-outside allowed range, libpng seems to correct them silently on
-writing rather than producing an error.
+outside the allowed range, libpng corrects them silently on writing
+rather than producing an error.
 
 [% cor(fn="set_cHRM_XYZ") %] with a hash reference instead of the C<double>
 arguments.
