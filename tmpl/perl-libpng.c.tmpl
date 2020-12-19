@@ -1517,10 +1517,10 @@ static void perl_png_set_gAMA (perl_libpng_t * png, double gamma)
 }
 
 #if PNG_LIBPNG_VER_MINOR <= 4
-typedef png_charp png_profile_t;
+typedef png_charp perl_png_profile_t;
 #else
     /* Modern version */
-typedef png_bytep png_profile_t;
+typedef png_bytep perl_png_profile_t;
 #endif /* minor <= 2 */
 
 
@@ -1533,7 +1533,7 @@ static SV * perl_png_get_iCCP (perl_libpng_t * png)
     png_uint_32 proflen;
     HV * ice;
     SV * profile_sv;
-    png_profile_t profile;
+    perl_png_profile_t profile;
 
     if (! VALID (iCCP)) {
 	return iccp;
@@ -1564,11 +1564,11 @@ static void perl_png_set_iCCP (perl_libpng_t * png, HV * iCCP)
        due to economising of typing in the HASH_FETCH_PV macro, then
        we copy that pointer into "p". */
     char * profile;
-    png_profile_t p;
+    perl_png_profile_t p;
 
     HASH_FETCH_PV (iCCP, profile);
     HASH_FETCH_PV (iCCP, name);
-    p = (png_profile_t) profile;
+    p = (perl_png_profile_t) profile;
     png_set_iCCP (pngi, name, UNUSED_ZERO_ARG, p,
 		  (png_uint_32) profile_length);
 #else /* PNG_iCCP_SUPPORTED */
@@ -1628,8 +1628,6 @@ static SV * perl_png_get_tRNS (perl_libpng_t * png)
 #endif
 }
 
-/* Empty code. */
-
 static void perl_png_set_tRNS (perl_libpng_t * png, SV * tRNS)
 {
 #ifdef PNG_tRNS_SUPPORTED
@@ -1637,28 +1635,30 @@ static void perl_png_set_tRNS (perl_libpng_t * png, SV * tRNS)
     png_byte trans[256] = {0};
     int num_trans;
     png_color_16 trans_values = {0};
+
     color_type = png_get_color_type (pngi);
     if (color_type & PNG_COLOR_MASK_PALETTE) {
 	AV * trans_av;
 	int i;
 	if (SvTYPE (SvRV (tRNS)) != SVt_PVAV) {
-	    /* unhandled error */
+	    croak ("set_tRNS: argument must be an array reference with palette color types");
 	}
 	trans_av = (AV *) SvRV (tRNS);
 	num_trans = av_len (trans_av) + 1;
 	if (num_trans > 256) {
-	    /* unhandled error */
+	    croak ("set_tRNS: palette has too many entries %d > 256", num_trans);
 	}
 	for (i = 0; i < num_trans; i++) {
 	    int ti;
 	    SV ** ti_sv;
 	    ti_sv = av_fetch (trans_av, i, 0); 
 	    if (! ti_sv) {
-		/* unhandled error */
+		croak ("set_tRNS: empty entry at offset %d into tRNS", i);
 	    }
 	    ti = SvIV (* ti_sv);
 	    if (ti < 0 || ti > 0xFF) {
-		/* unhandled error */
+		croak ("set_tRNS: tRNS value at offset %d %d < 0 or >= 256",
+		       i, ti);
 	    }
 	    trans[i] = ti;
 	}
@@ -1669,12 +1669,12 @@ static void perl_png_set_tRNS (perl_libpng_t * png, SV * tRNS)
     else {
 	HV * trans_hv;
 	if (SvTYPE (SvRV (tRNS)) != SVt_PVHV) {
-	    /* unhandled error */
+	    croak ("set_tRNS: argument must be a hash reference for non-palette images");
 	}
 	trans_hv = (HV *) SvRV (tRNS);
 #oline
         [% FOR color IN noalpha %]
-	    HASH_FETCH_IV_MEMBER (trans_hv, [% color %], (& trans_values));
+	HASH_FETCH_IV_MEMBER (trans_hv, [% color %], (& trans_values));
 	[% END %]
 #line
 	num_trans = 1;
@@ -2592,6 +2592,73 @@ static void perl_png_set_unknown_chunks (perl_libpng_t * png, AV * chunk_list)
 #endif
 }
 
+static void
+perl_png_set_keep_unknown_chunks (perl_libpng_t * png, int keep,
+                                  SV * chunk_list)
+{
+#if defined(PNG_UNKNOWN_CHUNKS_SUPPORTED)
+    if (chunk_list && 
+        SvROK (chunk_list) && 
+        SvTYPE (SvRV (chunk_list)) == SVt_PVAV) {
+        int num_chunks;
+        char * chunk_list_text;
+        AV * chunk_list_av;
+        int i;
+        const int len = (PERL_PNG_CHUNK_NAME_LENGTH + 1);
+
+        chunk_list_av = (AV *) SvRV (chunk_list);
+        num_chunks = av_len (chunk_list_av) + 1;
+        MESSAGE ("There are %d chunks in your list.\n", num_chunks);
+        if (num_chunks == 0) {
+            goto empty_chunk_list;
+        }
+	Newxz (chunk_list_text, len * num_chunks, char);
+        png->memory_gets++;
+        for (i = 0; i < num_chunks; i++) {
+            const char * chunk_i_name;
+            STRLEN chunk_i_length;
+            SV ** chunk_i_sv_ptr;
+            int j;
+            chunk_i_sv_ptr = av_fetch (chunk_list_av, i, 0);
+            if (! chunk_i_sv_ptr) {
+                /* The chunk name was not defined.  */
+                croak ("undefined chunk name at offset %d in chunk list", i);
+            }
+            chunk_i_name = SvPV (*chunk_i_sv_ptr, chunk_i_length);
+            if (chunk_i_length != PERL_PNG_CHUNK_NAME_LENGTH) {
+                croak ("chunk %i has bad length %zu: should be %d in chunk list", i, chunk_i_length, PERL_PNG_CHUNK_NAME_LENGTH);
+            }
+            MESSAGE ("Keeping chunk '%s'\n", chunk_i_name);
+            for (j = 0; j < PERL_PNG_CHUNK_NAME_LENGTH; j++) {
+                chunk_list_text [ i * len + j ] = chunk_i_name [ j ];
+            }
+            chunk_list_text [ i * len + PERL_PNG_CHUNK_NAME_LENGTH ] = '\0';
+        }
+        png_set_keep_unknown_chunks (png->png, keep,
+                                     (unsigned char *) chunk_list_text,
+				     num_chunks);
+        Safefree (chunk_list_text);
+        png->memory_gets--;
+    }
+    else {
+        MESSAGE ("There is no valid chunk list.");
+    empty_chunk_list:
+        png_set_keep_unknown_chunks (png->png, keep, 0, 0);
+    }
+#else
+    /* libpng was compiled without this option. */
+    UNSUPPORTED (UNKNOWN_CHUNKS);
+    return & PL_sv_undef;
+#endif
+}
+
+/*  ____                               _       
+   / ___| _   _ _ __  _ __   ___  _ __| |_ ___ 
+   \___ \| | | | '_ \| '_ \ / _ \| '__| __/ __|
+    ___) | |_| | |_) | |_) | (_) | |  | |_\__ \
+   |____/ \__,_| .__/| .__/ \___/|_|   \__|___/
+               |_|   |_|                        */
+
 /* Does the libpng support "what"? */
 
 int perl_png_libpng_supports (const char * what)
@@ -2658,65 +2725,13 @@ int perl_png_libpng_supports (const char * what)
     return 0;
 }
 
-static void
-perl_png_set_keep_unknown_chunks (perl_libpng_t * png, int keep,
-                                  SV * chunk_list)
-{
-#if defined(PNG_UNKNOWN_CHUNKS_SUPPORTED)
-    if (chunk_list && 
-        SvROK (chunk_list) && 
-        SvTYPE (SvRV (chunk_list)) == SVt_PVAV) {
-        int num_chunks;
-        char * chunk_list_text;
-        AV * chunk_list_av;
-        int i;
-        const int len = (PERL_PNG_CHUNK_NAME_LENGTH + 1);
+/*       _   _ ____  __  __ 
+     ___| | | |  _ \|  \/  |
+    / __| |_| | |_) | |\/| |
+   | (__|  _  |  _ <| |  | |
+    \___|_| |_|_| \_\_|  |_| */
+                         
 
-        chunk_list_av = (AV *) SvRV (chunk_list);
-        num_chunks = av_len (chunk_list_av) + 1;
-        MESSAGE ("There are %d chunks in your list.\n", num_chunks);
-        if (num_chunks == 0) {
-            goto empty_chunk_list;
-        }
-	Newxz (chunk_list_text, len * num_chunks, char);
-        png->memory_gets++;
-        for (i = 0; i < num_chunks; i++) {
-            const char * chunk_i_name;
-            STRLEN chunk_i_length;
-            SV ** chunk_i_sv_ptr;
-            int j;
-            chunk_i_sv_ptr = av_fetch (chunk_list_av, i, 0);
-            if (! chunk_i_sv_ptr) {
-                /* The chunk name was not defined.  */
-                croak ("undefined chunk name at offset %d in chunk list", i);
-            }
-            chunk_i_name = SvPV (*chunk_i_sv_ptr, chunk_i_length);
-            if (chunk_i_length != PERL_PNG_CHUNK_NAME_LENGTH) {
-                croak ("chunk %i has bad length %zu: should be %d in chunk list", i, chunk_i_length, PERL_PNG_CHUNK_NAME_LENGTH);
-            }
-            MESSAGE ("Keeping chunk '%s'\n", chunk_i_name);
-            for (j = 0; j < PERL_PNG_CHUNK_NAME_LENGTH; j++) {
-                chunk_list_text [ i * len + j ] = chunk_i_name [ j ];
-            }
-            chunk_list_text [ i * len + PERL_PNG_CHUNK_NAME_LENGTH ] = '\0';
-        }
-        png_set_keep_unknown_chunks (png->png, keep,
-                                     (unsigned char *) chunk_list_text,
-				     num_chunks);
-        Safefree (chunk_list_text);
-        png->memory_gets--;
-    }
-    else {
-        MESSAGE ("There is no valid chunk list.");
-    empty_chunk_list:
-        png_set_keep_unknown_chunks (png->png, keep, 0, 0);
-    }
-#else
-    /* libpng was compiled without this option. */
-    UNSUPPORTED (UNKNOWN_CHUNKS);
-    return & PL_sv_undef;
-#endif
-}
 
 static SV * perl_png_get_cHRM (perl_libpng_t * png)
 {
