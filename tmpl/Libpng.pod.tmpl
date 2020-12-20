@@ -185,7 +185,7 @@ L</set_background> to replace the alpha channel.
 
 [% example("set-background") %]
 
-[% eximg("loveheartface",
+[% eximg("luv",
          'The input image has a transparent background:') %]
 
 [% eximg("set-background", 'The output image has a blue background:') %]
@@ -2205,6 +2205,9 @@ background using the option C<bkgd>:
 This will of course be ignored if F<any.png> does not contain an alpha
 channel. RGB to gray conversion is done using L</set_rgb_to_gray> with
 the default values.
+
+This function is not supported for versions of libpng earlier than
+1.6.14.
 
 =head2 color_type_channels
 

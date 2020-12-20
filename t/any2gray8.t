@@ -16,9 +16,15 @@ BEGIN: {
     use IPNGLT;
 };
 
-# tantei-san.png is a 256-color paletted grayscale, qrpng is a 1 bit image.
+# There are too many different things that can go wrong
+# with the old libpngs.
 
-for my $f (qw!tantei-san qrpng x-life_before_the_pandemic!) {
+skip_old (); 
+
+# tantei-san.png is a 256-color paletted grayscale, qrpng is a 1 bit
+# image, ../examples/life_* is a grayscale image in an RGB PNG file.
+
+for my $f (qw!tantei-san qrpng x-life!) {
     my $file = "$Bin/$f.png";
     $file =~ s!x-!../examples/!;
     die unless -f $file;

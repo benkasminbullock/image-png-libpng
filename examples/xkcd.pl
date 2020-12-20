@@ -6,7 +6,7 @@ use FindBin '$Bin';
 use Image::PNG::Libpng ':all';
 use Image::PNG::Const ':all';
 
-my $file = 'life_before_the_pandemic.png';
+my $file = 'life.png';
 print "Size before: ", -s $file, "\n";
 my $png = create_reader ($file);
 $png->read_info ();

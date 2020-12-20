@@ -5,7 +5,7 @@ use utf8;
 use FindBin '$Bin';
 use Image::PNG::Libpng ':all';
 use Image::PNG::Const ':all';
-my $file = "$Bin/loveheartface.png";
+my $file = "$Bin/luv.png";
 my %color = (red => 0xC0, green => 0xFF, blue => 0xFF);
 my $png = create_reader ($file);
 $png->set_background (\%color, PNG_BACKGROUND_GAMMA_SCREEN, 0);

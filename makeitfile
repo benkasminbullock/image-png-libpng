@@ -28,7 +28,10 @@ TIN= \
 	tmpl/typemap.tmpl \
 
 
-all:	$(TOUT) $(CONST) README
+all:	$(TOUT) $(CONST) README ex
+
+ex:
+	cd examples;make
 
 README: lib/Image/PNG/Libpng.pod MYMETA.json
 	makereadme > $@

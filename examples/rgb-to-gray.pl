@@ -6,7 +6,7 @@ use FindBin '$Bin';
 use Image::PNG::Libpng ':all';
 use Image::PNG::Const ':all';
 
-my $png = create_reader ("$Bin/loveheartface.png");
+my $png = create_reader ("$Bin/luv.png");
 $png->read_info ();
 $png->set_rgb_to_gray ();
 $png->read_image ();
