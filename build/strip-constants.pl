@@ -70,6 +70,8 @@ my %macros;
     }
 }
 
+@macros = sort {$a->{macro} cmp $b->{macro}} @macros;
+
 my %config = ImagePNGBuild::read_config;
 
 my $output_file = "lib/Image/PNG/Const.pm";

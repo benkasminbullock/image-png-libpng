@@ -174,8 +174,9 @@ The following example demonstrates copying a PNG.
      my $png = create_reader ('file.png');
      $png->read_png ();
 
-This combines L</create_read_struct>, C<open>, and L</init_io> on
-the specified file name but does not read the file in. This is for the case that the user wants to apply some kind of transformation.
+This combines L</create_read_struct>, C<open>, and L</init_io> on the
+specified file name but does not read the file in. This is for the
+case that the user wants to apply some kind of transformation.
 
 =head3 Setting the background
 
@@ -2006,10 +2007,31 @@ number. [% manual %]
 
 =head2 set_background
 
-    $png->set_background (\%color, PNG_, $need_expand, $gamma);
+    $png->set_background (\%color, $bkgd_gamma_code, $need_expand, $gamma);
 
-C<%color> is a hash reference containing color values as integers
-from 0 to 255. See L</Setting the background> for an example.
+C<set_background> sets the background of an image with an alpha
+channel or simple transparency (a L</tRNS> chunk) with the color
+specified by C<%color>. If C<$bkgd_gamma_code> is set to
+C<PNG_BACKGROUND_GAMMA_SCREEN>, it indicates that the supplied
+background color is in the gamma space of the display, else if it is
+set to C<PNG_BACKGROUND_GAMMA_FILE>, the color is in the gamma space
+of the file. If C<$bkgd_gamma_code> is set to
+C<PNG_BACKGROUND_GAMMA_UNIQUE>, the value of C<$gamma> is used,
+otherwise C<$gamma> appears to be ignored and can be omitted. (This is
+not documented in the libpng manual or elsewhere. See
+L<https://github.com/glennrp/libpng/issues/358>.)
+
+If the background color is supplied at the original bit-depth for a
+grayscale image that is expanded to truecolor or to a higher
+bit-depth, C<$need_expand> must be set to a true value, but if the
+background color is supplied at the expanded bit-depth,
+C<$need_expand> must be set to a false value. Similarly for paletted
+images, if C<%color> is supplied as a palette index
+(C<$color{index}>), C<$need_expand> must be set to a true value, but
+if C<%color> is an RGB triplet, C<$need_expand> must be set to a false
+value.
+
+See L</Setting the background> for an example.
 
 [% supports(desc='set_background', val='READ_BACKGROUND') %]
 

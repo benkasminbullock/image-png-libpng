@@ -8,7 +8,7 @@ use Image::PNG::Const ':all';
 my $file = "$Bin/loveheartface.png";
 my %color = (red => 0xC0, green => 0xFF, blue => 0xFF);
 my $png = create_reader ($file);
-$png->set_background (\%color, PNG_BACKGROUND_GAMMA_SCREEN, 0, 1);
+$png->set_background (\%color, PNG_BACKGROUND_GAMMA_SCREEN, 0);
 $png->read_png ();
 my $wpng = copy_png ($png);
 $wpng->write_png_file ("$Bin/set-background.png");
