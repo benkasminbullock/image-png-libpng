@@ -13,6 +13,7 @@ our @EXPORT_OK = qw/
 [% FOR function IN functions -%]
 	[% function %]
 [% END -%]
+	any2gray8
 	copy_png
 	create_reader
 	create_writer
@@ -252,6 +253,77 @@ sub create_writer
     my $png = create_write_struct ();
     $png->init_io ($in);
     return $png;
+}
+
+# White background for either RGB or grayscale.
+
+my %white = (red => 0xff, green => 0xff, blue => 0xff, gray => 0xff);
+
+sub any2gray8
+{
+    my ($file, %options) = @_;
+    my $reader = create_reader ($file);
+    $reader->set_verbosity (1);
+    $reader->read_info ();
+    my $ihdr = $reader->get_IHDR ();
+    my $bd = $ihdr->{bit_depth};
+    my $ct = $ihdr->{color_type};
+    if ($bd != 8) {
+	if ($bd == 16) {
+	    $reader->set_scale_16 ();
+	}
+	elsif ($bd < 8) {
+	    # There is no GRAY_ALPHA with less than 8 bits, so don't
+	    # worry about that.
+	    if ($ct == PNG_COLOR_TYPE_GRAY) {
+		$reader->set_expand_gray_1_2_4_to_8 ();
+	    }
+	    elsif ($ct == PNG_COLOR_TYPE_PALETTE) {
+		$reader->set_palette_expand_to_rgb ();
+		$reader->set_rgb_to_gray ();
+	    }
+	    else {
+		croak "Unknown color type $ct and bit-depth $bd combination in $file";
+	    }
+	}
+	else {
+	    croak "Unknown bit depth $bd in $file";
+	}
+    }
+    if ($ct & PNG_COLOR_MASK_ALPHA) {
+	# We need to add a background color.
+	my $bkgd = $reader->get_bKGD ();
+	if ($bkgd) {
+	    $reader->set_background ($bkgd, PNG_BACKGROUND_GAMMA_SCREEN, 1);
+	}
+	elsif ($options{bkgd}) {
+	    $reader->set_background ($bkgd, PNG_BACKGROUND_GAMMA_SCREEN, 1);
+	}
+	else {
+	    $reader->set_background (\%white, PNG_BACKGROUND_GAMMA_SCREEN, 1);
+	}
+    }
+    if ($ct & PNG_COLOR_MASK_COLOR) {
+	$reader->set_rgb_to_gray ();
+    }
+    elsif ($ct == PNG_COLOR_TYPE_PALETTE) {
+	$reader->set_palette_expand_to_rgb ();
+	$reader->set_rgb_to_gray ();
+    }
+    $reader->read_image ();
+    $reader->read_end ();
+    my $rows = $reader->get_rows ();
+    my $wpng = create_write_struct ();
+    my %ihdr = (
+	height => $ihdr->{height},
+	width => $ihdr->{width},
+	color_type => PNG_COLOR_TYPE_GRAY,
+	bit_depth => 8,
+	interlace_type => $ihdr->{interlace_type},
+    );
+    $wpng->set_IHDR (\%ihdr);
+    $wpng->set_rows ($rows);
+    return $wpng;
 }
 
 1;

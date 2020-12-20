@@ -1,6 +1,11 @@
-0.55
+0.54_01 2020-12-20
 
 - Add README to distribution
+- Bugs in transform fixed
+ -- Always call png_read_update_info before reading image data
+- New "any2gray8" converts any kind of PNG file to an 8-bit gray one
+- Document read_update_info
+- Add support for (g|s)et_chunk_malloc_max
 
 0.54 2020-12-19
 

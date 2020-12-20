@@ -982,14 +982,16 @@ CODE:
 
  # These macros are for rgb_to_gray
 
-#define DEFAULT_WEIGHT -1.0
+#ifndef PNG_RGB_TO_GRAY_DEFAULT
+#define PNG_RGB_TO_GRAY_DEFAULT (-1)
+#endif /* PNG_RGB_TO_GRAY_DEFAULT */
 
 #ifndef PNG_ERROR_ACTION_NONE
 #define PNG_ERROR_ACTION_NONE 1
 #endif /* ndef PNG_ERROR_ACTION_NONE */
 	
 void
-perl_png_set_rgb_to_gray (Png, error_action = PNG_ERROR_ACTION_NONE, red = DEFAULT_WEIGHT, green = DEFAULT_WEIGHT)
+perl_png_set_rgb_to_gray (Png, error_action = PNG_ERROR_ACTION_NONE, red = PNG_RGB_TO_GRAY_DEFAULT, green = PNG_RGB_TO_GRAY_DEFAULT)
 	Image::PNG::Libpng Png;
 	int error_action;
 	double red;

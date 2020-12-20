@@ -375,6 +375,14 @@ is defined (true) for old libpngs which do not actually contain these
 functions.
 %%
 
+c: CHUNK_MALLOC_MAX
+local: 1
+%%d:
+
+The reasons for this are identical to those for L</CHUNK_CACHE_MAX>.
+
+%%
+
 # Local variables:
 # mode: table-readable
 # End:

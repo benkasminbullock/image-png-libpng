@@ -2309,6 +2309,7 @@ perl_png_read_image (perl_libpng_t * png)
     int i;
 
     check_init_io (png);
+    png_read_update_info (pngi);
     n_rows = png_get_image_height (pngi);
     rowbytes = png_get_rowbytes (pngi);
     if (! n_rows) {

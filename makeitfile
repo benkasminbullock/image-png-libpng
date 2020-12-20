@@ -30,10 +30,10 @@ TIN= \
 
 all:	$(TOUT) $(CONST) README
 
-README: lib/Image/PNG/Libpng.pod META.json
+README: lib/Image/PNG/Libpng.pod MYMETA.json
 	makereadme > $@
 
-META.json: Makefile.PL
+MYMETA.json: Makefile.PL
 	perl Makefile.PL
 
 $(CONST): build/strip-constants.pl tmpl/Const.pm.tmpl

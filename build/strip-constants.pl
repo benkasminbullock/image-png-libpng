@@ -59,6 +59,10 @@ my %macros;
 	if ($macro =~ /_WILL_FREE_DATA$/) {
 	    next;
 	}
+	# Memory management, used by png_free_data.
+	if ($macro =~ /^PNG_FREE_$/) {
+	    next;
+	}
 
 	# Delete fake inline macro things.
 	if ($macro =~ /PNG_get_.*int_\d+/) {
