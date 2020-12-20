@@ -223,11 +223,6 @@ item: png_get_cHRM_fixed
 %%
 cat: unimplemented
 
-item: png_get_chunk_malloc_max
-%%desc:
-%%
-cat: memfunc
-
 item: png_get_current_pass_number
 %%desc:
 %%
@@ -461,11 +456,6 @@ Writes a 32 bit unsigned number into an octet buffer. Perl programmers
 will probably use C<pack> for this.
 %%
 cat: notforperl
-
-item: png_set_chunk_malloc_max
-%%desc:
-%%
-cat: memfunc
 
 item: png_set_error_fn
 %%desc:

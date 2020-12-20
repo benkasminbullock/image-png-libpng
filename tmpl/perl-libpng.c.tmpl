@@ -38,6 +38,7 @@
 
 #if PNG_LIBPNG_VER_MAJOR >= 1 && PNG_LIBPNG_VER_MINOR >= 4 && PNG_LIBPNG_VER_RELEASE >= 0
 #define PNG_CHUNK_CACHE_MAX_SUPPORTED
+#define PNG_CHUNK_MALLOC_MAX_SUPPORTED
 #endif /* version >= 1.4.0 */
 
 /* The cHRM_XYZ functions are protected by the cHRM_SUPPORTED macro,
@@ -2701,6 +2702,14 @@ int perl_png_libpng_supports (const char * what)
 #else
         return 0;
 #endif /* PNG_CHUNK_CACHE_MAX_SUPPORTED */
+    }
+
+    if (strcmp (what, "CHUNK_MALLOC_MAX") == 0) {
+#ifdef PNG_CHUNK_MALLOC_MAX_SUPPORTED
+        return 1;
+#else
+        return 0;
+#endif /* PNG_CHUNK_MALLOC_MAX_SUPPORTED */
     }
 
     if (strcmp (what, "cHRM_XYZ") == 0) {

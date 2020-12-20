@@ -314,6 +314,35 @@ perl_png_set_keep_unknown_chunks (Png, keep, chunk_list = 0)
 CODE:
         perl_png_set_keep_unknown_chunks (Png, keep, chunk_list);
 
+int
+perl_png_get_chunk_malloc_max (Png)
+	Image::PNG::Libpng Png;
+CODE:
+#ifdef PNG_CHUNK_MALLOC_MAX_SUPPORTED
+	RETVAL = png_get_chunk_malloc_max (Png->png);
+#else
+	UNSUPPORTED(CHUNK_MALLOC_MAX);
+	RETVAL = 0;
+#endif /* chunk_malloc_max supported */
+OUTPUT:
+	RETVAL
+
+
+void
+perl_png_set_chunk_malloc_max (Png, max)
+	Image::PNG::Libpng Png;
+	int max;
+CODE:
+#ifdef PNG_CHUNK_MALLOC_MAX_SUPPORTED
+	png_set_chunk_malloc_max (Png->png, max);
+#else
+	UNSUPPORTED(CHUNK_MALLOC_MAX);
+#endif /* chunk_malloc_max supported */
+
+
+
+
+
  # Chunk code which is not automatically generated.
 
 int

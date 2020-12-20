@@ -40,15 +40,25 @@ my %macros;
 
         # Now we reject constants which aren't necessary for Perl.
 
+	# These are counters of the number of things, like 0, 1, 2, 3,
+	# _LAST, which are all commented with "Not a valid value", so
+	# there is no point putting them in our Perl module.
         if ($macro =~ /_LAST$/) {
             next;
         }
+	# These are libpng version things, I'm not sure why they
+	# aren't necessary for Perl, maybe reconsider this.
         if ($macro =~ /_LIBPNG_/) {
             next;
         }
+	# These are related to the sizes of various libpng types.
         if ($macro =~ /_MAX$/) {
             next;
         }
+	# Memory management.
+	if ($macro =~ /_WILL_FREE_DATA$/) {
+	    next;
+	}
 
 	# Delete fake inline macro things.
 	if ($macro =~ /PNG_get_.*int_\d+/) {

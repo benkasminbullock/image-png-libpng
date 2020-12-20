@@ -912,6 +912,26 @@ standards for private chunks.
 
 [% supports(desc="private chunks",val="UNKNOWN_CHUNKS") %]
 
+=head2 get_chunk_malloc_max
+
+    my $max = $png->get_chunk_malloc_max ();
+
+This gets the maximum amount of memory that a chunk can use.
+
+[% supports(desc="get_chunk_malloc_max", val="CHUNK_MALLOC_MAX") %]
+
+[% cor(fn="get_chunk_malloc_max") %]
+
+=head2 set_chunk_malloc_max
+
+    $png->set_chunk_malloc_max ($max);
+
+This sets the maximum amount of memory that a chunk can use.
+
+[% supports(desc="get_chunk_malloc_max", val="CHUNK_MALLOC_MAX") %]
+
+[% cor(fn="set_chunk_malloc_max") %]
+
 =head2 set_keep_unknown_chunks
 
     use Image::PNG::Const 'PNG_HANDLE_CHUNK_ALWAYS';
