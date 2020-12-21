@@ -5,6 +5,8 @@
 #  \____|_| |_|\___|\___|_|\_\ |_|  \___/|_|    |_|_|_.__/| .__/|_| |_|\__, |
 #                                                         |_|          |___/ 
 #
+# Repository: https://github.com/benkasminbullock/check4libpng
+#
 # This file lives in ~/projects/check4libpng/lib and should be copied
 # from there.
 #
@@ -144,11 +146,11 @@ sub check_for_libpng
 	    $pkg_config_ldflags =~ s/\s+$//;
 	    if ($pkg_config_cflags) {
 		msg ("Adding '$pkg_config_cflags' to C compiler flags from pkg-config");
-		$inc = "$inc $pkg_config_cflags";
+		$inc = $pkg_config_cflags;
 	    }
 	    if ($pkg_config_ldflags) {
 		msg ("Adding '$pkg_config_ldflags' to linker flags from pkg-config");
-		$libs = "$pkg_config_ldflags $libs";
+		$libs = $pkg_config_ldflags;
 	    }
 	}
     }

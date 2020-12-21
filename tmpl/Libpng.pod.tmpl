@@ -294,7 +294,11 @@ C<open> plus L</init_io> followed by L</read_png> or L</write_png>.
 
 =head3 A self-pixellating program
 
-This demonstrates writing a monochrome PNG to a filehandle using the separate functions L</write_info>, L</write_image>, and then L</write_end>.
+This example demonstrates writing a monochrome PNG by creating a write
+structure with L</create_write_struct>, opening a filehandle to write
+it, associating the filehandle with the PNG structure with
+L</init_io>, then using the functions L</write_info>, L</write_image>,
+and then L</write_end> to actually write the PNG data to the file.
 
 [% example("libpng-write") %]
 
@@ -2540,13 +2544,13 @@ duplicates another function.
 [% danger | eval %] [% undocumented %] [% END # undocumented %]
 [% func.desc | eval %]
 [% IF func.cat == "error" %]
-See L</Error handling functions>.
+💔 See L</Error handling functions>.
 [% END -%]
 [% IF func.cat == "fixed" %]
-See L</Fixed point functions>.
+🍓 See L</Fixed point functions>.
 [% END -%]
 [% IF func.cat == "memfunc" %]
-See L</Memory management functions>.
+🐘 See L</Memory management functions>.
 [% END -%]
 [% END # unsupported %]
 

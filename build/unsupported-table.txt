@@ -7,6 +7,10 @@ cat: error
 item: png_build_grayscale_palette
 %%desc:
 See L<https://github.com/glennrp/libpng/issues/353>.
+
+This function builds an evenly-spaced grayscale palette at a specified
+bit depth into a user-supplied array. It is not used elsewhere in
+libpng.
 %%
 cat: undocumented
 
@@ -165,22 +169,10 @@ item: png_set_filter_heuristics
 %%
 cat: deprecated
 
-item: png_set_quantize
-%%desc:
-This is fairly difficult to implement since it requires interfacing
-various different things.
-%%
-cat: unimplemented
-
 item: png_set_sig_bytes
 %%desc:
 %%
 cat: notforperl
-
-item: png_set_tRNS_to_alpha
-%%desc:
-
-%%
 
 item: png_set_unknown_chunk_location
 %%desc:
