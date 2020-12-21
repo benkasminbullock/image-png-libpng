@@ -2988,18 +2988,39 @@ perl_png_set_eXIf (perl_libpng_t * png, SV * exif)
 #endif /*  PNG_eXIf_SUPPORTED */
 }
 
+/*
+  Make a new entry in "split" using "name" as the key, with "len"
+  bytes of memory. We tried newSV(len) but it didn't work,
+  because we didn't know how to turn that into anything other
+  than "undef", but assigning with an empty string but with the
+  length of data that we need seems to work to get us the length
+  of data we want, and the string value of the data that we
+  insert is also accessible by Perl. 
+*/
+
+/*
+  A failure of the type "segmentation fault" occurred on Solaris
+  somewhere in the split-alpha.t file, so we're adding lots of
+  debugging/checking code.  2020-12-22 07:25:10
+  http://www.cpantesters.org/cpan/report/f0c81600-43be-11eb-9b1a-56bbc304f86f
+*/
+
 static unsigned char *
-bullshit (HV * split, char * name, int name_length, int len)
+sv_memory (HV * split, char * name, int name_length, int len)
 {
     SV * sv;
-    /* newSV(len) didn't work, because it's not clear how to turn that
-       into anything other than "undef", but assigning with an empty
-       string but with the length of data that we need seems to work
-       to get us the length of data we want, and the string value of
-       the data that we insert is also accessible by Perl. */
-    sv = newSVpv ("", len);
-    hv_store (split, name, name_length, sv, 0);
-    return (unsigned char *) SvPVX (sv);
+    unsigned char * retval;
+    sv = newSVpv ("", (STRLEN) len);
+    if (! hv_store (split, name, name_length, sv, 0)) {
+	croak ("%s:%d: hv_store %s, %d bytes failed",
+	       __FILE__, __LINE__, name, len);
+    }
+    retval = (unsigned char *) SvPVX (sv);
+    if (! retval) {
+	croak ("%s:%d: newSVpv/SvPVX %s, %d bytes failed",
+	       __FILE__, __LINE__, name, len);
+    }
+    return retval;
 }
 
 static SV *
@@ -3007,13 +3028,13 @@ perl_png_split_alpha (perl_libpng_t * png)
 {
     HV * split;
     SV * split_ref;
-    int datapix;
     png_uint_32 width;
     png_uint_32 height;
     int bit_depth;
     int color_type;
     int interlace_method;
     int rowbytes;
+    int datapix;
     int alphapix;
     unsigned char * databytes;
     unsigned char * alphabytes;
@@ -3048,8 +3069,11 @@ perl_png_split_alpha (perl_libpng_t * png)
     alphapix = bytes * height * width;
     datapix = colors * alphapix;
     split = newHV ();
-    alphabytes = bullshit (split, "alpha", strlen ("alpha"), alphapix);
-    databytes = bullshit (split, "data", strlen ("data"), datapix);
+    if (! split) {
+	croak ("%s:%d: newHV failed", __FILE__, __LINE__);
+    }
+    alphabytes = sv_memory (split, "alpha", strlen ("alpha"), alphapix);
+    databytes = sv_memory (split, "data", strlen ("data"), datapix);
     for (i = 0; i < height; i++) {
 	int j;
 	png_bytep row;
