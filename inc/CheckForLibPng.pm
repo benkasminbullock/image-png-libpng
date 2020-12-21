@@ -143,12 +143,12 @@ sub check_for_libpng
 	    my $pkg_config_ldflags = `pkg-config --libs libpng`;
 	    $pkg_config_ldflags =~ s/\s+$//;
 	    if ($pkg_config_cflags) {
-		msg ("Adding '$pkg_config_cflags' to C compiler flags from pkg-config");
-		$inc = "$inc $pkg_config_cflags";
+		msg ("Replacing C compiler flags with '$pkg_config_cflags' from pkg-config");
+		$inc = "$pkg_config_cflags";
 	    }
 	    if ($pkg_config_ldflags) {
-		msg ("Adding '$pkg_config_ldflags' to linker flags from pkg-config");
-		$libs = "$pkg_config_ldflags $libs";
+		msg ("Replacing linker flags with '$pkg_config_ldflags' from pkg-config");
+		$libs = "$pkg_config_ldflags";
 	    }
 	}
     }
