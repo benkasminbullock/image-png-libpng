@@ -6,6 +6,7 @@ cat: error
 
 item: png_build_grayscale_palette
 %%desc:
+See L<https://github.com/glennrp/libpng/issues/353>.
 %%
 cat: undocumented
 

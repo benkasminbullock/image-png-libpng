@@ -2536,6 +2536,8 @@ module.
 This function was omitted from this module because it merely
 duplicates another function.
 [% END -%]
+[% IF func.cat == "undocumented" %]
+[% danger | eval %] [% undocumented %] [% END # undocumented %]
 [% func.desc | eval %]
 [% IF func.cat == "error" %]
 See L</Error handling functions>.
@@ -2546,8 +2548,6 @@ See L</Fixed point functions>.
 [% IF func.cat == "memfunc" %]
 See L</Memory management functions>.
 [% END -%]
-[% IF func.cat == "undocumented" %]
-[% danger | eval %] [% undocumented %] [% END %]
 [% END # unsupported %]
 
 =back
