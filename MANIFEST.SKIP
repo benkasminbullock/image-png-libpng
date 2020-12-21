@@ -25,3 +25,6 @@ doc/.*
 ^util/.*$
 # Examples not ready for cpan
 ^nocpan/.*$
+# CPAN doesn't need this, it's in the repo if anyone does.
+^examples/Makefile$
+
