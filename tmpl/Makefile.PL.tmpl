@@ -54,7 +54,7 @@ my %wm = (
 
 if ($optimize) {
     warn "Optimizing is on";
-    $wm{OPTIMIZE} = ' -Wall -O ';
+    $wm{OPTIMIZE} = ' -g -Wall -O ';
 }
 
 if ($vars) {
