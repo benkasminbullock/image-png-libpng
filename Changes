@@ -1,3 +1,7 @@
+0.56_01
+
+- Remove undocumented "get_row_pointers" method
+
 0.56 2020-12-23
 
 - Fix for memory bug within split_alpha

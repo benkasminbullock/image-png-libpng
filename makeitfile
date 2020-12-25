@@ -43,7 +43,7 @@ $(CONST): build/strip-constants.pl tmpl/Const.pm.tmpl
 	build/strip-constants.pl
 
 $(TOUT): $(TIN)
-	build/make-files.pl
+	build/make-files.pl --lines
 
 clean:
 	rm -rf $(TOUT) $(CONST)

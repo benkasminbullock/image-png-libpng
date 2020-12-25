@@ -57,3 +57,9 @@ README
 inc/CheckForLibpng.pm
 
 ppport.h
+
+# Temporarily ignore these
+
+get-pixel.pl
+qrpng-small.png
+nicemake.pl
