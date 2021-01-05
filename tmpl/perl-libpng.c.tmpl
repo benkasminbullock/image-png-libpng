@@ -886,10 +886,10 @@ perl_png_set_tIME (perl_libpng_t * png, SV * input_time)
 int
 perl_png_sig_cmp (SV * png_header, int start, int num_to_check)
 {
-    unsigned char * header;
+    const unsigned char * header;
     STRLEN length;
     int ret_val;
-    header = (unsigned char *) SvPV (png_header, length);
+    header = (const unsigned char *) SvPV (png_header, length);
     ret_val = png_sig_cmp (header, start, num_to_check);
     return ret_val;
 }
@@ -2411,11 +2411,15 @@ static void perl_png_set_rows (perl_libpng_t * png, AV * rows)
     for (i = 0; i < n_rows; i++) {
         /* Need to check that this is the same as the width of the image. */
         STRLEN length;
-        SV * row_i;
+	SV ** row_i_ptr;
 	/* The data from Perl's row. */
-	unsigned char * pr;
-        row_i = * av_fetch (rows, i, 0);
-	pr = (unsigned char *) SvPV (row_i, length);
+	const unsigned char * pr;
+
+        row_i_ptr = av_fetch (rows, i, 0);
+	if (! row_i_ptr) {
+	    croak ("NULL pointer at offset %d of rows", i);
+	}
+	pr = (const unsigned char *) SvPV (*row_i_ptr, length);
 	if (length > rbytes) {
 	    warn ("Row %d is %zu bytes, which is too long; truncating to %d",
 		  i, length, rbytes);
@@ -2993,13 +2997,13 @@ perl_png_set_eXIf (perl_libpng_t * png, SV * exif)
 {
 #ifdef PNG_eXIf_SUPPORTED
     png_uint_32 num_exif;
-    png_bytep exif_buf;
+    png_const_bytep exif_buf;
     STRLEN exif_len;
     
-    exif_buf = (png_bytep) SvPV (exif, exif_len);
+    exif_buf = (const png_bytep) SvPV (exif, exif_len);
     num_exif = (png_uint_32) exif_len;
 
-    png_set_eXIf_1 (png->png, png->info, num_exif, exif_buf);
+    png_set_eXIf_1 (png->png, png->info, num_exif, (png_bytep) exif_buf);
 #else /*  PNG_eXIf_SUPPORTED */
     UNSUPPORTED (eXIf);
 #endif /*  PNG_eXIf_SUPPORTED */
@@ -3279,7 +3283,9 @@ sv_memory (HV * split, char * name, int name_length, int len)
     /* newSVpv with "" and this length caused some kind of problem,
        detectable on a few people's computers and with valgrind, which
        said it was an invalid read, so we switched to this method
-       based on Perl source code and the perlguts.  */
+       based on Perl source code and the perlguts. In fact newSVpv
+       copies "len" bytes of the string it is given, and I was giving
+       it a zero length string, so that was wrong. */
     sv = newSV (sv_len);
     SvPOK_on (sv);
     SvCUR_set (sv, sv_len);
