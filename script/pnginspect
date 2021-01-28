@@ -105,7 +105,7 @@ sub print_text
     my ($contents) = @_;
 
     print "Contents of '$contents->{name}':\n\n";
-    print "File size: $contents->{size}\n\n";
+    print "File size: $contents->{size} bytes\n\n";
     # Print the header first
     print_header ($contents->{ihdr});
     for my $key (sort keys %$contents) {
