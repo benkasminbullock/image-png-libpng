@@ -1,4 +1,4 @@
-0.56_01 2021-04-26
+0.57 2021-04-27
 
 - Remove export of "shift" causing bugs in dependent modules
 - Remove any2gray (is now in Image::PNG::Data)
