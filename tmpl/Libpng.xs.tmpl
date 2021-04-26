@@ -941,19 +941,6 @@ CODE:
 #endif /* MNG_FEATURES */
 
 
-[% IF 0 %]
-void
-perl_png_shift(Png)
-	Image::PNG::Libpng Png;
-CODE:
-#ifdef PNG_READ_SHIFT_SUPPORTED
-	png_set_shift (Png->png)
-#else
-	UNSUPPORTED (READ_SHIFT);
-#endif /* READ_SHIFT */
-[% END %]
-
-
  # Transform functions which require arguments.
 
 void

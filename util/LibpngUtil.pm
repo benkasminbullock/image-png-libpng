@@ -10,10 +10,10 @@ use warnings;
 use strict;
 use utf8;
 use Carp;
-use JSON::Parse 'json_file_to_perl';
+use JSON::Parse 'read_json';
 use File::Slurper qw!read_text write_text!;
 
-my $config = json_file_to_perl ("config.txt");
+my $config = read_json ("config.txt");
 
 sub libpngdir
 {

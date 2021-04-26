@@ -1,5 +1,7 @@
-0.56_01
+0.57
 
+- Remove export of "shift" causing bugs in dependent modules
+- Remove any2gray (is now in Image::PNG::Data)
 - Remove undocumented "get_row_pointers" method
 
 0.56 2020-12-23
