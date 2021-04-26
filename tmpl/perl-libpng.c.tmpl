@@ -2372,6 +2372,12 @@ static void perl_png_set_rows (perl_libpng_t * png, AV * rows)
     png_uint_32 width;
     int bit_depth;
     int channels;
+    /* Older libpngs, e.g. version 1.2.59, need png_get_IHDR to be
+       passed a valid pointer for "color_type", otherwise png_get_IHDR
+       fails. We don't need it here at all. This is no longer the case
+       for libpng version 1.6.37, but we support the old versions
+       too. */
+    int color_type;
 
     /* libpng return value */
     int status;
@@ -2385,8 +2391,22 @@ static void perl_png_set_rows (perl_libpng_t * png, AV * rows)
     unsigned char * r;
 
     status = png_get_IHDR (pngi, & width, & height,
-                           & bit_depth, 0, 0,
+                           & bit_depth,
+			   & color_type, /* Unused, see comment above. */
+			   0,
                            UNUSED_ZERO_ARG, UNUSED_ZERO_ARG);
+    if (status == 0) {
+	/* The return value of png_get_IHDR is either 0 or 1, 0 means
+	   error, 1 means success. */
+	croak ("Image::PNG::Libpng: error from png_get_IHDR");
+    }
+    if (width == 0 || height == 0) {
+	/* This was for catching the bug with png_get_IHDR, it doesn't
+	   do any harm and it might catch another bug later so it can
+	   stay here. */
+	croak ("Image::PNG::Libpng: image width (%u) or height (%u) zero",
+	       (unsigned) width, (unsigned) height);
+    }
 
     channels = png_get_channels (pngi);
     rbytes = bytes_for_bits (width * bit_depth * channels);
