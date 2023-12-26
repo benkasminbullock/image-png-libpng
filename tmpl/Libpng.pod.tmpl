@@ -223,7 +223,7 @@ The output looks like this:
 
 [% output('get-www-png') %]
 
-See also L</Input/output manipulation functions>.
+See also L</Input and output manipulation functions>.
 
 =head2 read_png_file
 
@@ -278,7 +278,7 @@ So, for example,
 
 [% example('png-cgi') %]
 
-See also L</Input/output manipulation functions>.
+See also L</Input and output manipulation functions>.
 
 The optional argument to L</write_png> can be specified using
 L</set_transforms>.
@@ -352,6 +352,10 @@ or
 [% cor(fn="init_io") %], with a Perl
 file handle substituting for the C C<FILE *>.
 
+=head3 Caveats when using init_io
+
+=head4 Check the return value of open
+
 On some versions of Perl, L</init_io> may crash in some circumstances
 with an error like "segmentation fault", if you use code like
 
@@ -364,6 +368,20 @@ F<some.png> does not exist. The crash occurs within Perl's conversion
 of C<$file> into a C C<FILE *> pointer, before this module's code
 runs. This bug was fixed in Perls after version 5.24.1. To avoid
 trouble, please check the return value of C<open>.
+
+=head4 Cannot deal with non-file filehandles
+
+Since C<init_io> is a Perl access to an underlying C function
+C<png_init_io>, it requires something which can be passed to the
+underlying C as a C<FILE *>, C's file structure. If, for example you
+use L<IO::String> or open a scalar reference as a file handle, since
+these actions do not create a C file structure, an error of the form
+C<scalar's file handle is NULL> will occur. 
+
+If you have a PNG in the form of a Perl scalar, use
+L</read_from_scalar> instead of C<init_io>, which uses a C function
+called C<png_set_read_fn> so that the C library can access the data in
+the Perl scalar. See also L</Input and output manipulation functions>.
 
 =head2 read_end
 
@@ -2469,34 +2487,30 @@ freeing is now handled by Perl automatically.
 
 =head2 Other unimplemented parts of libpng
 
-=over
-
-=item Memory management functions
+=head3 Memory management functions
 
 The management of memory for libpng objects is handled automatically
 by this module, and so it does not offer an interface to C<png_malloc>
 and C<png_free> or other libpng memory handling functions.
 
-=item Error handling functions
+=head3 Error handling functions
 
 This module does not offer an interface to C<png_error> and
 C<png_get_error_ptr> or any of the other error handling functions of
 libpng. It redirects the error and warning handlers to Perl's error
 stream.
 
-=item Input/output manipulation functions
+=head3 Input and output manipulation functions
 
 This module does not offer a direct interface to C<png_set_write_fn>
 and C<png_set_read_fn>. However, it is possible to use their
 functionality to access Perl data via L</read_from_scalar> and
 L</write_to_scalar>.
 
-=item Fixed point functions
+=head3 Fixed point functions
 
 There is currently no support for the PNG fixed point functions in
 this Perl module, the functions with suffix C<_fixed>.
-
-=back
 
 =head2 List of unsupported functions
 
