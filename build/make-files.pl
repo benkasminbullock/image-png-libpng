@@ -13,7 +13,6 @@ BEGIN {
     use ImagePNGBuild;
     use LibpngInfo 'template_vars', '@chunks', 'oldversions';
 };
-use autodie;
 use Getopt::Long;
 use File::Compare;
 use File::Copy;
@@ -80,15 +79,15 @@ my $tt = Template->new (
 # The output files from this script.
 
 my @files = qw/
-                  Libpng.pm
-                  Libpng.pod
-                  Libpng.t
-                  Libpng.xs
-                  Makefile.PL
-                  PLTE.t
-                  perl-libpng.c
-                  typemap
-              /;
+    Libpng.pm
+    Libpng.pod
+    Libpng.t
+    Libpng.xs
+    Makefile.PL
+    PLTE.t
+    perl-libpng.c
+    typemap
+/;
 
 # This holds the variables passed to $tt.
 
@@ -99,7 +98,7 @@ $vars{config} = \%config;
 
 # Extract the git commit from the log, via Perl::Build.
 
-my %pbv = (base => $Bin);
+my %pbv = (base => "$Bin/..");
 my $commit = get_commit (%pbv);
 $vars{commit} = $commit;
 

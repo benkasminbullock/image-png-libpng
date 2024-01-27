@@ -2596,7 +2596,23 @@ Versions of libpng up to 1.5 behave erratically when
 L</set_compression_level> or other C<set_compression_*> functions are
 used to alter the compression of the image data. Testing of
 compression-related functions is disabled by this Perl module for
-pre-1.6.13 versions of libpng.
+pre-1.6.13 versions of libpng. 
+
+=head3 Compression level and zlib-ng
+
+Some people have compiled libpng with a new version of zlib known as
+zlib-ng. This gives different values for compression than the original
+zlib. On versions of this module earlier than 0.58, this caused some
+unimportant but annoying test failures where this module was making
+exact size comparisons. See
+L<https://github.com/benkasminbullock/image-png-libpng/issues/40>. As
+far as we know, there is no way to detect whether zlib-ng is being
+used from Perl, so to support the use of zlib-ng, these tests have
+been switched off. The disabled tests can be restored by setting the
+environment variable C<ORIGINAL_ZLIB> to a true value, if you want
+them.
+
+    ORIGINAL_ZLIB=1 prove t/*.t
 
 =head3 sCAL chunk
 

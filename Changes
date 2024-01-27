@@ -1,3 +1,8 @@
+0.57_01 2024-01-27
+
+- Remove documentation for any2gray8 (does not exist)
+- Support for zlib-ng different compression behaviour
+
 0.57 2021-04-27
 
 - Remove export of "shift" causing bugs in dependent modules
