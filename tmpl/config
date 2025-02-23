@@ -6,5 +6,5 @@ email: benkasminbullock@gmail.com
 license: perl
 mylibpng: 1.6.40
 repo: https://github.com/benkasminbullock/image-png-libpng
-version: 0.58
-year: 2024
+version: 0.58_01
+year: 2025
