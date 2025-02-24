@@ -4,7 +4,7 @@ author_pause: BKB
 base: Image::PNG::Libpng
 email: benkasminbullock@gmail.com
 license: perl
-mylibpng: 1.6.40
+mylibpng: 1.6.45
 repo: https://github.com/benkasminbullock/image-png-libpng
-version: 0.58_01
+version: 0.59
 year: 2025
