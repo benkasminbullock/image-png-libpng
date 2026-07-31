@@ -2641,6 +2641,14 @@ A standalone script, L<pnginspect>, is installed with the
 distribution. It prints out the contents of the chunks of the PNG file
 on the command line.
 
+=head1 TESTING
+
+Please ignore errors of the form C<libpng warning: hIST: out of place>
+if they arise during testing. Newer versions of libpng produce these
+errors on the test files which come with older versions of libpng. At
+some point the older test files may be removed, but since it is not a
+serious problem, nothing has been done yet.
+
 =head1 SEE ALSO
 
 =head2 [% pngspec %]
